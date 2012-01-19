@@ -36,7 +36,7 @@ if __name__ == "__main__":
     log.startLogging(sys.stdout)
 
     publisher_endpoint = serverFromString(reactor, PUBLISHER_LISTEN_ON)
-    publisher_factory = VOEventPublisherFactory()
+    publisher_factory = VOEventPublisherFactory(LOCAL_IVO)
     publisher_endpoint.listen(publisher_factory)
 
     receiver_endpoint = serverFromString(reactor, RECEIVER_LISTEN_ON)

@@ -7,12 +7,13 @@ import xml.etree.ElementTree as ElementTree
 # Twisted protocol definition
 from twisted.python import log
 from twisted.protocols.basic import Int32StringReceiver
+from twisted.internet.task import LoopingCall
 from twisted.internet.protocol import Factory
 from twisted.internet.protocol import ServerFactory
 from twisted.internet.protocol import ReconnectingClientFactory
 
 # Constructors for transport protocol messages
-from .messages import Ack
+from .messages import Ack, IAmAlive, IAmAliveResponse
 
 # Constants
 VOEVENT_ROLES = ('observation', 'prediction', 'utility', 'test')
@@ -78,10 +79,11 @@ class VOEventSubscriber(Int32StringReceiver):
         # have received.
         if incoming.get('role') == "iamalive":
             log.msg("IAmAlive received")
-            outgoing = IAmAliveResponse(incoming.find('Origin').text)
+            outgoing = IAmAliveResponse(self.factory.local_ivo, incoming.find('Origin').text)
         elif incoming.get('role') in VOEVENT_ROLES:
             log.msg("VOEvent received")
             outgoing = Ack(self.factory.local_ivo, incoming.attrib['ivorn'])
+            self.voEventHandler(incoming)
         else:
             log.err("Incomprehensible data received")
         try:
@@ -89,9 +91,6 @@ class VOEventSubscriber(Int32StringReceiver):
             log.msg("Sent response")
         except NameError:
             log.msg("No response to send")
-
-        # Call the local handler
-        self.voEventHandler(incoming)
 
     def voEventHandler(self, event):
         """
@@ -116,18 +115,49 @@ class VOEventSubscriberFactory(ReconnectingClientFactory):
 class VOEventPublisher(Int32StringReceiver):
     def connectionMade(self):
         self.factory.publishers.append(self)
+        self.alive_count = 0
+
+    def connectionLost(self, reason):
+        self.factory.publishers.remove(self)
+
+    def sendIAmAlive(self):
+        if self.alive_count > 1:
+            log.msg("Peer appears to be dead; dropping connection")
+            self.transport.abortConnection()
+        else:
+            self.sendString(IAmAlive(self.factory.local_ivo).to_string())
+            self.alive_count += 1
+            log.msg("Sent iamalive %d" % self.alive_count)
 
     def sendEvent(self, event):
         self.sendString(ElementTree.tostring(event))
         log.msg("Sent event")
 
     def stringReceived(self, data):
-        pass
+        try:
+            incoming = ElementTree.fromstring(data)
+        except ElementTree.ParseError:
+            log.err("Unparsable message received")
+            return
+
+        if incoming.get('role') == "iamalive":
+            log.msg("IAmAlive received")
+            self.alive_count -= 1
+        else:
+            log.err("Incomprehensible data received")
+
 
 class VOEventPublisherFactory(ServerFactory):
     protocol = VOEventPublisher
-    def __init__(self):
+    def __init__(self, local_ivo):
+        self.local_ivo = local_ivo
         self.publishers = []
+        self.alive_loop = LoopingCall(self.sendIAmAlive)
+        self.alive_loop.start(5)
+
+    def sendIAmAlive(self):
+        for publisher in self.publishers:
+            publisher.sendIAmAlive()
 
 
 class VOEventSender(Int32StringReceiver):
