@@ -12,9 +12,9 @@ from twisted.internet.endpoints import serverFromString
 from twisted.internet import task
 
 # Transport protocol definitions
-from tcp.transport import VOEventSubscriber
-from tcp.transport import VOEventPublisher, VOEventPublisherFactory
-from tcp.transport import VOEventReceiver, VOEventReceiverFactory
+from tcp.protocol import VOEventSubscriber
+from tcp.protocol import VOEventPublisher, VOEventPublisherFactory
+from tcp.protocol import VOEventReceiver, VOEventReceiverFactory
 
 # Local configuration
 from config import RECEIVER_LISTEN_ON

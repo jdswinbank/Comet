@@ -12,7 +12,7 @@ from twisted.internet.endpoints import clientFromString
 from twisted.internet import task
 
 # VOEvent transport protocol
-from tcp.transport import VOEventSenderFactory
+from tcp.protocol import VOEventSenderFactory
 
 # Constructors for messages
 from voevent.voevent import VOEventMessage

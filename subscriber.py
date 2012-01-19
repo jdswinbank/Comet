@@ -10,7 +10,7 @@ from twisted.internet import reactor
 from twisted.internet.endpoints import clientFromString
 
 # VOEvent transport protocol
-from tcp.transport import VOEventSubscriber, VOEventSubscriberFactory
+from tcp.protocol import VOEventSubscriber, VOEventSubscriberFactory
 
 # Local configuration
 from config import LOCAL_IVO

@@ -53,5 +53,15 @@ Is there any value in checking messages for validity?
 Plugins
 -------
 
-Can we do something smarter with plugins/interfaces to avoid all this message
+Can we do something smarter with plugins/interfaces to avoid all this
 subclassing?
+
+Applications, Multiservices, etc
+--------------------------------
+
+Does all this clever Twisted stuff offer real advantages?
+
+Error handling
+--------------
+
+Currently, we have none.
