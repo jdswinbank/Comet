@@ -49,3 +49,9 @@ Quality control
 ---------------
 
 Is there any value in checking messages for validity?
+
+Plugins
+-------
+
+Can we do something smarter with plugins/interfaces to avoid all this message
+subclassing?
