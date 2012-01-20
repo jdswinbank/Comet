@@ -14,17 +14,14 @@ from tcp.protocol import VOEventSubscriber, VOEventSubscriberFactory
 
 # Local configuration
 from config import LOCAL_IVO
-from config import SUBSCRIBER_CONNECT_TO
-
-#class PrintingVOEventSubscriber(VOEventSubscriber):
-#    def voEventHandler(self, event):
-#        log.msg("Event received!")
-#
-#class PrintingVOEventSubscriberFactory(VOEventSubscriberFactory):
-#    protocol = PrintingVOEventSubscriber
+from config import SUBSCRIBER_HOST
+from config import SUBSCRIBER_PORT
 
 if __name__ == "__main__":
     log.startLogging(sys.stdout)
-    endpoint = clientFromString(reactor, SUBSCRIBER_CONNECT_TO)
-    endpoint.connect(VOEventSubscriberFactory(LOCAL_IVO))
+    reactor.connectTCP(
+        SUBSCRIBER_HOST,
+        SUBSCRIBER_PORT,
+        VOEventSubscriberFactory(LOCAL_IVO)
+    )
     reactor.run()
