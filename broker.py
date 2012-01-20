@@ -15,9 +15,8 @@ from twisted.internet.endpoints import serverFromString
 from twisted.internet import task
 
 # Transport protocol definitions
-from tcp.protocol import VOEventSubscriber
-from tcp.protocol import VOEventPublisher, VOEventPublisherFactory
-from tcp.protocol import VOEventReceiver, VOEventReceiverFactory
+from tcp.protocol import VOEventPublisherFactory
+from broker.relay import RelayingVOEventReceiverFactory
 
 # Broker support
 from broker.ivorn_db import IVORN_DB
@@ -27,21 +26,6 @@ from config import RECEIVER_LISTEN_ON
 from config import PUBLISHER_LISTEN_ON
 from config import LOCAL_IVO
 from config import IVORN_DB_ROOT
-
-def publish_event(protocol, event):
-    if protocol.factory.ivorn_db.check_ivorn(event.attrib['ivorn']):
-        log.msg("This is a new event; forwarding")
-        for publisher in protocol.factory.publisher_factory.publishers:
-            publisher.sendEvent(event)
-    else:
-        log.msg("This is a previously seen event; dropping")
-
-class RelayingVOEventReceiverFactory(VOEventReceiverFactory):
-    protocol = VOEventReceiver
-    def __init__(self, local_ivo, publisher_factory, ivorn_db, validate=False, handlers=[]):
-        VOEventReceiverFactory.__init__(self, local_ivo, validate, handlers)
-        self.publisher_factory = publisher_factory
-        self.ivorn_db = ivorn_db
 
 if __name__ == "__main__":
     log.startLogging(sys.stdout)
@@ -56,7 +40,6 @@ if __name__ == "__main__":
         publisher_factory,
         IVORN_DB(IVORN_DB_ROOT),
         validate="http://www.ivoa.net/xml/VOEvent/VOEvent-v2.0.xsd",
-        handlers=[publish_event]
     )
     receiver_endpoint.listen(receiver_factory)
 
