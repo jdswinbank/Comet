@@ -2,6 +2,7 @@
 # John Swinbank, <swinbank@transientskp.org>, 2011-12.
 
 from twisted.python import log
+from twisted.internet.threads import deferToThread
 from tcp.protocol import VOEventReceiver, VOEventReceiverFactory
 
 def publish_event(protocol, event):
@@ -9,7 +10,14 @@ def publish_event(protocol, event):
     Forward an event to all subscribers, unless we've seen the IVORN
     previously.
     """
-    if protocol.factory.ivorn_db.check_ivorn(event.attrib['ivorn']):
+    d = deferToThread(
+        protocol.factory.ivorn_db.check_ivorn,
+        event.attrib['ivorn']
+    )
+    d.addCallback(event_sender, protocol, event)
+
+def event_sender(valid, protocol, event):
+    if valid:
         log.msg("This is a new event; forwarding")
         for publisher in protocol.factory.publisher_factory.publishers:
             publisher.sendEvent(event)
