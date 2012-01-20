@@ -19,6 +19,9 @@ from tcp.protocol import VOEventSubscriber
 from tcp.protocol import VOEventPublisher, VOEventPublisherFactory
 from tcp.protocol import VOEventReceiver, VOEventReceiverFactory
 
+# Broker support
+from broker.ivorn_db import IVORN_DB
+
 # Local configuration
 from config import RECEIVER_LISTEN_ON
 from config import PUBLISHER_LISTEN_ON
@@ -39,22 +42,6 @@ class RelayingVOEventReceiverFactory(VOEventReceiverFactory):
         VOEventReceiverFactory.__init__(self, local_ivo, validate, handlers)
         self.publisher_factory = publisher_factory
         self.ivorn_db = ivorn_db
-
-
-class IVORN_DB(object):
-    def __init__(self, root):
-        self.root = root
-
-    def check_ivorn(self, ivorn):
-        db_path, key = ivorn.split('//')[1].split('#')
-        db_path = db_path.replace(os.path.sep, "_")
-        with closing(anydbm.open(os.path.join(self.root, db_path), 'c')) as db:
-            if db.has_key(key):
-                return False # Should not forward
-            else:
-                db[key] = str(datetime.datetime.utcnow())
-                return True # Ok to forward
-
 
 if __name__ == "__main__":
     log.startLogging(sys.stdout)
