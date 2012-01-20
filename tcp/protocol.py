@@ -79,31 +79,28 @@ class VOEventSubscriber(Int32StringReceiver):
         # have received.
         if incoming.get('role') == "iamalive":
             log.msg("IAmAlive received")
-            outgoing = IAmAliveResponse(self.factory.local_ivo, incoming.find('Origin').text)
+            self.sendString(
+                IAmAliveResponse(self.factory.local_ivo, incoming.find('Origin').text).to_string()
+            )
         elif incoming.get('role') in VOEVENT_ROLES:
             log.msg("VOEvent received")
-            outgoing = Ack(self.factory.local_ivo, incoming.attrib['ivorn'])
-            self.voEventHandler(incoming)
+            self.sendString(
+                Ack(self.factory.local_ivo, incoming.attrib['ivorn']).to_string()
+            )
+            self.handle_event(incoming)
         else:
             log.err("Incomprehensible data received")
-        try:
-            self.sendString(outgoing.to_string())
-            log.msg("Sent response")
-        except NameError:
-            log.msg("No response to send")
 
-    def voEventHandler(self, event):
-        """
-        End-users should define voEventHandler which is called when an event
-        is received.
-        """
-        log.msg("Event received")
-##        raise NotImplementedError("Subclass VOEventSubscrber to define handlers")
+    def handle_event(self, event):
+        for handler in self.factory.handlers:
+            handler(self, event)
 
 class VOEventSubscriberFactory(ReconnectingClientFactory):
     protocol = VOEventSubscriber
-    def __init__(self, local_ivo):
+
+    def __init__(self, local_ivo, handlers=[]):
         self.local_ivo = local_ivo
+        self.handlers = handlers
 
     def buildProtocol(self, addr):
         self.resetDelay()
@@ -113,17 +110,24 @@ class VOEventSubscriberFactory(ReconnectingClientFactory):
 
 
 class VOEventPublisher(Int32StringReceiver):
+    MAX_ALIVE_COUNT = 1      # Drop connection if peer misses too many iamalives
+    MAX_OUTSTANDING_ACK = 10 # Drop connection if peer misses too many acks
+
     def connectionMade(self):
         self.factory.publishers.append(self)
         self.alive_count = 0
+        self.outstanding_ack = 0
 
     def connectionLost(self, reason):
         self.factory.publishers.remove(self)
 
     def sendIAmAlive(self):
-        if self.alive_count > 1:
+        if self.alive_count > self.MAX_ALIVE_COUNT:
             log.msg("Peer appears to be dead; dropping connection")
-            self.transport.abortConnection()
+            self.transport.loseConnection()
+        elif self.outstanding_ack > self.MAX_OUTSTANDING_ACK:
+            log.msg("Peer is not acknowledging events; dropping connection")
+            self.transport.loseConnection()
         else:
             self.sendString(IAmAlive(self.factory.local_ivo).to_string())
             self.alive_count += 1
@@ -131,6 +135,7 @@ class VOEventPublisher(Int32StringReceiver):
 
     def sendEvent(self, event):
         self.sendString(ElementTree.tostring(event))
+        self.outstanding_ack += 1
         log.msg("Sent event")
 
     def stringReceived(self, data):
@@ -143,17 +148,26 @@ class VOEventPublisher(Int32StringReceiver):
         if incoming.get('role') == "iamalive":
             log.msg("IAmAlive received")
             self.alive_count -= 1
+        elif incoming.get('role') == "ack":
+            log.msg("Ack received")
+            self.outstanding_ack -= 1
+        elif incoming.get('role') == "nak":
+            log.msg("Nak received; terminating peer")
+            self.transport.loseConnection()
         else:
+            log.err(incoming.get('role'))
             log.err("Incomprehensible data received")
 
 
 class VOEventPublisherFactory(ServerFactory):
+    IAMALIVE_INTERVAL = 60 # Sent iamalive every IAMALIVE_INTERVAL seconds
     protocol = VOEventPublisher
+
     def __init__(self, local_ivo):
         self.local_ivo = local_ivo
         self.publishers = []
         self.alive_loop = LoopingCall(self.sendIAmAlive)
-        self.alive_loop.start(5)
+        self.alive_loop.start(self.IAMALIVE_INTERVAL)
 
     def sendIAmAlive(self):
         for publisher in self.publishers:
@@ -213,29 +227,21 @@ class VOEventReceiver(Int32StringReceiver):
         # have received.
         if incoming.get('role') in VOEVENT_ROLES:
             log.msg("VOEvent received")
-            outgoing = Ack(self.factory.local_ivo, incoming.attrib['ivorn'])
+            self.sendString(
+                Ack(self.factory.local_ivo, incoming.attrib['ivorn']).to_string()
+            )
+            self.transport.loseConnection()
+            self.handle_event(incoming)
         else:
             log.err("Incomprehensible data received")
-        try:
-            self.sendString(outgoing.to_string())
-            log.msg("Sent response")
-        except NameError:
-            log.msg("No response to send")
 
-        # After receiving an event, we shut down the connection.
-        self.transport.loseConnection()
-
-        # Call the local handler
-        self.voEventHandler(incoming)
-
-    def voEventHandler(self, event):
-        """
-        End-users should define voEventHandler which is called when an event
-        is received.
-        """
-        raise NotImplementedError("Subclass VOEventReceiver to define handlers")
+    def handle_event(self, event):
+        for handler in self.factory.handlers:
+            handler(self, event)
 
 class VOEventReceiverFactory(ServerFactory):
     protocol = VOEventReceiver
-    def __init__(self, local_ivo):
+
+    def __init__(self, local_ivo, handlers=[]):
         self.local_ivo = local_ivo
+        self.handlers = handlers

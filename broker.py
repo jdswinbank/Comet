@@ -21,16 +21,16 @@ from config import RECEIVER_LISTEN_ON
 from config import PUBLISHER_LISTEN_ON
 from config import LOCAL_IVO
 
-class RelayingVOEventReceiver(VOEventReceiver):
-    def voEventHandler(self, event):
-        for publisher in self.factory.publisher_factory.publishers:
-            publisher.sendEvent(event)
+def publish_event(protocol, event):
+    for publisher in protocol.factory.publisher_factory.publishers:
+        publisher.sendEvent(event)
 
 class RelayingVOEventReceiverFactory(VOEventReceiverFactory):
-    protocol = RelayingVOEventReceiver
-    def __init__(self, local_ivo, publisher_factory):
+    protocol = VOEventReceiver
+    def __init__(self, local_ivo, publisher_factory, handlers=[]):
         VOEventReceiverFactory.__init__(self, local_ivo)
         self.publisher_factory = publisher_factory
+        self.handlers = handlers
 
 if __name__ == "__main__":
     log.startLogging(sys.stdout)
@@ -40,7 +40,11 @@ if __name__ == "__main__":
     publisher_endpoint.listen(publisher_factory)
 
     receiver_endpoint = serverFromString(reactor, RECEIVER_LISTEN_ON)
-    receiver_factory = RelayingVOEventReceiverFactory(LOCAL_IVO, publisher_factory)
+    receiver_factory = RelayingVOEventReceiverFactory(
+        LOCAL_IVO,
+        publisher_factory,
+        [publish_event]
+    )
     receiver_endpoint.listen(receiver_factory)
 
     reactor.run()
