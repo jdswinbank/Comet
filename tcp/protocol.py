@@ -129,7 +129,6 @@ class VOEventPublisher(Int32StringReceiver):
         else:
             self.sendString(IAmAlive(self.factory.local_ivo).to_string())
             self.alive_count += 1
-            log.msg("Sent iamalive %d" % self.alive_count)
 
     def sendEvent(self, event):
         self.sendString(ElementTree.tostring(event))

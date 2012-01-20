@@ -3,7 +3,8 @@
 
 from twisted.python import log
 from twisted.internet.threads import deferToThread
-from tcp.protocol import VOEventReceiver, VOEventReceiverFactory
+from tcp.protocol import VOEventSubscriberFactory
+from tcp.protocol import VOEventReceiverFactory
 
 def publish_event(protocol, event):
     """
@@ -25,8 +26,13 @@ def event_sender(valid, protocol, event):
         log.msg("This is a previously seen event; dropping")
 
 class RelayingVOEventReceiverFactory(VOEventReceiverFactory):
-    protocol = VOEventReceiver
     def __init__(self, local_ivo, publisher_factory, ivorn_db, validate=False):
         VOEventReceiverFactory.__init__(self, local_ivo, validate, [publish_event])
+        self.publisher_factory = publisher_factory
+        self.ivorn_db = ivorn_db
+
+class RelayingVOEventSubscriberFactory(VOEventSubscriberFactory):
+    def __init__(self, local_ivo, publisher_factory, ivorn_db):
+        VOEventSubscriberFactory.__init__(self, local_ivo, [publish_event])
         self.publisher_factory = publisher_factory
         self.ivorn_db = ivorn_db
