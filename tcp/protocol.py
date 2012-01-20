@@ -194,6 +194,8 @@ class VOEventSender(Int32StringReceiver):
 
         if incoming.get('role') == "ack":
             log.msg("Acknowledgement received")
+        elif incoming.get('role') == "nak":
+            log.err("Nak received: remote refused to accept VOEvent")
         else:
             log.err("Incomprehensible data received")
 
