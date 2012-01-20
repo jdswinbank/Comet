@@ -55,8 +55,6 @@ class VOEventSubscriber(Int32StringReceiver):
     All messages consist of a 4-byte network ordered payload size followed by
     the payload data. Twisted's Int32StringReceiver handles this for us
     automatically.
-
-    When a VOEvent is received, we broadcast it onto a ZeroMQ PUB socket.
     """
     def stringReceived(self, data):
         """
