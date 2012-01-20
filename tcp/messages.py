@@ -70,3 +70,11 @@ class Ack(OriginResponseMessage):
     def __init__(self, local_ivo, remote_ivo):
         super(Ack, self).__init__(local_ivo, remote_ivo)
         self.root_element.set("role", "ack")
+
+class Nak(OriginResponseMessage):
+    """
+    Specialist Transport packet with an "nak" role.
+    """
+    def __init__(self, local_ivo, remote_ivo):
+        super(Nak, self).__init__(local_ivo, remote_ivo)
+        self.root_element.set("role", "nak")

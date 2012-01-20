@@ -35,11 +35,10 @@ def publish_event(protocol, event):
 
 class RelayingVOEventReceiverFactory(VOEventReceiverFactory):
     protocol = VOEventReceiver
-    def __init__(self, local_ivo, publisher_factory, ivorn_db, handlers=[]):
-        VOEventReceiverFactory.__init__(self, local_ivo)
+    def __init__(self, local_ivo, publisher_factory, ivorn_db, validate=False, handlers=[]):
+        VOEventReceiverFactory.__init__(self, local_ivo, validate, handlers)
         self.publisher_factory = publisher_factory
         self.ivorn_db = ivorn_db
-        self.handlers = handlers
 
 
 class IVORN_DB(object):
@@ -69,7 +68,8 @@ if __name__ == "__main__":
         LOCAL_IVO,
         publisher_factory,
         IVORN_DB(IVORN_DB_ROOT),
-        [publish_event]
+        validate="http://www.ivoa.net/xml/VOEvent/VOEvent-v2.0.xsd",
+        handlers=[publish_event]
     )
     receiver_endpoint.listen(receiver_factory)
 

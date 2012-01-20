@@ -13,7 +13,7 @@ from twisted.internet.protocol import ServerFactory
 from twisted.internet.protocol import ReconnectingClientFactory
 
 # Constructors for transport protocol messages
-from .messages import Ack, IAmAlive, IAmAliveResponse
+from .messages import Ack, Nak, IAmAlive, IAmAliveResponse
 
 # Constants
 VOEVENT_ROLES = ('observation', 'prediction', 'utility', 'test')
@@ -227,11 +227,19 @@ class VOEventReceiver(Int32StringReceiver):
         # have received.
         if incoming.get('role') in VOEVENT_ROLES:
             log.msg("VOEvent received")
-            self.sendString(
-                Ack(self.factory.local_ivo, incoming.attrib['ivorn']).to_string()
-            )
+            if self.validate_event(data):
+                log.msg("VOEvent is valid")
+                self.sendString(
+                    Ack(self.factory.local_ivo, incoming.attrib['ivorn']).to_string()
+                )
+                # Should use a deferred?
+                self.handle_event(incoming)
+            else:
+                log.msg("VOEvent is NOT valid")
+                self.sendString(
+                    Nak(self.factory.local_ivo, incoming.attrib['ivorn']).to_string()
+                )
             self.transport.loseConnection()
-            self.handle_event(incoming)
         else:
             log.err("Incomprehensible data received")
 
@@ -239,9 +247,22 @@ class VOEventReceiver(Int32StringReceiver):
         for handler in self.factory.handlers:
             handler(self, event)
 
+    def validate_event(self, event):
+        return self.factory.validate_event(event)
+
 class VOEventReceiverFactory(ServerFactory):
     protocol = VOEventReceiver
 
-    def __init__(self, local_ivo, handlers=[]):
+    def __init__(self, local_ivo, validate=False, handlers=[]):
         self.local_ivo = local_ivo
         self.handlers = handlers
+        if validate:
+            from lxml import etree
+            self.schema = etree.XMLSchema(etree.parse(validate))
+
+    def validate_event(self, event):
+        if hasattr(self, "schema"):
+            from lxml import etree
+            return self.schema.validate(etree.fromstring(event))
+        else:
+            return True
