@@ -14,9 +14,6 @@ The broker must support three types of connection:
 These are defined in the IVOA note. Note that 2 is fundamentally a subset of
 1: each broker is just a subscriber as far as other brokers are concerned.
 
-At first, we will support only 1 & 2 above; direct submissions from authors
-will not be accepted. This will be added in a later version.
-
 Initially, all VOEvents received from other brokers will be sent to every
 subscriber.
 
@@ -37,6 +34,8 @@ this? An SQL database?
 
 Is there any value to storing the whole event rather than just the IVORN?
 
+Currently, we use Python's anydbm module for this. I suspect it doesn't scale.
+
 Authentication
 --------------
 
@@ -49,12 +48,6 @@ Quality control
 ---------------
 
 Is there any value in checking messages for validity?
-
-Plugins
--------
-
-Can we do something smarter with plugins/interfaces to avoid all this
-subclassing?
 
 Applications, Multiservices, etc
 --------------------------------

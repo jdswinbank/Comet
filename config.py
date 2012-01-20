@@ -8,3 +8,4 @@ SENDER_CONNECT_TO     = "tcp:host=localhost:port=8099"
 SUBSCRIBER_HOST       = "localhost"
 SUBSCRIBER_PORT       = 8100
 LOCAL_IVO             = "ivo://lofar/transients"
+IVORN_DB_ROOT         = "/tmp"
