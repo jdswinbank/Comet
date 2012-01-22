@@ -16,6 +16,7 @@ def publish_event(protocol, event):
         event.attrib['ivorn']
     )
     d.addCallback(event_sender, protocol, event)
+    return d
 
 def event_sender(valid, protocol, event):
     if valid:

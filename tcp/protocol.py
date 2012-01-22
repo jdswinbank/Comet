@@ -6,6 +6,7 @@ import xml.etree.ElementTree as ElementTree
 
 # Twisted protocol definition
 from twisted.python import log
+from twisted.internet import defer
 from twisted.protocols.basic import Int32StringReceiver
 from twisted.internet.task import LoopingCall
 from twisted.internet.protocol import Factory
@@ -49,15 +50,27 @@ To implement the broker, we need the Subscriber, Publisher & Receiver, but not
 the Sender. All four are implemented here for completeness.
 """
 
-class VOEventSubscriber(Int32StringReceiver):
+class EventHandler(Int32StringReceiver):
     """
-    Implements the VOEvent Transport Protocol; see
-    <http://www.ivoa.net/Documents/Notes/VOEventTransport/>.
+    Superclass for protocols which will receive events (ie, Subscriber and
+    Receiver) providing event handling support.
+    """
+    def handle_event(self, event):
+        """
+        Call a set of event handlers on a given event (itself an ElementTree
+        element).
 
-    All messages consist of a 4-byte network ordered payload size followed by
-    the payload data. Twisted's Int32StringReceiver handles this for us
-    automatically.
-    """
+        We return a DeferredList which fires when all handlers have run.
+        """
+        return defer.gatherResults(
+            [
+                defer.maybeDeferred(handler, self, event)
+                for handler in self.factory.handlers
+            ],
+            consumeErrors=True
+        )
+
+class VOEventSubscriber(EventHandler):
     def stringReceived(self, data):
         """
         Called when a complete new message is received.
@@ -73,7 +86,6 @@ class VOEventSubscriber(Int32StringReceiver):
             log.err("Unparsable message received")
             return
 
-        # Handle our transport protocol obligations.
         # The root element of both VOEvent and Transport packets has a
         # "role" element which we use to identify the type of message we
         # have received.
@@ -87,13 +99,9 @@ class VOEventSubscriber(Int32StringReceiver):
             self.sendString(
                 Ack(self.factory.local_ivo, incoming.attrib['ivorn']).to_string()
             )
-            self.handle_event(incoming)
+            self.handle_event(incoming).addCallback(lambda x: log.msg("Event processed"))
         else:
             log.err("Incomprehensible data received")
-
-    def handle_event(self, event):
-        for handler in self.factory.handlers:
-            handler(self, event)
 
 class VOEventSubscriberFactory(ReconnectingClientFactory):
     protocol = VOEventSubscriber
@@ -208,11 +216,10 @@ class VOEventSenderFactory(Factory):
     protocol = VOEventSender
 
 
-class VOEventReceiver(Int32StringReceiver):
+
+class VOEventReceiver(EventHandler):
     """
-    When a VOEvent is received, we acknowledge it, shut down the connection,
-    and call VOEventReceiver.voEventHandler() to process it. That method
-    should be supplied in a subclass.
+    A receiver waits for a one-shot submission from a connecting client.
     """
     def stringReceived(self, data):
         """
@@ -223,7 +230,6 @@ class VOEventReceiver(Int32StringReceiver):
         except ElementTree.ParseError:
             log.err("Unparsable message received")
 
-        # Handle our transport protocol obligations.
         # The root element of both VOEvent and Transport packets has a
         # "role" element which we use to identify the type of message we
         # have received.
@@ -234,8 +240,7 @@ class VOEventReceiver(Int32StringReceiver):
                 self.sendString(
                     Ack(self.factory.local_ivo, incoming.attrib['ivorn']).to_string()
                 )
-                # Should use a deferred?
-                self.handle_event(incoming)
+                self.handle_event(incoming).addCallback(lambda x: log.msg("Event processed"))
             else:
                 log.msg("VOEvent is NOT valid")
                 self.sendString(
@@ -243,11 +248,7 @@ class VOEventReceiver(Int32StringReceiver):
                 )
             self.transport.loseConnection()
         else:
-            log.err("Incomprehensible data received")
-
-    def handle_event(self, event):
-        for handler in self.factory.handlers:
-            handler(self, event)
+            log.err("Incomprehensible data received from %s" % str(self.transport.getPeer()))
 
     def validate_event(self, event):
         return self.factory.validate_event(event)
