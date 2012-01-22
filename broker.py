@@ -43,7 +43,7 @@ if __name__ == "__main__":
         LOCAL_IVO,
         publisher_factory,
         ivorn_db,
-        validate="http://www.ivoa.net/xml/VOEvent/VOEvent-v2.0.xsd",
+        validate="schema/VOEvent-v2.0.xsd",
     )
     receiver_endpoint.listen(receiver_factory)
 

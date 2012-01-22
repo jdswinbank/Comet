@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns='http://www.telescope-networks.org/xml/Transport/v0.1' 
+  xmlns:xs='http://www.w3.org/2001/XMLSchema' 
+  targetNamespace="http://www.telescope-networks.org/xml/Transport/v0.1" 
+  elementFormDefault="unqualified">
+  
+ <!-- Transport is the root element -->
+  <xs:element name="Transport">
+    <xs:complexType>
+      <xs:all>
+        <xs:element name="Origin"  type="xs:string" minOccurs="0"/>
+        <xs:element name="Response"  type="xs:string" minOccurs="0"/>
+        <xs:element name="TimeStamp" type="xs:dateTime" minOccurs="0"/>
+        <xs:element name="Meta" minOccurs="0"/>   
+      </xs:all>
+      <xs:attribute name="version" type="xs:token" fixed="0.1" use="required"/>
+      <xs:attribute name="role" default="observation"/>
+    </xs:complexType>
+  </xs:element>  
+
+
+  <!-- Meta: Possibly useful meta-data -->
+  <xs:complexType name="Meta">
+    <xs:choice maxOccurs="unbounded">
+      <xs:element name="Param"/>
+      <xs:element name="Group"/>
+    </xs:choice>
+  </xs:complexType>
+  <xs:complexType name="Param">
+    <xs:attribute name="name" type="xs:token"/>
+    <xs:attribute name="ucd" type="xs:token"/>
+    <xs:attribute name="value" type="xs:string"/>
+    <xs:attribute name="unit" type="xs:string"/>
+  </xs:complexType>
+  <xs:complexType name="Group">
+    <xs:choice maxOccurs="unbounded">
+      <xs:element name="Param"/>
+    </xs:choice>
+    <xs:attribute name="name" type="xs:string"/>
+    <xs:attribute name="type" type="xs:string"/>
+  </xs:complexType>
+
+
+</xs:schema>
