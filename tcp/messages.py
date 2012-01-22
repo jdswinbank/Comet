@@ -2,6 +2,7 @@
 # John Swinbank, <swinbank@transientskp.org>, 2011.
 
 # Python standard library
+from StringIO import StringIO
 from datetime import datetime
 
 # XML parsing using ElementTree
@@ -31,7 +32,9 @@ class TransportMessage(object):
         """
         Serialise the message to an XML string.
         """
-        return ElementTree.tostring(self.root_element)
+        s = StringIO()
+        ElementTree.ElementTree(self.root_element).write(s, encoding="UTF-8", xml_declaration=True)
+        return s.getvalue()
 
 class OriginResponseMessage(TransportMessage):
     """
