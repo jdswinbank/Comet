@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<xs:schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<xs:schema xmlns='http://www.telescope-networks.org/xml/Transport/v1.1'
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="http://www.telescope-networks.org/xml/Transport/v1.1">
 
   <xs:element name="Transport">
     <xs:complexType>
@@ -12,10 +14,11 @@
           <xs:complexType>
             <xs:sequence minOccurs="1" maxOccurs="1">
               <xs:element minOccurs="0" maxOccurs="unbounded" name="Param">
-              <xs:complexType>
-                <xs:attribute name="name" type="xs:string" use="required" />
-                <xs:attribute name="value" type="xs:string" use="required" />
-              </xs:complexType>
+                <xs:complexType>
+                  <xs:attribute name="name" type="xs:string" use="required" />
+                  <xs:attribute name="value" type="xs:string" use="required" />
+                </xs:complexType>
+              </xs:element>
               <xs:element minOccurs="0" maxOccurs="1" name="Result" type="xs:string" />
             </xs:sequence>
           </xs:complexType>
