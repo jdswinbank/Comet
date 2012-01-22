@@ -99,7 +99,10 @@ class VOEventSubscriber(EventHandler):
             self.sendString(
                 Ack(self.factory.local_ivo, incoming.attrib['ivorn']).to_string()
             )
-            self.handle_event(incoming).addCallback(lambda x: log.msg("Event processed"))
+            self.handle_event(incoming).addCallbacks(
+                lambda x: log.msg("Event processed"),
+                lambda x: log.err("Event handlers failed")
+            )
         else:
             log.err("Incomprehensible data received")
 
@@ -241,7 +244,10 @@ class VOEventReceiver(EventHandler):
                 self.sendString(
                     Ack(self.factory.local_ivo, incoming.attrib['ivorn']).to_string()
                 )
-                self.handle_event(incoming).addCallback(lambda x: log.msg("Event processed"))
+                self.handle_event(incoming).addCallbacks(
+                    lambda x: log.msg("Event processed"),
+                    lambda x: log.err("Event handlers failed")
+                )
             else:
                 log.msg("VOEvent is NOT valid")
                 self.sendString(
