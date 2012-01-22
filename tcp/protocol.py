@@ -242,21 +242,26 @@ class VOEventReceiver(EventHandler):
         # have received.
         if incoming.get('role') in VOEVENT_ROLES:
             log.msg("VOEvent received from %s" % str(self.transport.getPeer()))
-            if self.validate_event(data):
-                log.msg("VOEvent is valid")
-                self.sendString(
-                    Ack(self.factory.local_ivo, incoming.attrib['ivorn']).to_string()
-                )
-                self.handle_event(incoming).addCallbacks(
-                    lambda x: log.msg("Event processed"),
-                    lambda x: log.err("Event handlers failed")
-                )
-            else:
-                log.msg("VOEvent is NOT valid")
-                self.sendString(
-                    Nak(self.factory.local_ivo, incoming.attrib['ivorn']).to_string()
-                )
-            self.transport.loseConnection()
+            def event_process(event_is_valid):
+                if event_is_valid:
+                    log.msg("VOEvent is valid")
+                    self.sendString(
+                        Ack(self.factory.local_ivo, incoming.attrib['ivorn']).to_string()
+                    )
+                    self.handle_event(incoming).addCallbacks(
+                        lambda x: log.msg("Event processed"),
+                        lambda x: log.err("Event handlers failed")
+                    )
+                else:
+                    log.msg("VOEvent is NOT valid")
+                    self.sendString(
+                        Nak(self.factory.local_ivo, incoming.attrib['ivorn']).to_string()
+                    )
+                self.transport.loseConnection()
+            deferToThread(self.validate_event, data).addCallbacks(
+                event_process,
+                lambda x: log.err("Event validator failed")
+            )
         else:
             log.err("Incomprehensible data received from %s" % str(self.transport.getPeer()))
 
