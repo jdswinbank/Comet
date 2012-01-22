@@ -2,11 +2,12 @@
 # John Swinbank, <swinbank@transientskp.org>, 2011.
 
 # Python standard library
-from StringIO import StringIO
 from datetime import datetime
 
 # XML parsing using ElementTree
 import xml.etree.ElementTree as ElementTree
+
+from .utils import serialize_element_to_xml
 
 # For neatness only; requires Python 2.7
 #ElementTree.register_namespace("trn", "http://www.telescope-networks.org/xml/Transport/v1.1")
@@ -33,9 +34,7 @@ class TransportMessage(object):
         """
         Serialise the message to an XML string.
         """
-        s = StringIO()
-        ElementTree.ElementTree(self.root_element).write(s, encoding="UTF-8", xml_declaration=True)
-        return s.getvalue()
+        return serialize_element_to_xml(self.root_element)
 
 class OriginResponseMessage(TransportMessage):
     """

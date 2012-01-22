@@ -14,6 +14,8 @@ from twisted.internet.protocol import ReconnectingClientFactory
 
 # Constructors for transport protocol messages
 from .messages import Ack, Nak, IAmAlive, IAmAliveResponse
+from .utils import serialize_element_to_xml
+
 
 # Constants
 VOEVENT_ROLES = ('observation', 'prediction', 'utility', 'test')
@@ -131,7 +133,8 @@ class VOEventPublisher(Int32StringReceiver):
             self.alive_count += 1
 
     def sendEvent(self, event):
-        self.sendString(ElementTree.tostring(event))
+        # event is an ElementTree element
+        self.sendString(serialize_element_to_xml(event))
         self.outstanding_ack += 1
         log.msg("Sent event")
 
