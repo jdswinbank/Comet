@@ -90,12 +90,12 @@ class VOEventSubscriber(EventHandler):
         # "role" element which we use to identify the type of message we
         # have received.
         if incoming.get('role') == "iamalive":
-            log.msg("IAmAlive received")
+            log.msg("IAmAlive received from %s" % str(self.transport.getPeer()))
             self.sendString(
                 IAmAliveResponse(self.factory.local_ivo, incoming.find('Origin').text).to_string()
             )
         elif incoming.get('role') in VOEVENT_ROLES:
-            log.msg("VOEvent received")
+            log.msg("VOEvent received from %s" % str(self.transport.getPeer()))
             self.sendString(
                 Ack(self.factory.local_ivo, incoming.attrib['ivorn']).to_string()
             )
@@ -144,7 +144,7 @@ class VOEventPublisher(Int32StringReceiver):
         # event is an ElementTree element
         self.sendString(serialize_element_to_xml(event))
         self.outstanding_ack += 1
-        log.msg("Sent event")
+        log.msg("Sent event to %s" % str(self.transport.getPeer()))
 
     def stringReceived(self, data):
         try:
@@ -154,17 +154,17 @@ class VOEventPublisher(Int32StringReceiver):
             return
 
         if incoming.get('role') == "iamalive":
-            log.msg("IAmAlive received")
+            log.msg("IAmAlive received from %s" % str(self.transport.getPeer()))
             self.alive_count -= 1
         elif incoming.get('role') == "ack":
-            log.msg("Ack received")
+            log.msg("Ack received from %s" % str(self.transport.getPeer()))
             self.outstanding_ack -= 1
         elif incoming.get('role') == "nak":
-            log.msg("Nak received; terminating peer")
+            log.msg("Nak received from %s; terminating" % str(self.transport.getPeer()))
             self.transport.loseConnection()
         else:
             log.err(incoming.get('role'))
-            log.err("Incomprehensible data received")
+            log.err("Incomprehensible data received from %s" % str(self.transport.getPeer()))
 
 
 class VOEventPublisherFactory(ServerFactory):
@@ -195,19 +195,19 @@ class VOEventSender(Int32StringReceiver):
         """
         Called when a complete new message is received.
         """
-        log.msg("Got response")
+        log.msg("Got response from %s" % str(self.transport.getPeer()))
         try:
             incoming = ElementTree.fromstring(data)
         except ElementTree.ParseError:
-            log.err("Unparsable message received")
+            log.err("Unparsable message received from %s" % str(self.transport.getPeer()))
             return
 
         if incoming.get('role') == "ack":
-            log.msg("Acknowledgement received")
+            log.msg("Acknowledgement received from %s" % str(self.transport.getPeer()))
         elif incoming.get('role') == "nak":
-            log.err("Nak received: remote refused to accept VOEvent")
+            log.err("Nak received: %s refused to accept VOEvent" % str(self.transport.getPeer()))
         else:
-            log.err("Incomprehensible data received")
+            log.err("Incomprehensible data received from %s" % str(self.transport.getPeer()))
 
         # After receiving a message, we shut down the connection.
         self.transport.loseConnection()
@@ -228,13 +228,14 @@ class VOEventReceiver(EventHandler):
         try:
             incoming = ElementTree.fromstring(data)
         except ElementTree.ParseError:
-            log.err("Unparsable message received")
+            log.err("Unparsable message received from %s" % str(self.transport.getPeer()))
+            return
 
         # The root element of both VOEvent and Transport packets has a
         # "role" element which we use to identify the type of message we
         # have received.
         if incoming.get('role') in VOEVENT_ROLES:
-            log.msg("VOEvent received")
+            log.msg("VOEvent received from %s" % str(self.transport.getPeer()))
             if self.validate_event(data):
                 log.msg("VOEvent is valid")
                 self.sendString(
