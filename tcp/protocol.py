@@ -7,6 +7,7 @@ import xml.etree.ElementTree as ElementTree
 # Twisted protocol definition
 from twisted.python import log
 from twisted.internet import defer
+from twisted.internet.threads import deferToThread
 from twisted.protocols.basic import Int32StringReceiver
 from twisted.internet.task import LoopingCall
 from twisted.internet.protocol import Factory
@@ -145,9 +146,11 @@ class VOEventPublisher(Int32StringReceiver):
 
     def sendEvent(self, event):
         # event is an ElementTree element
-        self.sendString(serialize_element_to_xml(event))
-        self.outstanding_ack += 1
-        log.msg("Sent event to %s" % str(self.transport.getPeer()))
+        def do_send(serialized_event):
+            self.sendString(serialized_event)
+            self.outstanding_ack +=1
+            log.msg("Sent event to %s" % str(self.transport.getPeer()))
+        deferToThread(serialize_element_to_xml, event).addCallback(do_send)
 
     def stringReceived(self, data):
         try:
