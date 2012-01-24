@@ -6,6 +6,7 @@ import xml.etree.ElementTree as ElementTree
 
 # Twisted protocol definition
 from twisted.python import log
+from twisted.internet import reactor
 from twisted.internet import defer
 from twisted.internet.threads import deferToThread
 from twisted.protocols.basic import Int32StringReceiver
@@ -72,14 +73,21 @@ class EventHandler(Int32StringReceiver):
         )
 
 class VOEventSubscriber(EventHandler):
+    ALIVE_INTERVAL = 120 # If we get no iamalive for ALIVE_INTERVAL seconds,
+                         # assume our peer forgot us.
+    def __init__(self):
+        self.check_alive = reactor.callLater(self.ALIVE_INTERVAL, self.timed_out)
+
+    def timed_out(self):
+        log.msg(
+            "No iamalive received for %d seconds; disconecting" %
+            self.ALIVE_INTERVAL
+        )
+        self.transport.loseConnection()
+
     def stringReceived(self, data):
         """
         Called when a complete new message is received.
-
-        We have two jobs here:
-
-        1. Reply according to the Transport Protocol.
-        2. Call a local event handler, voEventHandler(), defined in subclass.
         """
         try:
             incoming = ElementTree.fromstring(data)
@@ -92,9 +100,11 @@ class VOEventSubscriber(EventHandler):
         # have received.
         if incoming.get('role') == "iamalive":
             log.msg("IAmAlive received from %s" % str(self.transport.getPeer()))
+            self.check_alive.cancel()
             self.sendString(
                 IAmAliveResponse(self.factory.local_ivo, incoming.find('Origin').text).to_string()
             )
+            self.check_alive = reactor.callLater(self.ALIVE_INTERVAL, self.timed_out)
         elif incoming.get('role') in VOEVENT_ROLES:
             log.msg("VOEvent received from %s" % str(self.transport.getPeer()))
             self.sendString(
