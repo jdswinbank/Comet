@@ -2,17 +2,12 @@
 # John Swinbank, <swinbank@transientskp.org>, 2011-12.
 
 # Python standard library
-import os
 import sys
-import anydbm
-import datetime
-from contextlib import closing
 
 # Twisted
 from twisted.python import log
 from twisted.internet import reactor
 from twisted.internet.endpoints import serverFromString
-from twisted.internet import task
 
 # Transport protocol definitions
 from tcp.protocol import VOEventPublisherFactory
