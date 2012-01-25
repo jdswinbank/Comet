@@ -15,7 +15,7 @@ from twisted.internet import task
 from tcp.protocol import VOEventSenderFactory
 
 # Constructors for messages
-from voevent.voevent import VOEventMessage
+from voevent.voevent import dummy_voevent_message
 
 # Local configuration
 from config import LOCAL_IVO
@@ -28,7 +28,7 @@ MAX_CONNECT = 1
 #from config import MAX_CONNECT
 
 def send_message(endpoint, dispatcher):
-    outgoing_message = VOEventMessage(LOCAL_IVO)
+    outgoing_message = dummy_voevent_message(LOCAL_IVO)
     if dispatcher.ctr == N_OF_EVENTS:
         dispatcher.loop.stop()
     else:
@@ -39,7 +39,7 @@ def send_message(endpoint, dispatcher):
         d = endpoint.connect(VOEventSenderFactory())
 
         # And when the connection is ready, use it to send a message
-        d.addCallback(lambda p: p.sendString(outgoing_message.to_string()))
+        d.addCallback(lambda p: p.send_element(outgoing_message))
 
         # The semaphore releases when the returned Deferred fires
         return d
