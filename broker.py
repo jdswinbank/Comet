@@ -37,8 +37,7 @@ if __name__ == "__main__":
     receiver_factory = RelayingVOEventReceiverFactory(
         LOCAL_IVO,
         publisher_factory,
-        ivorn_db,
-        validate="schema/VOEvent-v2.0.xsd",
+        ivorn_db
     )
     receiver_endpoint.listen(receiver_factory)
 

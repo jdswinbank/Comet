@@ -1,39 +1,74 @@
 # VOEvent Broker.
-# John Swinbank, <swinbank@transientskp.org>, 2011-12.
+# John Swinbank, <swinbank@transientskp.org>, 2012.
 
 from twisted.python import log
 from twisted.internet.threads import deferToThread
 from tcp.protocol import VOEventSubscriberFactory
 from tcp.protocol import VOEventReceiverFactory
+from tcp.utils import serialize_element_to_xml
+import lxml.etree as etree
 
 def publish_event(protocol, event):
     """
     Forward an event to all subscribers, unless we've seen the IVORN
     previously.
     """
-    d = deferToThread(
+    log.msg("Rebroadcasting event to subscribers")
+    for publisher in protocol.factory.publisher_factory.publishers:
+        publisher.sendEvent(event)
+
+class SchemaValidator(object):
+    """
+    This takes an ElementTree element, converts it to a string, then reads
+    that into lxml for validation. That... can't be optimal.
+    """
+    def __init__(self, schema):
+        self.schema = etree.XMLSchema(etree.parse(schema))
+
+    def __call__(self, protocol, event):
+        def check_validity(is_valid):
+            if is_valid:
+                log.msg("Schema validation passed")
+                return True
+            else:
+                log.msg("Schema validation failed")
+                raise Exception("Schema validation failed")
+
+        def schema_failure(failure):
+            log.err("Schema validator failed!")
+            return failure
+
+        return deferToThread(
+            self.schema.validate,
+            etree.fromstring(serialize_element_to_xml(event))
+        ).addCallbacks(check_validity, schema_failure)
+
+def previously_seen(protocol, event):
+    def check_validity(is_valid):
+        if is_valid:
+            log.msg("Event not previously seen")
+            return True
+        else:
+            log.msg("Event HAS been previously seen")
+            raise Exception("Previously seen event")
+
+    def db_failure(failure):
+        log.err("IVORN DB lookup failed!")
+        return failure
+
+    return deferToThread(
         protocol.factory.ivorn_db.check_ivorn,
         event.attrib['ivorn']
-    )
-    d.addCallback(event_sender, protocol, event)
-    return d
-
-def event_sender(valid, protocol, event):
-    if valid:
-        log.msg("This is a new event; forwarding")
-        for publisher in protocol.factory.publisher_factory.publishers:
-            publisher.sendEvent(event)
-    else:
-        log.msg("This is a previously seen event; dropping")
+    ).addCallbacks(check_validity, db_failure)
 
 class RelayingVOEventReceiverFactory(VOEventReceiverFactory):
-    def __init__(self, local_ivo, publisher_factory, ivorn_db, validate=False):
-        VOEventReceiverFactory.__init__(self, local_ivo, validate, [publish_event])
+    def __init__(self, local_ivo, publisher_factory, ivorn_db):
+        VOEventReceiverFactory.__init__(self, local_ivo, [previously_seen, SchemaValidator('schema/VOEvent-v2.0.xsd')], [publish_event])
         self.publisher_factory = publisher_factory
         self.ivorn_db = ivorn_db
 
 class RelayingVOEventSubscriberFactory(VOEventSubscriberFactory):
     def __init__(self, local_ivo, publisher_factory, ivorn_db):
-        VOEventSubscriberFactory.__init__(self, local_ivo, [publish_event])
+        VOEventSubscriberFactory.__init__(self, local_ivo, [], [publish_event])
         self.publisher_factory = publisher_factory
         self.ivorn_db = ivorn_db

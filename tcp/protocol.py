@@ -19,7 +19,6 @@ from twisted.internet.protocol import ReconnectingClientFactory
 from .messages import Ack, Nak, IAmAlive, IAmAliveResponse
 from .utils import serialize_element_to_xml
 
-
 # Constants
 VOEVENT_ROLES = ('observation', 'prediction', 'utility', 'test')
 
@@ -57,6 +56,22 @@ class EventHandler(Int32StringReceiver):
     Superclass for protocols which will receive events (ie, Subscriber and
     Receiver) providing event handling support.
     """
+    def validate_event(self, event):
+        """
+        Call a set of event validators on a given event (itself an ElementTree
+        element).
+
+        If a validator raises an exception (ie, calls an errback), the event
+        is invalid. Otherwise, it's ok.
+        """
+        return defer.gatherResults(
+            [
+                defer.maybeDeferred(validator, self, event)
+                for validator in self.factory.validators
+            ],
+            consumeErrors=True,
+        )
+
     def handle_event(self, event):
         """
         Call a set of event handlers on a given event (itself an ElementTree
@@ -64,13 +79,37 @@ class EventHandler(Int32StringReceiver):
 
         We return a DeferredList which fires when all handlers have run.
         """
-        return defer.gatherResults(
+        return defer.DeferredList(
             [
                 defer.maybeDeferred(handler, self, event)
                 for handler in self.factory.handlers
             ],
             consumeErrors=True
         )
+
+    def process_event(self, event):
+        def handle_valid(status):
+            self.sendString(
+                Ack(
+                    self.factory.local_ivo, event.attrib['ivorn']
+                ).to_string()
+            )
+            self.handle_event(event).addCallbacks(
+                lambda x: log.msg("Event processed"),
+                lambda x: log.err("Event handlers failed")
+            )
+
+        def handle_invalid(failure):
+            # Should unpack exception from failure to include useful output
+            # in Nak
+            self.sendString(
+                Nak(
+                    self.factory.local_ivo, event.attrib['ivorn']
+                ).to_string()
+            )
+            log.msg("Event invalid; discarding")
+        self.validate_event(event).addCallbacks(handle_valid, handle_invalid)
+
 
 class VOEventSubscriber(EventHandler):
     ALIVE_INTERVAL = 120 # If we get no iamalive for ALIVE_INTERVAL seconds,
@@ -106,23 +145,23 @@ class VOEventSubscriber(EventHandler):
             )
             self.check_alive = reactor.callLater(self.ALIVE_INTERVAL, self.timed_out)
         elif incoming.get('role') in VOEVENT_ROLES:
-            log.msg("VOEvent received from %s" % str(self.transport.getPeer()))
-            self.sendString(
-                Ack(self.factory.local_ivo, incoming.attrib['ivorn']).to_string()
+            log.msg(
+                "VOEvent %s received from %s" % (
+                    incoming.attrib['ivorn'],
+                    str(self.transport.getPeer())
+                )
             )
-            self.handle_event(incoming).addCallbacks(
-                lambda x: log.msg("Event processed"),
-                lambda x: log.err("Event handlers failed")
-            )
+            self.process_event(incoming)
         else:
             log.err("Incomprehensible data received")
 
 class VOEventSubscriberFactory(ReconnectingClientFactory):
     protocol = VOEventSubscriber
 
-    def __init__(self, local_ivo, handlers=[]):
+    def __init__(self, local_ivo, validators=[], handlers=[]):
         self.local_ivo = local_ivo
         self.handlers = handlers
+        self.validators = validators
 
     def buildProtocol(self, addr):
         self.resetDelay()
@@ -232,7 +271,6 @@ class VOEventSenderFactory(Factory):
     protocol = VOEventSender
 
 
-
 class VOEventReceiver(EventHandler):
     """
     A receiver waits for a one-shot submission from a connecting client.
@@ -251,46 +289,20 @@ class VOEventReceiver(EventHandler):
         # "role" element which we use to identify the type of message we
         # have received.
         if incoming.get('role') in VOEVENT_ROLES:
-            log.msg("VOEvent received from %s" % str(self.transport.getPeer()))
-            def event_process(event_is_valid):
-                if event_is_valid:
-                    log.msg("VOEvent is valid")
-                    self.sendString(
-                        Ack(self.factory.local_ivo, incoming.attrib['ivorn']).to_string()
-                    )
-                    self.handle_event(incoming).addCallbacks(
-                        lambda x: log.msg("Event processed"),
-                        lambda x: log.err("Event handlers failed")
-                    )
-                else:
-                    log.msg("VOEvent is NOT valid")
-                    self.sendString(
-                        Nak(self.factory.local_ivo, incoming.attrib['ivorn']).to_string()
-                    )
-                self.transport.loseConnection()
-            deferToThread(self.validate_event, data).addCallbacks(
-                event_process,
-                lambda x: log.err("Event validator failed")
+            log.msg(
+                "VOEvent %s received from %s" % (
+                    incoming.attrib['ivorn'],
+                    str(self.transport.getPeer())
+                )
             )
+            self.process_event(incoming)
         else:
             log.err("Incomprehensible data received from %s" % str(self.transport.getPeer()))
-
-    def validate_event(self, event):
-        return self.factory.validate_event(event)
 
 class VOEventReceiverFactory(ServerFactory):
     protocol = VOEventReceiver
 
-    def __init__(self, local_ivo, validate=False, handlers=[]):
+    def __init__(self, local_ivo, validators=[], handlers=[]):
         self.local_ivo = local_ivo
+        self.validators = validators
         self.handlers = handlers
-        if validate:
-            from lxml import etree
-            self.schema = etree.XMLSchema(etree.parse(validate))
-
-    def validate_event(self, event):
-        if hasattr(self, "schema"):
-            from lxml import etree
-            return self.schema.validate(etree.fromstring(event))
-        else:
-            return True
