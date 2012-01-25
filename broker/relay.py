@@ -68,6 +68,6 @@ class RelayingVOEventReceiverFactory(VOEventReceiverFactory):
 
 class RelayingVOEventSubscriberFactory(VOEventSubscriberFactory):
     def __init__(self, local_ivo, publisher_factory, ivorn_db):
-        VOEventSubscriberFactory.__init__(self, local_ivo, [], [publish_event])
+        VOEventSubscriberFactory.__init__(self, local_ivo, [previously_seen], [publish_event])
         self.publisher_factory = publisher_factory
         self.ivorn_db = ivorn_db
