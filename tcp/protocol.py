@@ -223,7 +223,7 @@ class VOEventPublisher(Int32StringReceiver):
 
 
 class VOEventPublisherFactory(ServerFactory):
-    IAMALIVE_INTERVAL = 6 # Sent iamalive every IAMALIVE_INTERVAL seconds
+    IAMALIVE_INTERVAL = 60 # Sent iamalive every IAMALIVE_INTERVAL seconds
     protocol = VOEventPublisher
 
     def __init__(self, local_ivo):
