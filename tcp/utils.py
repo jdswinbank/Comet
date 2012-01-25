@@ -3,7 +3,10 @@
 
 # Python standard library
 from cStringIO import StringIO
-import xml.etree.ElementTree as ElementTree
+
+# XML handling with lxml
+import lxml.etree as ElementTree
+
 
 def serialize_element_to_xml(et_element):
     """

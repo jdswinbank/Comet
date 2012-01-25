@@ -4,8 +4,10 @@
 # Python standard library
 from datetime import datetime
 
-# XML parsing using ElementTree
-import xml.etree.ElementTree as ElementTree
+# XML parsing using lxml
+import lxml.etree as ElementTree
+
+ElementTree.register_namespace("voe", "http://www.ivoa.net/xml/VOEvent/v2.0")
 
 class VOEventMessage(object):
     """
@@ -17,9 +19,7 @@ class VOEventMessage(object):
                 "ivorn": ivo + "#1",
                 "role": "test",
                 "version": "2.0",
-                "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
-                "xmlns:voe": "http://www.ivoa.net/xml/VOEvent/v2.0",
-                "xsi:schemaLocation": "http://www.ivoa.net/xml/VOEvent/v2.0 http://www.ivoa.net/xml/VOEvent/VOEvent-v2.0.xsd"
+                "{http://www.w3.org/2001/XMLSchema-instance}schemaLocation": "http://www.ivoa.net/xml/VOEvent/v2.0 http://www.ivoa.net/xml/VOEvent/VOEvent-v2.0.xsd"
             }
         )
         who = ElementTree.SubElement(self.root_element, "Who")
@@ -33,4 +33,3 @@ class VOEventMessage(object):
         Serialise the message to an XML string.
         """
         return ElementTree.tostring(self.root_element)
-

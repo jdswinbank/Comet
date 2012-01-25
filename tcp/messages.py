@@ -4,13 +4,12 @@
 # Python standard library
 from datetime import datetime
 
-# XML parsing using ElementTree
-import xml.etree.ElementTree as ElementTree
+# XML parsing using lxml
+import lxml.etree as ElementTree
 
 from .utils import serialize_element_to_xml
 
-# For neatness only; requires Python 2.7
-#ElementTree.register_namespace("trn", "http://www.telescope-networks.org/xml/Transport/v1.1")
+ElementTree.register_namespace("trn", "http://www.telescope-networks.org/xml/Transport/v1.1")
 
 # NB: ordering must be per schema --
 # Origin, Response, Timestamp, Meta.
@@ -25,8 +24,7 @@ class TransportMessage(object):
         self.root_element = ElementTree.Element("{http://www.telescope-networks.org/xml/Transport/v1.1}Transport",
             attrib={
                 "version": "1.0",
-                "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
-                "xsi:schemaLocation": "http://telescope-networks.org/schema/Transport/v1.1 http://www.telescope-networks.org/schema/Transport-v1.1.xsd"
+                "{http://www.w3.org/2001/XMLSchema-instance}schemaLocation": "http://telescope-networks.org/schema/Transport/v1.1 http://www.telescope-networks.org/schema/Transport-v1.1.xsd"
             }
         )
 

@@ -1,8 +1,8 @@
 # VOEvent TCP transport protocol using Twisted.
 # John Swinbank, <swinbank@transientskp.org>, 2011-12.
 
-# XML parsing using ElementTree
-import xml.etree.ElementTree as ElementTree
+# XML parsing using lxml
+import lxml.etree as ElementTree
 
 # Twisted protocol definition
 from twisted.python import log
@@ -223,7 +223,7 @@ class VOEventPublisher(Int32StringReceiver):
 
 
 class VOEventPublisherFactory(ServerFactory):
-    IAMALIVE_INTERVAL = 60 # Sent iamalive every IAMALIVE_INTERVAL seconds
+    IAMALIVE_INTERVAL = 6 # Sent iamalive every IAMALIVE_INTERVAL seconds
     protocol = VOEventPublisher
 
     def __init__(self, local_ivo):

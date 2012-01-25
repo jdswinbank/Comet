@@ -3,7 +3,7 @@
 
 # Python standard library
 import sys
-import xml.etree.ElementTree as ElementTree
+import lxml.etree as ElementTree
 
 # Twisted
 from twisted.python import log
