@@ -5,7 +5,6 @@ from twisted.python import log
 from twisted.internet.threads import deferToThread
 from tcp.protocol import VOEventSubscriberFactory
 from tcp.protocol import VOEventReceiverFactory
-from tcp.utils import serialize_element_to_xml
 import lxml.etree as etree
 
 def publish_event(protocol, event):
@@ -15,7 +14,7 @@ def publish_event(protocol, event):
     """
     log.msg("Rebroadcasting event to subscribers")
     for publisher in protocol.factory.publisher_factory.publishers:
-        publisher.sendEvent(event)
+        publisher.send_element(event)
 
 class SchemaValidator(object):
     """
@@ -40,7 +39,7 @@ class SchemaValidator(object):
 
         return deferToThread(
             self.schema.validate,
-            etree.fromstring(serialize_element_to_xml(event))
+            event
         ).addCallbacks(check_validity, schema_failure)
 
 def previously_seen(protocol, event):

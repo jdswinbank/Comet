@@ -16,8 +16,7 @@ from twisted.internet.protocol import ServerFactory
 from twisted.internet.protocol import ReconnectingClientFactory
 
 # Constructors for transport protocol messages
-from .messages import Ack, Nak, IAmAlive, IAmAliveResponse
-from .utils import serialize_element_to_xml
+from .messages import ack, nak, iamalive, iamaliveresponse
 
 # Constants
 VOEVENT_ROLES = ('observation', 'prediction', 'utility', 'test')
@@ -50,6 +49,26 @@ There are four different VOEvent protocols to implement:
 To implement the broker, we need the Subscriber, Publisher & Receiver, but not
 the Sender. All four are implemented here for completeness.
 """
+
+class ElementSender(Int32StringReceiver):
+    """
+    Superclass for protocols which will send XML messages which must be
+    deserialized from ET elements.
+    """
+    def send_element(self, element):
+        """
+        Takes an ElementTree element and serializes it to a (pretty, UTF-8)
+        string before sending.
+
+        Returns a deferred which fires when the event is being sent.
+        """
+        return deferToThread(
+            ElementTree.tostring,
+            element,
+            xml_declaration=True,
+            encoding="UTF-8",
+            pretty_print=True
+        ).addCallback(self.sendString)
 
 class EventHandler(Int32StringReceiver):
     """
@@ -89,10 +108,8 @@ class EventHandler(Int32StringReceiver):
 
     def process_event(self, event):
         def handle_valid(status):
-            self.sendString(
-                Ack(
-                    self.factory.local_ivo, event.attrib['ivorn']
-                ).to_string()
+            self.send_element(
+                ack(self.factory.local_ivo, event.attrib['ivorn'])
             )
             self.handle_event(event).addCallbacks(
                 lambda x: log.msg("Event processed"),
@@ -102,16 +119,14 @@ class EventHandler(Int32StringReceiver):
         def handle_invalid(failure):
             # Should unpack exception from failure to include useful output
             # in Nak
-            self.sendString(
-                Nak(
-                    self.factory.local_ivo, event.attrib['ivorn']
-                ).to_string()
+            self.send_element(
+                nak(self.factory.local_ivo, event.attrib['ivorn'])
             )
             log.msg("Event invalid; discarding")
         self.validate_event(event).addCallbacks(handle_valid, handle_invalid)
 
 
-class VOEventSubscriber(EventHandler):
+class VOEventSubscriber(EventHandler, ElementSender):
     ALIVE_INTERVAL = 120 # If we get no iamalive for ALIVE_INTERVAL seconds,
                          # assume our peer forgot us.
     def __init__(self):
@@ -140,8 +155,8 @@ class VOEventSubscriber(EventHandler):
         if incoming.get('role') == "iamalive":
             log.msg("IAmAlive received from %s" % str(self.transport.getPeer()))
             self.check_alive.cancel()
-            self.sendString(
-                IAmAliveResponse(self.factory.local_ivo, incoming.find('Origin').text).to_string()
+            self.send_element(
+                iamaliveresponse(self.factory.local_ivo, incoming.find('Origin').text)
             )
             self.check_alive = reactor.callLater(self.ALIVE_INTERVAL, self.timed_out)
         elif incoming.get('role') in VOEVENT_ROLES:
@@ -170,7 +185,7 @@ class VOEventSubscriberFactory(ReconnectingClientFactory):
         return p
 
 
-class VOEventPublisher(Int32StringReceiver):
+class VOEventPublisher(ElementSender):
     MAX_ALIVE_COUNT = 1      # Drop connection if peer misses too many iamalives
     MAX_OUTSTANDING_ACK = 10 # Drop connection if peer misses too many acks
 
@@ -190,16 +205,8 @@ class VOEventPublisher(Int32StringReceiver):
             log.msg("Peer is not acknowledging events; dropping connection")
             self.transport.loseConnection()
         else:
-            self.sendString(IAmAlive(self.factory.local_ivo).to_string())
+            self.send_element(iamalive(self.factory.local_ivo))
             self.alive_count += 1
-
-    def sendEvent(self, event):
-        # event is an ElementTree element
-        def do_send(serialized_event):
-            self.sendString(serialized_event)
-            self.outstanding_ack +=1
-            log.msg("Sent event to %s" % str(self.transport.getPeer()))
-        deferToThread(serialize_element_to_xml, event).addCallback(do_send)
 
     def stringReceived(self, data):
         try:
@@ -237,7 +244,7 @@ class VOEventPublisherFactory(ServerFactory):
             publisher.sendIAmAlive()
 
 
-class VOEventSender(Int32StringReceiver):
+class VOEventSender(ElementSender):
     """
     Implements the VOEvent Transport Protocol; see
     <http://www.ivoa.net/Documents/Notes/VOEventTransport/>.
@@ -271,7 +278,7 @@ class VOEventSenderFactory(Factory):
     protocol = VOEventSender
 
 
-class VOEventReceiver(EventHandler):
+class VOEventReceiver(EventHandler, ElementSender):
     """
     A receiver waits for a one-shot submission from a connecting client.
     """

@@ -7,6 +7,6 @@ PUBLISHER_LISTEN_ON   = "tcp:8099"
 SENDER_CONNECT_TO     = "tcp:host=localhost:port=8098"
 SUBSCRIBER_HOST       = "localhost"
 SUBSCRIBER_PORT       = 8099
-BROKER_SUBSCRIBE_TO   = [("voevent.dc3.com", 8099)]
+BROKER_SUBSCRIBE_TO   = [("10.8.6.20", 8099), ("voevent.dc3.com", 8099)]
 LOCAL_IVO             = "ivo://lofar/transients"
 IVORN_DB_ROOT         = "/tmp"
