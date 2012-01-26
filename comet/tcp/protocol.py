@@ -11,7 +11,7 @@ from twisted.internet import defer
 from twisted.internet.threads import deferToThread
 from twisted.protocols.basic import Int32StringReceiver
 from twisted.internet.task import LoopingCall
-from twisted.internet.protocol import Factory
+from twisted.internet.protocol import ClientFactory
 from twisted.internet.protocol import ServerFactory
 from twisted.internet.protocol import ReconnectingClientFactory
 
@@ -255,6 +255,9 @@ class VOEventSender(ElementSender):
     the payload data. Twisted's Int32StringReceiver handles this for us
     automatically.
     """
+    def connectionMade(self):
+        self.send_element(self.factory.event)
+
     def stringReceived(self, data):
         """
         Called when a complete new message is received.
@@ -276,8 +279,10 @@ class VOEventSender(ElementSender):
         # After receiving a message, we shut down the connection.
         self.transport.loseConnection()
 
-class VOEventSenderFactory(Factory):
+class VOEventSenderFactory(ClientFactory):
     protocol = VOEventSender
+    def __init__(self, event):
+        self.event = event
 
 
 class VOEventReceiver(EventHandler, ElementSender):

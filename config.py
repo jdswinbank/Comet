@@ -2,11 +2,4 @@
 # John Swinbank, <swinbank@transientskp.org>, 2012.
 
 # This is quick and dirty!
-RECEIVER_PORT         = 8098
-PUBLISHER_PORT        = 8099
-SENDER_CONNECT_TO     = "tcp:host=localhost:port=8098"
-SUBSCRIBER_HOST       = "localhost"
-SUBSCRIBER_PORT       = 8099
 BROKER_SUBSCRIBE_TO   = [("10.8.6.20", 8099), ("voevent.dc3.com", 8099)]
-LOCAL_IVO             = "ivo://lofar/transients"
-IVORN_DB_ROOT         = "/tmp"
