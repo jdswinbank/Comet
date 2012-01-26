@@ -16,6 +16,7 @@ setup(
         'comet.voevent'
     ],
     scripts=['scripts/send_voevent'],
+    package_data={'comet': ['schema/*.xsd']},
     data_files=[
         (
             os.path.join(
