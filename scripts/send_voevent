@@ -1,5 +1,7 @@
+#!/usr/bin/python
+
 # VOEvent sender.
-# John Swinbank, <swinbank@transientskp.org>, 2011-12.
+# John Swinbank, <swinbank@transientskp.org>, 2012.
 
 # Python standard library
 import sys
