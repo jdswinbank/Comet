@@ -3,8 +3,8 @@
 
 from twisted.python import log
 from twisted.internet.threads import deferToThread
-from tcp.protocol import VOEventSubscriberFactory
-from tcp.protocol import VOEventReceiverFactory
+from ..tcp.protocol import VOEventSubscriberFactory
+from ..tcp.protocol import VOEventReceiverFactory
 import lxml.etree as etree
 
 def publish_event(protocol, event):

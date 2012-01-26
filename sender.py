@@ -10,10 +10,10 @@ from twisted.internet import reactor
 from twisted.internet.endpoints import clientFromString
 
 # VOEvent transport protocol
-from tcp.protocol import VOEventSenderFactory
+from comet.tcp.protocol import VOEventSenderFactory
 
 # Constructors for messages
-from voevent.voevent import dummy_voevent_message
+from comet.voevent.voevent import dummy_voevent_message
 
 # Local configuration
 from config import LOCAL_IVO

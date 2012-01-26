@@ -12,7 +12,7 @@ from twisted.application.internet import TCPClient
 from twisted.application.internet import TCPServer
 
 # Transport protocol definitions
-from tcp.protocol import VOEventPublisherFactory
+from ..tcp.protocol import VOEventPublisherFactory
 from .relay import RelayingVOEventReceiverFactory
 from .relay import RelayingVOEventSubscriberFactory
 

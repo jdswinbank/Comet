@@ -1,5 +1,5 @@
 from twisted.application.service import ServiceMaker
 
 broker = ServiceMaker(
-    "VOEvent Broker", "broker.broker", "Run a VOEvent broker.", "broker"
+    "Comet VOEvent Broker", "comet.broker.broker", "The Comet VOEvent broker.", "broker"
 )
