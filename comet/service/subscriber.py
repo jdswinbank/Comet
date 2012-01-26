@@ -7,11 +7,12 @@ import lxml.etree as ElementTree
 
 # Twisted
 from twisted.python import log
-from twisted.internet import reactor
-from twisted.internet.endpoints import clientFromString
+from twisted.python.usage import Options
+from twisted.application.service import MultiService
+from twisted.application.internet import TCPClient
 
 # VOEvent transport protocol
-from comet.tcp.protocol import VOEventSubscriberFactory
+from ..tcp.protocol import VOEventSubscriberFactory
 
 # Local configuration
 from config import LOCAL_IVO
@@ -29,3 +30,12 @@ if __name__ == "__main__":
         VOEventSubscriberFactory(LOCAL_IVO, [print_event])
     )
     reactor.run()
+
+def makeService(config):
+    subscriber_service = MultiService()
+    TCPClient(
+        SUBSCRIBER_HOST,
+        SUBSCRIBER_PORT,
+        VOEventSubscriberFactory(LOCAL_IVO, [print_event])
+    ).setServiceParent(subscriber_service)
+    return subscriber_service
