@@ -190,11 +190,13 @@ class VOEventPublisher(ElementSender):
     MAX_OUTSTANDING_ACK = 10 # Drop connection if peer misses too many acks
 
     def connectionMade(self):
+        log.msg("New subscriber at %s" % str(self.transport.getPeer()))
         self.factory.publishers.append(self)
         self.alive_count = 0
         self.outstanding_ack = 0
 
     def connectionLost(self, reason):
+        log.msg("Subscriber at %s disconnected" % str(self.transport.getPeer()))
         self.factory.publishers.remove(self)
 
     def sendIAmAlive(self):
