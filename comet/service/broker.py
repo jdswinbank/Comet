@@ -13,11 +13,11 @@ from twisted.application.internet import TCPServer
 
 # Transport protocol definitions
 from ..tcp.protocol import VOEventPublisherFactory
-from .relay import RelayingVOEventReceiverFactory
-from .relay import RelayingVOEventSubscriberFactory
+from ..utility.relay import RelayingVOEventReceiverFactory
+from ..utility.relay import RelayingVOEventSubscriberFactory
 
 # Broker support
-from .ivorn_db import IVORN_DB
+from ..utility.ivorn_db import IVORN_DB
 
 # Local configuration
 from config import PUBLISHER_PORT
