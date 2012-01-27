@@ -15,7 +15,7 @@ def dummy_voevent_message(ivo):
     """
     root_element = ElementTree.Element("{http://www.ivoa.net/xml/VOEvent/v2.0}VOEvent",
         attrib={
-            "ivorn": ivo + "#1",
+            "ivorn": ivo + "#TestEvent-%s" % datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S"),
             "role": "test",
             "version": "2.0",
             "{http://www.w3.org/2001/XMLSchema-instance}schemaLocation": "http://www.ivoa.net/xml/VOEvent/v2.0 http://www.ivoa.net/xml/VOEvent/VOEvent-v2.0.xsd"

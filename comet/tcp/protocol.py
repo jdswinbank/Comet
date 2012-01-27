@@ -18,6 +18,9 @@ from twisted.internet.protocol import ReconnectingClientFactory
 # Constructors for transport protocol messages
 from .messages import ack, nak, iamalive, iamaliveresponse
 
+# Constructor for our perodic test events
+from ..voevent.voevent import dummy_voevent_message
+
 # Constants
 VOEVENT_ROLES = ('observation', 'prediction', 'utility', 'test')
 
@@ -233,6 +236,7 @@ class VOEventPublisher(ElementSender):
 
 class VOEventPublisherFactory(ServerFactory):
     IAMALIVE_INTERVAL = 60 # Sent iamalive every IAMALIVE_INTERVAL seconds
+    TEST_INTERVAL = 3600   # Sent test event every TEST_INTERVAL seconds
     protocol = VOEventPublisher
 
     def __init__(self, local_ivo):
@@ -240,10 +244,19 @@ class VOEventPublisherFactory(ServerFactory):
         self.publishers = []
         self.alive_loop = LoopingCall(self.sendIAmAlive)
         self.alive_loop.start(self.IAMALIVE_INTERVAL)
+        self.test_loop = LoopingCall(self.sendTestEvent)
+        self.test_loop.start(self.TEST_INTERVAL)
 
     def sendIAmAlive(self):
+        log.msg("Broadcasting iamalive")
         for publisher in self.publishers:
             publisher.sendIAmAlive()
+
+    def sendTestEvent(self):
+        log.msg("Broadcasting test event")
+        test_event = dummy_voevent_message(self.local_ivo)
+        for publisher in self.publishers:
+            publisher.send_element(test_event)
 
 
 class VOEventSender(ElementSender):
