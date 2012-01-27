@@ -1,6 +1,8 @@
 # VOEvent Broker.
 # John Swinbank, <swinbank@transientskp.org>, 2012.
 
+import os.path
+import comet
 from twisted.python import log
 from twisted.internet.threads import deferToThread
 from ..tcp.protocol import VOEventSubscriberFactory
@@ -62,7 +64,14 @@ def previously_seen(protocol, event):
 
 class RelayingVOEventReceiverFactory(VOEventReceiverFactory):
     def __init__(self, local_ivo, publisher_factory, ivorn_db):
-        VOEventReceiverFactory.__init__(self, local_ivo, [previously_seen, SchemaValidator('schema/VOEvent-v2.0.xsd')], [publish_event])
+        VOEventReceiverFactory.__init__(self, local_ivo, [
+                previously_seen,
+                SchemaValidator(
+                    os.path.join(comet.__path__[0], "schema/VOEvent-v2.0.xsd")
+                )
+            ],
+            [publish_event]
+        )
         self.publisher_factory = publisher_factory
         self.ivorn_db = ivorn_db
 
