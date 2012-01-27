@@ -20,19 +20,30 @@ from ..utility.relay import RelayingVOEventSubscriberFactory
 # Broker support
 from ..utility.ivorn_db import IVORN_DB
 
-# Local configuration
-from config import BROKER_SUBSCRIBE_TO
-
 class Options(BaseOptions):
     optParameters = [
         ["publisher_port", "p", 8099, "TCP port for publishing events."],
         ["receiver_port", "r", 8098, "TCP port for receiving events."],
-        ["ivorndb", "i", "/tmp", "IVORN database root."]
+        ["ivorndb", "i", "/tmp", "IVORN database root."],
+        ["remotes", None, "remotes.cfg", "Remote brokers to subscribe to."]
     ]
 
     def postOptions(self):
         self["publisher_port"] = int(self["publisher_port"])
         self["receiver_port"] = int(self["receiver_port"])
+
+        try:
+            with open(self["remotes"]) as f:
+                self["remotes"] = [
+                    (y, int(z)) for y, z in (
+                        x.split(":") for x in (
+                            l.strip() for l in f.readlines()
+                        ) if x[0] != "#"
+                    )
+                ] # Doncha love list comprehensions?
+        except IOError:
+            log.msg("Could not read list of remote brokers.")
+            self["remotes"] = []
 
 def makeService(config):
     ivorn_db = IVORN_DB(config['ivorndb'])
@@ -53,7 +64,7 @@ def makeService(config):
         )
     ).setServiceParent(broker_service)
 
-    for host, port in BROKER_SUBSCRIBE_TO:
+    for host, port in config["remotes"]:
         log.msg("Subscribing to %s:%d" % (host, port))
         TCPClient(
             host, port,
