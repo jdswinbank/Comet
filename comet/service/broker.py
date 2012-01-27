@@ -22,15 +22,15 @@ from ..utility.ivorn_db import IVORN_DB
 
 class Options(BaseOptions):
     optParameters = [
-        ["publisher_port", "p", 8099, "TCP port for publishing events."],
-        ["receiver_port", "r", 8098, "TCP port for receiving events."],
+        ["publisher-port", "p", 8099, "TCP port for publishing events."],
+        ["receiver-port", "r", 8098, "TCP port for receiving events."],
         ["ivorndb", "i", "/tmp", "IVORN database root."],
         ["remotes", None, "remotes.cfg", "Remote brokers to subscribe to."]
     ]
 
     def postOptions(self):
-        self["publisher_port"] = int(self["publisher_port"])
-        self["receiver_port"] = int(self["receiver_port"])
+        self["publisher-port"] = int(self["publisher-port"])
+        self["receiver-port"] = int(self["receiver-port"])
 
         try:
             with open(self["remotes"]) as f:
@@ -49,16 +49,16 @@ def makeService(config):
     ivorn_db = IVORN_DB(config['ivorndb'])
 
     broker_service = MultiService()
-    publisher_factory = VOEventPublisherFactory(config["local_ivo"])
+    publisher_factory = VOEventPublisherFactory(config["local-ivo"])
     TCPServer(
-        config['publisher_port'],
+        config['publisher-port'],
         publisher_factory
     ).setServiceParent(broker_service)
 
     TCPServer(
-        config['receiver_port'],
+        config['receiver-port'],
         RelayingVOEventReceiverFactory(
-            config["local_ivo"],
+            config["local-ivo"],
             publisher_factory,
             ivorn_db
         )
@@ -69,7 +69,7 @@ def makeService(config):
         TCPClient(
             host, port,
             RelayingVOEventSubscriberFactory(
-                config["local_ivo"], publisher_factory, ivorn_db
+                config["local-ivo"], publisher_factory, ivorn_db
             )
         ).setServiceParent(broker_service)
     return broker_service

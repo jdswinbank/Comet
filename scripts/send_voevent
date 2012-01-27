@@ -43,6 +43,6 @@ if __name__ == "__main__":
     reactor.connectTCP(
         config['host'],
         config['port'],
-        OneShotSender(dummy_voevent_message(config['local_ivo']))
+        OneShotSender(dummy_voevent_message(config['local-ivo']))
     )
     reactor.run()
