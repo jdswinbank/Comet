@@ -22,7 +22,6 @@ from ..utility.ivorn_db import IVORN_DB
 
 # Local configuration
 from config import BROKER_SUBSCRIBE_TO
-from config import LOCAL_IVO
 
 class Options(BaseOptions):
     optParameters = [
