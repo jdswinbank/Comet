@@ -98,10 +98,8 @@ class EventHandler(Int32StringReceiver):
         """
         Call a set of event handlers on a given event (itself an ElementTree
         element).
-
-        We return a DeferredList which fires when all handlers have run.
         """
-        return defer.DeferredList(
+        return defer.gatherResults(
             [
                 defer.maybeDeferred(handler, self, event)
                 for handler in self.factory.handlers
