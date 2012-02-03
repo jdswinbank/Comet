@@ -32,6 +32,6 @@ def makeService(config):
     TCPClient(
         config['host'],
         config['port'],
-        VOEventSubscriberFactory(config['local-ivo'], [print_event])
+        VOEventSubscriberFactory(config['local-ivo'], handlers=[print_event])
     ).setServiceParent(subscriber_service)
     return subscriber_service
