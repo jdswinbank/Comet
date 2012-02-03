@@ -25,7 +25,7 @@ class Options(BaseOptions):
         self["port"] = int(self["port"])
 
 def print_event(protocol, event):
-    print ElementTree.tostring(event)
+    print ElementTree.tostring(event.element)
 
 def makeService(config):
     subscriber_service = MultiService()
