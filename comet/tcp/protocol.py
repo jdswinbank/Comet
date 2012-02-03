@@ -21,6 +21,8 @@ from .messages import ack, nak, iamalive, iamaliveresponse
 # Constructor for our perodic test events
 from ..voevent.voevent import dummy_voevent_message
 
+from ..utility.xml import xml_document
+
 # Constants
 VOEVENT_ROLES = ('observation', 'prediction', 'utility', 'test')
 
@@ -58,20 +60,28 @@ class ElementSender(Int32StringReceiver):
     Superclass for protocols which will send XML messages which must be
     deserialized from ET elements.
     """
-    def send_element(self, element):
+    def send_xml(self, document):
         """
-        Takes an ElementTree element and serializes it to a (pretty, UTF-8)
-        string before sending.
+        Takes a document and sents it as XML.
+
+        The document might be an ElementTree element, in which case we
+        serialise it to a (pretty, UTF-8) string, or it might be an
+        xml_document with original text, which we send directly.
 
         Returns a deferred which fires when the event is being sent.
         """
-        return deferToThread(
-            ElementTree.tostring,
-            element,
-            xml_declaration=True,
-            encoding="UTF-8",
-            pretty_print=True
-        ).addCallback(self.sendString)
+        def get_text(document):
+            if hasattr(document, "original"):
+                return document.original
+            else:
+                return deferToThread(
+                    ElementTree.tostring,
+                    document,
+                    xml_declaration=True,
+                    encoding="UTF-8",
+                    pretty_print=True
+                )
+        defer.maybeDeferred(get_text, document).addCallback(self.sendString)
 
 class EventHandler(Int32StringReceiver):
     """
@@ -109,7 +119,7 @@ class EventHandler(Int32StringReceiver):
 
     def process_event(self, event):
         def handle_valid(status):
-            self.send_element(
+            self.send_xml(
                 ack(self.factory.local_ivo, event.attrib['ivorn'])
             )
             self.handle_event(event).addCallbacks(
@@ -120,7 +130,7 @@ class EventHandler(Int32StringReceiver):
         def handle_invalid(failure):
             # Should unpack exception from failure to include useful output
             # in Nak
-            self.send_element(
+            self.send_xml(
                 nak(self.factory.local_ivo, event.attrib['ivorn'])
             )
             log.msg("Event invalid; discarding")
@@ -145,7 +155,7 @@ class VOEventSubscriber(EventHandler, ElementSender):
         Called when a complete new message is received.
         """
         try:
-            incoming = ElementTree.fromstring(data)
+            incoming = xml_document(data)
         except ElementTree.ParseError:
             log.err("Unparsable message received")
             return
@@ -156,7 +166,7 @@ class VOEventSubscriber(EventHandler, ElementSender):
         if incoming.get('role') == "iamalive":
             log.msg("IAmAlive received from %s" % str(self.transport.getPeer()))
             self.check_alive.cancel()
-            self.send_element(
+            self.send_xml(
                 iamaliveresponse(self.factory.local_ivo, incoming.find('Origin').text)
             )
             self.check_alive = reactor.callLater(self.ALIVE_INTERVAL, self.timed_out)
@@ -208,12 +218,12 @@ class VOEventPublisher(ElementSender):
             log.msg("Peer is not acknowledging events; dropping connection")
             self.transport.loseConnection()
         else:
-            self.send_element(iamalive(self.factory.local_ivo))
+            self.send_xml(iamalive(self.factory.local_ivo))
             self.alive_count += 1
 
     def stringReceived(self, data):
         try:
-            incoming = ElementTree.fromstring(data)
+            incoming = xml_document(data)
         except ElementTree.ParseError:
             log.err("Unparsable message received")
             return
@@ -254,7 +264,7 @@ class VOEventPublisherFactory(ServerFactory):
         log.msg("Broadcasting test event")
         test_event = dummy_voevent_message(self.local_ivo)
         for publisher in self.publishers:
-            publisher.send_element(test_event)
+            publisher.send_xml(test_event)
 
 
 class VOEventSender(ElementSender):
@@ -267,7 +277,7 @@ class VOEventSender(ElementSender):
     automatically.
     """
     def connectionMade(self):
-        self.send_element(self.factory.event)
+        self.send_xml(self.factory.event)
 
     def stringReceived(self, data):
         """
@@ -275,7 +285,7 @@ class VOEventSender(ElementSender):
         """
         log.msg("Got response from %s" % str(self.transport.getPeer()))
         try:
-            incoming = ElementTree.fromstring(data)
+            incoming = xml_document(data)
         except ElementTree.ParseError:
             log.err("Unparsable message received from %s" % str(self.transport.getPeer()))
             return
@@ -305,7 +315,7 @@ class VOEventReceiver(EventHandler, ElementSender):
         Called when a complete new message is received.
         """
         try:
-            incoming = ElementTree.fromstring(data)
+            incoming = xml_document(data)
         except ElementTree.ParseError:
             log.err("Unparsable message received from %s" % str(self.transport.getPeer()))
             return

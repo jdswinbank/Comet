@@ -16,7 +16,7 @@ def publish_event(protocol, event):
     """
     log.msg("Rebroadcasting event to subscribers")
     for publisher in protocol.factory.publisher_factory.publishers:
-        publisher.send_element(event)
+        publisher.send_xml(event)
 
 class SchemaValidator(object):
     """
@@ -41,7 +41,7 @@ class SchemaValidator(object):
 
         return deferToThread(
             self.schema.validate,
-            event
+            event.element
         ).addCallbacks(check_validity, schema_failure)
 
 def previously_seen(protocol, event):
