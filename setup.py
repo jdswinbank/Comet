@@ -15,7 +15,7 @@ setup(
         'comet.utility',
         'comet.voevent'
     ],
-    scripts=['scripts/send_voevent'],
+    scripts=['scripts/comet-sendvo'],
     package_data={'comet': ['schema/*.xsd']},
     data_files=[
         (

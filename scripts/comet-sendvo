@@ -14,13 +14,12 @@ from twisted.internet.endpoints import clientFromString
 
 # VOEvent transport protocol
 from comet.tcp.protocol import VOEventSenderFactory
-from comet.config.options import BaseOptions
 
 # Encapsulation of event
 from comet.utility.xml import xml_document
 import lxml.etree as ElementTree
 
-class Options(BaseOptions):
+class Options(usage.Options):
     optParameters = [
         ["host", "h", "localhost", "Host to send to."],
         ["port", "p", 8098, "Port to send to."],
