@@ -16,13 +16,15 @@ from twisted.internet.endpoints import clientFromString
 from comet.tcp.protocol import VOEventSenderFactory
 from comet.config.options import BaseOptions
 
-# Constructors for messages
-from comet.voevent.voevent import dummy_voevent_message
+# Encapsulation of event
+from comet.utility.xml import xml_document
+import lxml.etree as ElementTree
 
 class Options(BaseOptions):
     optParameters = [
         ["host", "h", "localhost", "Host to send to."],
-        ["port", "p", 8098, "Port to send to."]
+        ["port", "p", 8098, "Port to send to."],
+        ["file", "f", "-", "Where to read XML text to send."]
     ]
 
     def postOptions(self):
@@ -40,9 +42,23 @@ if __name__ == "__main__":
     config.parseOptions()
 
     log.startLogging(sys.stdout)
-    reactor.connectTCP(
-        config['host'],
-        config['port'],
-        OneShotSender(dummy_voevent_message(config['local-ivo']))
-    )
+    if config["file"] == "-":
+        f = sys.stdin
+    else:
+        f = open(config["file"])
+    try:
+        xmldoc = xml_document(f.read())
+        reactor.connectTCP(
+            config['host'],
+            config['port'],
+            OneShotSender(xmldoc)
+        )
+    except IOError:
+        log.msg("Reading XML document failed")
+        reactor.callWhenRunning(reactor.stop)
+    except ElementTree.Error:
+        log.msg("Could not parse event text")
+        reactor.callWhenRunning(reactor.stop)
+    finally:
+        f.close()
     reactor.run()
