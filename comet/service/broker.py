@@ -36,7 +36,7 @@ class Options(BaseOptions):
             with open(self["remotes"]) as f:
                 self["remotes"] = [
                     (y, int(z)) for y, z in (
-                        x.split(":") for x in (
+                        x.split("#")[0].split(":") for x in (
                             l.strip() for l in f.readlines()
                         ) if x[0] != "#"
                     )
