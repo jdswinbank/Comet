@@ -19,7 +19,7 @@ from twisted.internet.protocol import ReconnectingClientFactory
 from .messages import ack, nak, iamalive, iamaliveresponse
 
 # Constructor for our perodic test events
-from ..voevent.voevent import dummy_voevent_message
+from ..utility.voevent import dummy_voevent_message
 
 from ..utility.xml import xml_document
 
