@@ -8,7 +8,7 @@ A VOEvent Broker
 Comet is designed to serve as a development testbed for rapid prototyping of
 and experimentation with VOEvent transport systems. Currently, it partially
 implements the `VOEvent Transport Protocol
-<http://www.ivoa.net/Documents/Notes/VOEventTransport/>`_
+<http://www.ivoa.net/Documents/Notes/VOEventTransport/>`_.
 
 Comet provides three compoents:
 
