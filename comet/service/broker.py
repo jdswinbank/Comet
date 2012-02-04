@@ -22,14 +22,14 @@ from ..utility.ivorn_db import IVORN_DB
 
 class Options(BaseOptions):
     optParameters = [
-        ["publisher-port", "p", 8099, "TCP port for publishing events."],
         ["receiver-port", "r", 8098, "TCP port for receiving events."],
+        ["subscriber-port", "p", 8099, "TCP port for publishing events."],
         ["ivorndb", "i", "/tmp", "IVORN database root."],
         ["remotes", None, "remotes.cfg", "Remote brokers to subscribe to."]
     ]
 
     def postOptions(self):
-        self["publisher-port"] = int(self["publisher-port"])
+        self["subscriber-port"] = int(self["subscriber-port"])
         self["receiver-port"] = int(self["receiver-port"])
 
         try:
@@ -51,7 +51,7 @@ def makeService(config):
     broker_service = MultiService()
     publisher_factory = VOEventPublisherFactory(config["local-ivo"])
     TCPServer(
-        config['publisher-port'],
+        config['subscriber-port'],
         publisher_factory
     ).setServiceParent(broker_service)
 
