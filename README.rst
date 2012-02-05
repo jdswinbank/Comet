@@ -151,6 +151,7 @@ Future plans
 - Test suite.
 - Other receiver modules (eg GCN socket connection).
 - Probably other things... suggestions welcome.
+- Smarter logging, log levels, etc.
 
 Final words
 -----------
