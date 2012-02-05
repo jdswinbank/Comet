@@ -22,8 +22,9 @@ Comet provides three compoents:
 Requirements
 ------------
 
-Comet is developed targeting Python 2.7. It depends upon recent versions of
-`Twisted <http://twistedmatrix.com/>`_ and `lxml <http://lxml.de/>`_.
+Comet is developed targeting Python 2.6 and 2.7. It depends upon recent
+versions of `Twisted <http://twistedmatrix.com/>`_ (>= 11) and `lxml
+<http://lxml.de/>`_ (>= 2.3).
 
 Installation
 ------------
