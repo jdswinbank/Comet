@@ -165,8 +165,8 @@ equal to ``xpath``. For example, the following will select all VOEvent packets
 which are not marked as a test::
 
   <trn:Transport xmlns:trn="http://www.telescope-networks.org/xml/Transport/v1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://telescope-networks.org/schema/Transport/v1.1 http://www.telescope-networks.org/schema/Transport-v1.1.xsd" version="1.0" role="authenticate">
-    <Origin>ivo://response</Origin>
-    <Response>ivo://local</Response>
+    <Origin>ivo://origin</Origin>
+    <Response>ivo://response</Response>
     <TimeStamp>2012-02-08T21:13:53</TimeStamp>
     <Meta>
       <filter type="xpath">/*[local-name()="VOEvent" and @role!="test"]</filter>
