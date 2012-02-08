@@ -18,11 +18,8 @@ from ..config.options import BaseOptions
 class Options(BaseOptions):
     optParameters = [
         ["host", "h", "localhost", "Host to subscribe to."],
-        ["port", "p", 8099, "Port to subscribe to."]
+        ["port", "p", 8099, "Port to subscribe to.", int]
     ]
-
-    def postOptions(self):
-        self["port"] = int(self["port"])
 
 def print_event(protocol, event):
     print ElementTree.tostring(event.element)
