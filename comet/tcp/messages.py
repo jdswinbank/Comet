@@ -53,3 +53,21 @@ def nak(local_ivo, remote_ivo):
     root_element = origin_response_message(local_ivo, remote_ivo)
     root_element.set("role", "nak")
     return root_element
+
+def authenticate(local_ivo):
+    root_element = transport_message()
+    root_element.set("role", "authenticate")
+    origin = ElementTree.SubElement(root_element, "Origin")
+    origin.text = local_ivo
+    timestamp = ElementTree.SubElement(root_element, "TimeStamp")
+    timestamp.text = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
+    return root_element
+
+def authenticateresponse(local_ivo, remote_ivo, filters):
+    root_element = origin_response_message(local_ivo, remote_ivo)
+    root_element.set("role", "authenticate")
+    meta = ElementTree.SubElement(root_element, "Meta")
+    for my_filter in filters:
+        xslt = ElementTree.SubElement(meta, "filter", attrib={"type": "xpath"})
+        xslt.text = my_filter
+    return root_element

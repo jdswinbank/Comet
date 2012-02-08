@@ -16,7 +16,7 @@ def publish_event(protocol, event):
     """
     log.msg("Rebroadcasting event to subscribers")
     for publisher in protocol.factory.publisher_factory.publishers:
-        publisher.send_xml(event)
+        publisher.send_event(event)
 
 class SchemaValidator(object):
     """

@@ -16,7 +16,9 @@ from twisted.internet.protocol import ServerFactory
 from twisted.internet.protocol import ReconnectingClientFactory
 
 # Constructors for transport protocol messages
-from .messages import ack, nak, iamalive, iamaliveresponse
+from .messages import ack, nak
+from .messages import iamalive, iamaliveresponse
+from .messages import authenticate, authenticateresponse
 
 # Constructor for our perodic test events
 from ..utility.voevent import dummy_voevent_message
@@ -140,8 +142,9 @@ class EventHandler(Int32StringReceiver):
 class VOEventSubscriber(EventHandler, ElementSender):
     ALIVE_INTERVAL = 120 # If we get no iamalive for ALIVE_INTERVAL seconds,
                          # assume our peer forgot us.
-    def __init__(self):
+    def __init__(self, filters=[]):
         self.check_alive = reactor.callLater(self.ALIVE_INTERVAL, self.timed_out)
+        self.filters = filters
 
     def timed_out(self):
         log.msg(
@@ -170,6 +173,15 @@ class VOEventSubscriber(EventHandler, ElementSender):
                 iamaliveresponse(self.factory.local_ivo, incoming.find('Origin').text)
             )
             self.check_alive = reactor.callLater(self.ALIVE_INTERVAL, self.timed_out)
+        elif incoming.get('role') == "authenticate":
+            log.msg("Authenticate received from %s" % str(self.transport.getPeer()))
+            self.send_xml(
+                authenticateresponse(
+                    self.factory.local_ivo,
+                    incoming.find('Origin').text,
+                    self.filters
+                )
+            )
         elif incoming.get('role') in VOEVENT_ROLES:
             log.msg(
                 "VOEvent %s received from %s" % (
@@ -184,14 +196,15 @@ class VOEventSubscriber(EventHandler, ElementSender):
 class VOEventSubscriberFactory(ReconnectingClientFactory):
     protocol = VOEventSubscriber
 
-    def __init__(self, local_ivo, validators=[], handlers=[]):
+    def __init__(self, local_ivo, validators=[], handlers=[], filters=[]):
         self.local_ivo = local_ivo
         self.handlers = handlers
         self.validators = validators
+        self.filters = filters
 
     def buildProtocol(self, addr):
         self.resetDelay()
-        p = self.protocol()
+        p = self.protocol(self.filters)
         p.factory = self
         return p
 
@@ -200,10 +213,14 @@ class VOEventPublisher(ElementSender):
     MAX_ALIVE_COUNT = 1      # Drop connection if peer misses too many iamalives
     MAX_OUTSTANDING_ACK = 10 # Drop connection if peer misses too many acks
 
+    def __init__(self):
+        self.filters = []
+
     def connectionMade(self):
         log.msg("New subscriber at %s" % str(self.transport.getPeer()))
         self.factory.publishers.append(self)
         self.alive_count = 0
+        self.send_xml(authenticate(self.factory.local_ivo))
         self.outstanding_ack = 0
 
     def connectionLost(self, reason):
@@ -237,9 +254,37 @@ class VOEventPublisher(ElementSender):
         elif incoming.get('role') == "nak":
             log.msg("Nak received from %s; terminating" % str(self.transport.getPeer()))
             self.transport.loseConnection()
+        elif incoming.get('role') == "authenticate":
+            log.msg("Authentication received from %s" % str(self.transport.getPeer()))
+            for xpath in incoming.findall("Meta/filter[@type=\"xpath\"]"):
+                log.msg(
+                    "Installing filter %s for %s" %
+                    (xpath.text, str(self.transport.getPeer()))
+                )
+            self.filters = [
+                ElementTree.XPath(xpath.text)
+                for xpath in incoming.findall("Meta/filter[@type=\"xpath\"]")
+            ]
         else:
             log.err(incoming.get('role'))
             log.err("Incomprehensible data received from %s" % str(self.transport.getPeer()))
+
+    def send_event(self, event):
+        # Check the event against our filters and, if one or more pass, then
+        # we send the event to our subscriber.
+        def check_filters(result):
+            if not self.filters or any([value for success, value in result if success]):
+                log.msg("Event matches filter criteria: forwarding")
+                self.send_xml(event)
+            else:
+                log.msg("Event rejected by filter")
+        defer.DeferredList(
+            [
+                deferToThread(xpath, event.element)
+                for xpath in self.filters
+            ],
+            consumeErrors=True,
+        ).addCallback(check_filters)
 
 
 class VOEventPublisherFactory(ServerFactory):

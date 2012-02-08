@@ -73,10 +73,11 @@ The subscriber accepts a few command line options::
         --local-ivo=  [default: ivo://comet.broker/default_ivo]
     -h, --host=       Host to subscribe to. [default: localhost]
     -p, --port=       Port to subscribe to. [default: 8099]
+    -f, --filter=     XPath expression.
         --version     Display Twisted version and exit.
         --help        Display this help and exit.
 
-A simple invokation might thus look like::
+A simple invocation might thus look like::
 
   $ twistd -n subscriber --local-ivo=ivo://comet.test/test
 
@@ -90,6 +91,12 @@ rather than daemonizing.
 When a new event is received, it will be displayed in the subscriber's log. In
 the configuration above, that will be written to standard output; this is
 customizable through the ``twistd`` options.
+
+It is also possible to specify one or more filters, in the form of `XPath 1.0
+<http://www.w3.org/TR/xpath/>`_ expressions. The broker will evaluate the
+expression against each event it processes, and only forward the event to the
+subscriber if it produces a non-empty result. For more details see
+`Filtering`_, below.
 
 Running a broker
 ================
@@ -139,11 +146,60 @@ that the current implementation of the database will grown indefinitely: if
 the broker is in a situation where an extremely high volume of VOEvent
 messages are expected, the current implementation will not be adequate.
 
+Filtering
+---------
+
+As the number of events on the VOEvent backbone increases, it is unlikely that
+individual subscribers will want to receive or act upon all of them. Comet
+therefore implements an *experimental* filtering system which enables
+subscribers to express their preferences as to which events to receive.
+
+At any time, the subscriber may send the broker an `authentication response
+message
+<http://www.ivoa.net/Documents/Notes/VOEventTransport/20090805/NOTE-VOEventTransport-1.1-20090805.html#_Toc237246942>`_.
+(Note that in the current implementation no authentication is actually
+requred, and the processing of digital signatures is not supported). Within
+the ``<Meta />`` section of the authentication packet, one or more XPath
+expressions may be supplied in ``filter`` elements with a ``type`` attribute
+equal to ``xpath``. For example, the following will select all VOEvent packets
+which are not marked as a test::
+
+  <trn:Transport xmlns:trn="http://www.telescope-networks.org/xml/Transport/v1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://telescope-networks.org/schema/Transport/v1.1 http://www.telescope-networks.org/schema/Transport-v1.1.xsd" version="1.0" role="authenticate">
+    <Origin>ivo://response</Origin>
+    <Response>ivo://local</Response>
+    <TimeStamp>2012-02-08T21:13:53</TimeStamp>
+    <Meta>
+      <filter type="xpath">/*[local-name()="VOEvent" and @role!="test"]</filter>
+    </Meta>
+  </trn:Transport>
+
+The broker will evaluate each filter against each VOEvent packet it processes,
+and only forward it to the subscriber if one (or more) of the filters returns
+a positive result.
+
+It is worth noting that XPath expressions may, return one of four different
+types of result: a boolean, a floating point number, a string, or a node-set.
+For the purposes of filtering, we regard a positive result as a boolean true,
+a non-zero number, a non-empty string, or a non-empty node-set.
+
+When evaluating the XPath expression, no namespaces are defined. In other
+words, an expression such as ``//voe::VOEvent`` will not match anything (and
+hence the use of ``local-name()`` in the example above).
+
+The filtering capabilities of XPath are quite extensive, and the user is
+encouraged to experiment. For example, the names and values of individual
+paramters within the VOEvent message can be checked::
+
+  //Param[@name="SC_Lat" and @value>600]
+
+Or messages from particular senders selected::
+
+  //Who[AuthorIVORN="ivo://lofar.transients/"]
+
 Future plans
 ------------
 
 - Pruning the IVORN database.
-- Filtering of event streams.
 - IP whitelisting.
 - Authentication.
 - Event signing.
