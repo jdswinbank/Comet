@@ -199,16 +199,8 @@ Or messages from particular senders selected::
 Future plans
 ------------
 
-- Pruning the IVORN database.
-- IP whitelisting.
-- Authentication.
-- Event signing.
-- Pluggable event handling for subscribers (ie, allow end users to insert
-  their own functions to be run when a new event is received).
-- Test suite.
-- Other receiver modules (eg GCN socket connection).
-- Probably other things... suggestions welcome.
-- Smarter logging, log levels, etc.
+Take a look at the `issue tracker
+<https://github.com/jdswinbank/Comet/issues>`_.
 
 Final words
 -----------
