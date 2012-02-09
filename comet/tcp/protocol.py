@@ -4,6 +4,9 @@
 # XML parsing using lxml
 import lxml.etree as ElementTree
 
+# IP address handling uses ipaddr
+import ipaddr
+
 # Twisted protocol definition
 from twisted.python import log
 from twisted.internet import reactor
@@ -382,7 +385,17 @@ class VOEventReceiver(EventHandler, ElementSender):
 class VOEventReceiverFactory(ServerFactory):
     protocol = VOEventReceiver
 
-    def __init__(self, local_ivo, validators=[], handlers=[]):
+    def __init__(self, local_ivo, validators=[], handlers=[], whitelist=[]):
         self.local_ivo = local_ivo
         self.validators = validators
         self.handlers = handlers
+        self.whitelist = whitelist
+
+    def buildProtocol(self, addr):
+        log.msg("buildProtocol has addr: %s" % str(addr))
+        remote_ip = ipaddr.IPAddress(addr.host)
+        if any(remote_ip in network for network in self.whitelist):
+            return ServerFactory.buildProtocol(self, addr)
+        else:
+            log.msg("Attempted submission from non-whitelisted %s" % str(addr))
+            return None

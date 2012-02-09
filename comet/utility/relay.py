@@ -63,14 +63,15 @@ def previously_seen(protocol, event):
     ).addCallbacks(check_validity, db_failure)
 
 class RelayingVOEventReceiverFactory(VOEventReceiverFactory):
-    def __init__(self, local_ivo, publisher_factory, ivorn_db):
-        VOEventReceiverFactory.__init__(self, local_ivo, [
+    def __init__(self, local_ivo, publisher_factory, ivorn_db, whitelist):
+        VOEventReceiverFactory.__init__(self, local_ivo, validators=[
                 previously_seen,
                 SchemaValidator(
                     os.path.join(comet.__path__[0], "schema/VOEvent-v2.0.xsd")
                 )
             ],
-            [publish_event]
+            handlers=[publish_event],
+            whitelist=whitelist
         )
         self.publisher_factory = publisher_factory
         self.ivorn_db = ivorn_db

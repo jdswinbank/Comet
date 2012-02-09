@@ -4,6 +4,9 @@
 # Python standard library
 import sys
 
+# Used for building IP whitelist
+from ipaddr import IPNetwork
+
 # Twisted
 from twisted.python import log
 from twisted.python import usage
@@ -25,7 +28,8 @@ class Options(BaseOptions):
         ["receiver-port", "r", 8098, "TCP port for receiving events.", int],
         ["subscriber-port", "p", 8099, "TCP port for publishing events.", int],
         ["ivorndb", "i", "/tmp", "IVORN database root."],
-        ["remotes", None, "remotes.cfg", "Remote brokers to subscribe to."]
+        ["remotes", None, "remotes.cfg", "Remote brokers to subscribe to."],
+        ["whitelist", None, "whitelist.cfg", "Whitelist of hosts allowed to submit events."]
     ]
 
     def postOptions(self):
@@ -42,6 +46,19 @@ class Options(BaseOptions):
             log.msg("Could not read list of remote brokers.")
             self["remotes"] = []
 
+        try:
+            with open(self["whitelist"]) as f:
+                self["whitelist"] = [
+                    IPNetwork(x.split("#")[0]) for x in (
+                        l.strip() for l in f.readlines()
+                    ) if x[0] != "#"
+                ]
+        except IOError:
+            log.msg("Could not read list of remote brokers.")
+        # If no whitelist is defined, we whitelist everything
+        if not self["whitelist"]:
+            self["whitelist"] = IPNetwork("0.0.0.0/0")
+
 def makeService(config):
     ivorn_db = IVORN_DB(config['ivorndb'])
 
@@ -57,7 +74,8 @@ def makeService(config):
         RelayingVOEventReceiverFactory(
             config["local-ivo"],
             publisher_factory,
-            ivorn_db
+            ivorn_db,
+            config["whitelist"]
         )
     ).setServiceParent(broker_service)
 
