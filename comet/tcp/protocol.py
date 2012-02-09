@@ -392,7 +392,6 @@ class VOEventReceiverFactory(ServerFactory):
         self.whitelist = whitelist
 
     def buildProtocol(self, addr):
-        log.msg("buildProtocol has addr: %s" % str(addr))
         remote_ip = ipaddr.IPAddress(addr.host)
         if any(remote_ip in network for network in self.whitelist):
             return ServerFactory.buildProtocol(self, addr)
