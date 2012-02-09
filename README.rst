@@ -164,7 +164,11 @@ expressions may be supplied in ``filter`` elements with a ``type`` attribute
 equal to ``xpath``. For example, the following will select all VOEvent packets
 which are not marked as a test::
 
-  <trn:Transport xmlns:trn="http://www.telescope-networks.org/xml/Transport/v1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://telescope-networks.org/schema/Transport/v1.1 http://www.telescope-networks.org/schema/Transport-v1.1.xsd" version="1.0" role="authenticate">
+  <trn:Transport version="1.0" role="authenticate"
+    xmlns:trn="http://www.telescope-networks.org/xml/Transport/v1.1"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://telescope-networks.org/schema/Transport/v1.1
+      http://www.telescope-networks.org/schema/Transport-v1.1.xsd">
     <Origin>ivo://origin</Origin>
     <Response>ivo://response</Response>
     <TimeStamp>2012-02-08T21:13:53</TimeStamp>
@@ -177,7 +181,7 @@ The broker will evaluate each filter against each VOEvent packet it processes,
 and only forward it to the subscriber if one (or more) of the filters returns
 a positive result.
 
-It is worth noting that XPath expressions may, return one of four different
+It is worth noting that XPath expressions may return one of four different
 types of result: a boolean, a floating point number, a string, or a node-set.
 For the purposes of filtering, we regard a positive result as a boolean true,
 a non-zero number, a non-empty string, or a non-empty node-set.
