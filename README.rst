@@ -22,9 +22,9 @@ Comet provides three compoents:
 Requirements
 ------------
 
-Comet is developed targeting Python 2.6 and 2.7. It depends upon recent
-versions of `Twisted <http://twistedmatrix.com/>`_ (>= 11) and `lxml
-<http://lxml.de/>`_ (>= 2.3).
+Comet is developed targeting Python 2.6 and 2.7. It depends upon `Twisted
+<http://twistedmatrix.com/>`_ (versions >= 11) and `lxml <http://lxml.de/>`_
+(versions >= 2.3) and `ipaddr-py <https://code.google.com/p/ipaddr-py/>`_.
 
 Installation
 ------------
@@ -108,13 +108,14 @@ accepts a set of command line options::
   $ twistd broker --help
   Usage: twistd [options] broker [options]
   Options:
-        --local-ivo=       [default: ivo://comet.broker/default_ivo]
-    -r, --receiver-port=   TCP port for receiving events. [default: 8098]
-    -p, --subscriber-port  TCP port for publishing events. [default: 8099]
-    -i, --ivorndb=         IVORN database root. [default: /tmp]
-        --remotes=         Remote brokers to subscribe to. [default: remotes.cfg]
-        --version          Display Twisted version and exit.
-        --help             Display this help and exit.
+        --local-ivo=        [default: ivo://comet.broker/default_ivo]
+    -r, --receiver-port=    TCP port for receiving events. [default: 8098]
+    -p, --subscriber-port=  TCP port for publishing events. [default: 8099]
+    -i, --ivorndb=          IVORN database root. [default: /tmp]
+        --whitelist=        Network to be included in submission whitelist (CIDR).
+        --remote=           Remote broker to subscribe to (host:port).
+        --version           Display Twisted version and exit.
+        --help              Display this help and exit.
 
 The broker will listen for publishers (such as ``coment-sendvo``) connecting
 on the receiver port specified. Currently, no authentication or filtering of
@@ -129,13 +130,19 @@ receives and validates a new event, it is distributed to all subscribers.
 
 The broker may subscribe to any number of remote brokers and will
 re-broadcast to its subscribers any events it receives. Remote brokers should
-be listed in the file specified to the ``--remotes`` option (default
-``remotes.cfg``) in the form of a hostname, followed by a colon, followed by a
-port number. Comments may be included in this file, marked with ``#``. For
-example::
+be specified on the command line using the ``--remote`` option in the form of
+a hostname, followed by a colon, followed by a port number. For example:
+``--remote voevent.transientskp.org:8099``. This option may be specified
+multiple times.
 
-  voevent.dc3.com:8099     # dc3.com broker
-  an.other.broker.com:8099 # imaginary broker
+The broker will only accept new events for publication from hosts which have
+been specified as "whitelisted". Hosts (or, indeed, networks) may be included
+in the whitelist using the ``--whitelist`` option. This option accepts either
+`CIDR <https://en.wikipedia.org/wiki/CIDR_notation>`_ or dot-decimal notation
+including a subnet mask. For example, ``--whitelist 127.0.0.1/32`` and
+``--whitelist 127.0.0.1/255.255.255.255`` would both enable the local host
+to submit events to the broker. This option may be specified multiple times.
+To accept submissions from any host, specify ``--whitelist 0.0.0.0/0``.
 
 In order to prevent looping on the network (ie, two brokers exchanging the
 same event ad infinitum), a database of previously seen event IVORNs is

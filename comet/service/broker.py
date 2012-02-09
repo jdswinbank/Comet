@@ -8,6 +8,7 @@ import sys
 from ipaddr import IPNetwork
 
 # Twisted
+from twisted.internet import reactor
 from twisted.python import log
 from twisted.python import usage
 from twisted.application.service import MultiService
@@ -28,36 +29,24 @@ class Options(BaseOptions):
         ["receiver-port", "r", 8098, "TCP port for receiving events.", int],
         ["subscriber-port", "p", 8099, "TCP port for publishing events.", int],
         ["ivorndb", "i", "/tmp", "IVORN database root."],
-        ["remotes", None, "remotes.cfg", "Remote brokers to subscribe to."],
-        ["whitelist", None, "whitelist.cfg", "Whitelist of hosts allowed to submit events."]
+        ["whitelist", None, None, "Network to be included in submission whitelist (CIDR)."],
+        ["remote", None, None, "Remote broker to subscribe to (host:port)."],
     ]
 
-    def postOptions(self):
-        try:
-            with open(self["remotes"]) as f:
-                self["remotes"] = [
-                    (y, int(z)) for y, z in (
-                        x.split("#")[0].split(":") for x in (
-                            l.strip() for l in f.readlines()
-                        ) if x[0] != "#"
-                    )
-                ] # Doncha love list comprehensions?
-        except IOError:
-            log.msg("Could not read list of remote brokers.")
-            self["remotes"] = []
+    def __init__(self):
+        BaseOptions.__init__(self)
+        self['whitelist'] = []
+        self['remotes'] = []
 
-        try:
-            with open(self["whitelist"]) as f:
-                self["whitelist"] = [
-                    IPNetwork(x.split("#")[0]) for x in (
-                        l.strip() for l in f.readlines()
-                    ) if x[0] != "#"
-                ]
-        except IOError:
-            log.msg("Could not read list of remote brokers.")
-        # If no whitelist is defined, we whitelist everything
-        if not self["whitelist"]:
-            self["whitelist"] = IPNetwork("0.0.0.0/0")
+    def opt_whitelist(self, network):
+        reactor.callWhenRunning(log.msg, "Accepting submissions from %s" % network)
+        self['whitelist'].append(IPNetwork(network))
+
+    def opt_remote(self, remote):
+        reactor.callWhenRunning(log.msg, "Subscribing to remote broker %s" % remote)
+        host, port = remote.split(":")
+        self['remotes'].append((host, int(port)))
+
 
 def makeService(config):
     ivorn_db = IVORN_DB(config['ivorndb'])
@@ -80,7 +69,6 @@ def makeService(config):
     ).setServiceParent(broker_service)
 
     for host, port in config["remotes"]:
-        log.msg("Subscribing to %s:%d" % (host, port))
         TCPClient(
             host, port,
             RelayingVOEventSubscriberFactory(
