@@ -9,9 +9,9 @@ import lxml.etree as ElementTree
 
 ElementTree.register_namespace("voe", "http://www.ivoa.net/xml/VOEvent/v2.0")
 
-def dummy_voevent_message(ivo):
+def broker_test_message(ivo):
     """
-    Dummy VOEvent message for test purposes only.
+    Test message which is regularly broadcast to all subscribers.
     """
     root_element = ElementTree.Element("{http://www.ivoa.net/xml/VOEvent/v2.0}VOEvent",
         attrib={

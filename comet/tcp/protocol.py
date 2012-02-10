@@ -21,7 +21,7 @@ from .messages import iamalive, iamaliveresponse
 from .messages import authenticate, authenticateresponse
 
 # Constructor for our perodic test events
-from ..utility.voevent import dummy_voevent_message
+from ..utility.voevent import broker_test_message
 
 from ..utility.xml import xml_document
 
@@ -307,7 +307,7 @@ class VOEventPublisherFactory(ServerFactory):
 
     def sendTestEvent(self):
         log.msg("Broadcasting test event")
-        test_event = dummy_voevent_message(self.local_ivo)
+        test_event = broker_test_message(self.local_ivo)
         for publisher in self.publishers:
             publisher.send_xml(test_event)
 
