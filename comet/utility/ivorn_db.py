@@ -1,7 +1,7 @@
-# VOEvent receiver.
+# Comet VOEvent Broker.
+# IVORN database.
 # John Swinbank, <swinbank@transientskp.org>, 2011-12.
 
-# Python standard library
 import os
 import anydbm
 import datetime

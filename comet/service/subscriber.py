@@ -1,13 +1,11 @@
-# VOEvent sender.
+# Comet VOEvent subscriber.
 # John Swinbank, <swinbank@transientskp.org>, 2011-12.
 
 # Python standard library
-import sys
 import lxml.etree as ElementTree
 
 # Twisted
 from twisted.python import log
-from twisted.python import usage
 from twisted.application.service import MultiService
 from twisted.application.internet import TCPClient
 

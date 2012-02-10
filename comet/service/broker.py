@@ -27,8 +27,6 @@ from ..utility.relay import publish_event
 from ..utility.whitelist import WhitelistingFactory
 from ..utility.validators import SchemaValidator
 from ..utility.validators import previously_seen
-
-# Broker support
 from ..utility.ivorn_db import IVORN_DB
 
 class Options(BaseOptions):
