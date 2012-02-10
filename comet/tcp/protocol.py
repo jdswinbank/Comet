@@ -4,9 +4,6 @@
 # XML parsing using lxml
 import lxml.etree as ElementTree
 
-# IP address handling uses ipaddr
-import ipaddr
-
 # Twisted protocol definition
 from twisted.python import log
 from twisted.internet import reactor
