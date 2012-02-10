@@ -1,7 +1,8 @@
-# VOEvent receiver.
+# Comet VOEvent Broker.
 # John Swinbank, <swinbank@transientskp.org>, 2012.
 
 # Python standard library
+import os
 import sys
 
 # Used for building IP whitelist
@@ -15,11 +16,17 @@ from twisted.application.service import MultiService
 from twisted.application.internet import TCPClient
 from twisted.application.internet import TCPServer
 
-# Transport protocol definitions
+# Comet broker routines
+import comet
 from ..config.options import BaseOptions
 from ..tcp.protocol import VOEventPublisherFactory
-from ..utility.relay import RelayingVOEventReceiverFactory
-from ..utility.relay import RelayingVOEventSubscriberFactory
+from ..tcp.protocol import VOEventReceiverFactory
+from ..tcp.protocol import VOEventSubscriberFactory
+from ..utility.relay import RelayingFactory
+from ..utility.relay import publish_event
+from ..utility.whitelist import WhitelistingFactory
+from ..utility.validators import SchemaValidator
+from ..utility.validators import previously_seen
 
 # Broker support
 from ..utility.ivorn_db import IVORN_DB
@@ -48,6 +55,19 @@ class Options(BaseOptions):
         self['remotes'].append((host, int(port)))
 
 
+class RelayingWhitelistingReceiverFactory(VOEventReceiverFactory, WhitelistingFactory, RelayingFactory):
+    def __init__(self, local_ivo, publisher_factory, ivorn_db, whitelist, validators=[], handlers=[]):
+        VOEventReceiverFactory.__init__(self, local_ivo, validators, handlers)
+        WhitelistingFactory.__init__(self, whitelist)
+        RelayingFactory.__init__(self, publisher_factory, ivorn_db)
+
+
+class RelayingSubscriberFactory(VOEventSubscriberFactory, RelayingFactory):
+    def __init__(self, local_ivo, publisher_factory, ivorn_db, validators=[], handlers=[]):
+        VOEventSubscriberFactory.__init__(self, local_ivo, validators, handlers)
+        RelayingFactory.__init__(self, publisher_factory, ivorn_db)
+
+
 def makeService(config):
     ivorn_db = IVORN_DB(config['ivorndb'])
 
@@ -60,19 +80,30 @@ def makeService(config):
 
     TCPServer(
         config['receiver-port'],
-        RelayingVOEventReceiverFactory(
-            config["local-ivo"],
-            publisher_factory,
-            ivorn_db,
-            config["whitelist"]
+        RelayingWhitelistingReceiverFactory(
+            local_ivo=config["local-ivo"],
+            publisher_factory=publisher_factory,
+            ivorn_db=ivorn_db,
+            whitelist=config["whitelist"],
+            validators=[
+                previously_seen,
+                SchemaValidator(
+                    os.path.join(comet.__path__[0], "schema/VOEvent-v2.0.xsd")
+                )
+            ],
+            handlers=[publish_event]
         )
     ).setServiceParent(broker_service)
 
     for host, port in config["remotes"]:
         TCPClient(
             host, port,
-            RelayingVOEventSubscriberFactory(
-                config["local-ivo"], publisher_factory, ivorn_db
+            RelayingSubscriberFactory(
+                local_ivo=config["local-ivo"],
+                publisher_factory=publisher_factory,
+                ivorn_db=ivorn_db,
+                validators=[previously_seen],
+                handlers=[publish_event]
             )
         ).setServiceParent(broker_service)
     return broker_service
