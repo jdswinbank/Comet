@@ -14,7 +14,7 @@ class SchemaValidator(object):
     def __init__(self, schema):
         self.schema = etree.XMLSchema(etree.parse(schema))
 
-    def __call__(self, protocol, event):
+    def __call__(self, event):
         def check_validity(is_valid):
             if is_valid:
                 log.msg("Schema validation passed")
@@ -32,11 +32,11 @@ class SchemaValidator(object):
             event.element
         ).addCallbacks(check_validity, schema_failure)
 
-def CheckPreviouslySeen(object):
+class CheckPreviouslySeen(object):
     def __init__(self, ivorn_db):
         self.ivorn_db = ivorn_db
 
-    def __call__(self, protocol, event):
+    def __call__(self, event):
         def check_validity(is_valid):
             if is_valid:
                 log.msg("Event not previously seen")
