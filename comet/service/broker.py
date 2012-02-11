@@ -22,11 +22,10 @@ from ..config.options import BaseOptions
 from ..tcp.protocol import VOEventPublisherFactory
 from ..tcp.protocol import VOEventReceiverFactory
 from ..tcp.protocol import VOEventSubscriberFactory
-from ..utility.relay import RelayingFactory
-from ..utility.relay import publish_event
+from ..utility.relay import EventRelay
 from ..utility.whitelist import WhitelistingFactory
 from ..utility.validators import SchemaValidator
-from ..utility.validators import previously_seen
+from ..utility.validators import CheckPreviouslySeen
 from ..utility.ivorn_db import IVORN_DB
 
 class Options(BaseOptions):
@@ -53,17 +52,10 @@ class Options(BaseOptions):
         self['remotes'].append((host, int(port)))
 
 
-class RelayingWhitelistingReceiverFactory(VOEventReceiverFactory, WhitelistingFactory, RelayingFactory):
-    def __init__(self, local_ivo, publisher_factory, ivorn_db, whitelist, validators=[], handlers=[]):
+class WhitelistingReceiverFactory(VOEventReceiverFactory, WhitelistingFactory):
+    def __init__(self, local_ivo, whitelist, validators=[], handlers=[]):
         VOEventReceiverFactory.__init__(self, local_ivo, validators, handlers)
         WhitelistingFactory.__init__(self, whitelist)
-        RelayingFactory.__init__(self, publisher_factory, ivorn_db)
-
-
-class RelayingSubscriberFactory(VOEventSubscriberFactory, RelayingFactory):
-    def __init__(self, local_ivo, publisher_factory, ivorn_db, validators=[], handlers=[]):
-        VOEventSubscriberFactory.__init__(self, local_ivo, validators, handlers)
-        RelayingFactory.__init__(self, publisher_factory, ivorn_db)
 
 
 def makeService(config):
@@ -78,30 +70,26 @@ def makeService(config):
 
     TCPServer(
         config['receiver-port'],
-        RelayingWhitelistingReceiverFactory(
+        WhitelistingReceiverFactory(
             local_ivo=config["local-ivo"],
-            publisher_factory=publisher_factory,
-            ivorn_db=ivorn_db,
             whitelist=config["whitelist"],
             validators=[
-                previously_seen,
+                CheckPreviouslySeen(ivorn_db),
                 SchemaValidator(
                     os.path.join(comet.__path__[0], "schema/VOEvent-v2.0.xsd")
                 )
             ],
-            handlers=[publish_event]
+            handlers=[EventRelay(publisher_factory)]
         )
     ).setServiceParent(broker_service)
 
     for host, port in config["remotes"]:
         TCPClient(
             host, port,
-            RelayingSubscriberFactory(
+            VOEventSubscriberFactory(
                 local_ivo=config["local-ivo"],
-                publisher_factory=publisher_factory,
-                ivorn_db=ivorn_db,
-                validators=[previously_seen],
-                handlers=[publish_event]
+                validators=[CheckPreviouslySeen(ivorn_db)],
+                handlers=[EventRelay(publisher_factory)]
             )
         ).setServiceParent(broker_service)
     return broker_service

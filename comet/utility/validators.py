@@ -32,20 +32,24 @@ class SchemaValidator(object):
             event.element
         ).addCallbacks(check_validity, schema_failure)
 
-def previously_seen(protocol, event):
-    def check_validity(is_valid):
-        if is_valid:
-            log.msg("Event not previously seen")
-            return True
-        else:
-            log.msg("Event HAS been previously seen")
-            raise Exception("Previously seen event")
+def CheckPreviouslySeen(object):
+    def __init__(self, ivorn_db):
+        self.ivorn_db = ivorn_db
 
-    def db_failure(failure):
-        log.err("IVORN DB lookup failed!")
-        return failure
+    def __call__(self, protocol, event):
+        def check_validity(is_valid):
+            if is_valid:
+                log.msg("Event not previously seen")
+                return True
+            else:
+                log.msg("Event HAS been previously seen")
+                raise Exception("Previously seen event")
 
-    return deferToThread(
-        protocol.factory.ivorn_db.check_ivorn,
-        event.attrib['ivorn']
-    ).addCallbacks(check_validity, db_failure)
+        def db_failure(failure):
+            log.err("IVORN DB lookup failed!")
+            return failure
+
+        return deferToThread(
+            self.ivorn_db.check_ivorn,
+            event.attrib['ivorn']
+        ).addCallbacks(check_validity, db_failure)

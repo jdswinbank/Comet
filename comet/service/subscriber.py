@@ -27,7 +27,7 @@ class Options(BaseOptions):
     def opt_filter(self, my_filter):
         self['filters'].append(my_filter)
 
-def print_event(protocol, event):
+def print_event(event):
     print ElementTree.tostring(event.element)
 
 def makeService(config):

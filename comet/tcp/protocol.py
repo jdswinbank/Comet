@@ -100,7 +100,7 @@ class EventHandler(Int32StringReceiver):
         """
         return defer.gatherResults(
             [
-                defer.maybeDeferred(validator, self, event)
+                defer.maybeDeferred(validator, event)
                 for validator in self.factory.validators
             ],
             consumeErrors=True,
@@ -113,7 +113,7 @@ class EventHandler(Int32StringReceiver):
         """
         return defer.gatherResults(
             [
-                defer.maybeDeferred(handler, self, event)
+                defer.maybeDeferred(handler, event)
                 for handler in self.factory.handlers
             ],
             consumeErrors=True

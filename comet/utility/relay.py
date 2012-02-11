@@ -5,16 +5,13 @@
 from twisted.python import log
 from twisted.internet.protocol import ServerFactory
 
-def publish_event(protocol, event):
+class EventRelay(object):
     """
-    Forward an event to all subscribers, unless we've seen the IVORN
-    previously.
+    Forward an event to all subscribers.
     """
-    log.msg("Rebroadcasting event to subscribers")
-    for publisher in protocol.factory.publisher_factory.publishers:
-        publisher.send_event(event)
-
-class RelayingFactory(ServerFactory):
-    def __init__(self, publisher_factory, ivorn_db):
+    def __init__(self, publisher_factory):
         self.publisher_factory = publisher_factory
-        self.ivorn_db = ivorn_db
+
+    def __call__(self, protocol, event):
+        for publisher in self.publisher_factory.publishers:
+            publisher.send_event(event)
