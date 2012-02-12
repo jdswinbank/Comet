@@ -15,16 +15,18 @@ from twisted.plugin import getPlugins
 from ..tcp.protocol import VOEventSubscriberFactory
 from ..config.options import BaseOptions
 
-# Find handler plugins
+# Handlers and plugins
 import comet.plugins
 from ..icomet import IHandler
+from ..utility.spawn import SpawnCommand
 
 class Options(BaseOptions):
     optParameters = [
         ["host", "h", "localhost", "Host to subscribe to."],
         ["port", "p", 8099, "Port to subscribe to.", int],
         ["filter", "f", None, "XPath expression."],
-        ["action", None, None, "Add an event handler."]
+        ["action", None, None, "Add an event handler."],
+        ["cmd", None, None, "Spawn external command on event receipt."]
     ]
 
     def __init__(self):
@@ -38,6 +40,9 @@ class Options(BaseOptions):
 
     def opt_action(self, action):
         self['actions'].append(action)
+
+    def opt_cmd(self, cmd):
+        self["handlers"].append(SpawnCommand(cmd))
 
     def postOptions(self):
         all_plugins = list(getPlugins(IHandler, comet.plugins))
