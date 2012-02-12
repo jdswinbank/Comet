@@ -67,13 +67,13 @@ support for daemonization, logging, etc: see the man page for more detail.
 
 The subscriber accepts a few command line options::
 
-  $ twistd subscriber --help
   Usage: twistd [options] subscriber [options]
   Options:
         --local-ivo=  [default: ivo://comet.broker/default_ivo]
     -h, --host=       Host to subscribe to. [default: localhost]
     -p, --port=       Port to subscribe to. [default: 8099]
     -f, --filter=     XPath expression.
+        --action=     Add an event handler.
         --version     Display Twisted version and exit.
         --help        Display this help and exit.
 
@@ -88,9 +88,11 @@ identify itself: see the `VOEvent standard
 The ``-n (--nodaemon)`` flag instructs ``twistd`` to run in the foreground
 rather than daemonizing.
 
-When a new event is received, it will be displayed in the subscriber's log. In
-the configuration above, that will be written to standard output; this is
-customizable through the ``twistd`` options.
+By default, when a new event is received, it will be displayed in the
+subscriber's log (the location of which may be customized through the
+``twistd`` options). It is also possible for the end user to provide their own
+"handlers" which are used to execute arbitrary code in response to a new
+event: see `Event handlers`_, below.
 
 It is also possible to specify one or more filters, in the form of `XPath 1.0
 <http://www.w3.org/TR/xpath/>`_ expressions. The broker will evaluate the
@@ -206,6 +208,30 @@ paramters within the VOEvent message can be checked::
 Or messages from particular senders selected::
 
   //Who[AuthorIVORN="ivo://lofar.transients/"]
+
+Event handlers
+--------------
+
+Although the ``broker`` aims to serve as a fairly complete and
+fully-functional broker, it is anticipated that those interested in
+subscribing to VOEvent feeds may have varied and unforeseen requirements. The
+``subscriber`` module provided by Comet therefore only serves as a template,
+and it is expected that subscribers will wish to develop it further to meet
+their needs.
+
+One way in which the ``subscriber``'s capabilties may be developed is by
+providing "event handlers": Python code which is executed when a new event is
+received. In order to make use of this facility, the developer should be
+familiar with Twisted's `component architecture
+<http://twistedmatrix.com/documents/current/core/howto/components.html>`_.
+Handlers may then be written to follow Comet's ``comet.icomet.IHandler``
+interface, and then installed the ``comet/plugins`` directory.
+A simple example is provided in ``comet.plugins.eventprinter``.
+
+Each handler must provide a ``name`` attribute. The user may specify the names
+of one or more handlers to use on the command line (the ``--action`` argument
+to the ``subscriber``). If no action is specified, all available handlers are
+loaded by default.
 
 Future plans
 ------------
