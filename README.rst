@@ -225,7 +225,7 @@ received. In order to make use of this facility, the developer should be
 familiar with Twisted's `component architecture
 <http://twistedmatrix.com/documents/current/core/howto/components.html>`_.
 Handlers may then be written to follow Comet's ``comet.icomet.IHandler``
-interface, and then installed the ``comet/plugins`` directory.
+interface, and then installed in the ``comet/plugins`` directory.
 A simple example is provided in ``comet.plugins.eventprinter``.
 
 Each handler must provide a ``name`` attribute. The user may specify the names
