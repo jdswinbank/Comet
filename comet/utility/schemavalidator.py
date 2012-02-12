@@ -1,16 +1,21 @@
 # Comet VOEvent Broker.
-# Event validators.
+# Schema validator.
 # John Swinbank, <swinbank@transientskp.org>, 2012.
 
 from twisted.python import log
 from twisted.internet.threads import deferToThread
 import lxml.etree as etree
 
+from zope.interface import implements
+from ..icomet import IValidator
+
 class SchemaValidator(object):
     """
     This takes an ElementTree element, converts it to a string, then reads
     that into lxml for validation. That... can't be optimal.
     """
+    implements(IValidator)
+
     def __init__(self, schema):
         self.schema = etree.XMLSchema(etree.parse(schema))
 
@@ -31,25 +36,3 @@ class SchemaValidator(object):
             self.schema.validate,
             event.element
         ).addCallbacks(check_validity, schema_failure)
-
-class CheckPreviouslySeen(object):
-    def __init__(self, ivorn_db):
-        self.ivorn_db = ivorn_db
-
-    def __call__(self, event):
-        def check_validity(is_valid):
-            if is_valid:
-                log.msg("Event not previously seen")
-                return True
-            else:
-                log.msg("Event HAS been previously seen")
-                raise Exception("Previously seen event")
-
-        def db_failure(failure):
-            log.err("IVORN DB lookup failed!")
-            return failure
-
-        return deferToThread(
-            self.ivorn_db.check_ivorn,
-            event.attrib['ivorn']
-        ).addCallbacks(check_validity, db_failure)

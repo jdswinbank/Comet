@@ -10,10 +10,10 @@ setup(
     packages=[
         'comet',
         'comet.config',
+        'comet.plugins',
         'comet.service',
         'comet.tcp',
-        'comet.utility',
-        'comet.voevent'
+        'comet.utility'
     ],
     scripts=['scripts/comet-sendvo'],
     package_data={'comet': ['schema/*.xsd']},

@@ -8,6 +8,12 @@ import datetime
 from threading import Lock
 from collections import defaultdict
 
+from twisted.python import log
+from twisted.internet.threads import deferToThread
+
+from zope.interface import implements
+from ..icomet import IValidator
+
 class IVORN_DB(object):
     def __init__(self, root):
         self.root = root
@@ -26,3 +32,26 @@ class IVORN_DB(object):
                 return True # Ok to forward
         finally:
             self.locks[db_path].release()
+
+class CheckPreviouslySeen(object):
+    implements(IValidator)
+    def __init__(self, ivorn_db):
+        self.ivorn_db = ivorn_db
+
+    def __call__(self, event):
+        def check_validity(is_valid):
+            if is_valid:
+                log.msg("Event not previously seen")
+                return True
+            else:
+                log.msg("Event HAS been previously seen")
+                raise Exception("Previously seen event")
+
+        def db_failure(failure):
+            log.err("IVORN DB lookup failed!")
+            return failure
+
+        return deferToThread(
+            self.ivorn_db.check_ivorn,
+            event.attrib['ivorn']
+        ).addCallbacks(check_validity, db_failure)

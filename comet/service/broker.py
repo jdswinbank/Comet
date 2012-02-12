@@ -24,8 +24,8 @@ from ..tcp.protocol import VOEventReceiverFactory
 from ..tcp.protocol import VOEventSubscriberFactory
 from ..utility.relay import EventRelay
 from ..utility.whitelist import WhitelistingFactory
-from ..utility.validators import SchemaValidator
-from ..utility.validators import CheckPreviouslySeen
+from ..utility.schemavalidator import SchemaValidator
+from ..utility.ivorn_db import CheckPreviouslySeen
 from ..utility.ivorn_db import IVORN_DB
 
 class Options(BaseOptions):
