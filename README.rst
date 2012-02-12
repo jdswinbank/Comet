@@ -74,6 +74,7 @@ The subscriber accepts a few command line options::
     -p, --port=       Port to subscribe to. [default: 8099]
     -f, --filter=     XPath expression.
         --action=     Add an event handler.
+        --cmd=        Spawn external command on event receipt.
         --version     Display Twisted version and exit.
         --help        Display this help and exit.
 
@@ -88,17 +89,26 @@ identify itself: see the `VOEvent standard
 The ``-n (--nodaemon)`` flag instructs ``twistd`` to run in the foreground
 rather than daemonizing.
 
+It is possible to specify one or more filters, in the form of `XPath 1.0
+<http://www.w3.org/TR/xpath/>`_ expressions. The broker will evaluate the
+expression against each event it processes, and only forward the event to the
+subscriber if it produces a non-empty result. For more details see
+`Filtering`_, below.
+
 By default, when a new event is received, it will be displayed in the
 subscriber's log (the location of which may be customized through the
 ``twistd`` options). It is also possible for the end user to provide their own
 "handlers" which are used to execute arbitrary code in response to a new
 event: see `Event handlers`_, below.
 
-It is also possible to specify one or more filters, in the form of `XPath 1.0
-<http://www.w3.org/TR/xpath/>`_ expressions. The broker will evaluate the
-expression against each event it processes, and only forward the event to the
-subscriber if it produces a non-empty result. For more details see
-`Filtering`_, below.
+Received events may also be sent to one or more external commands for
+processing. These are specified using the ``--cmd`` option. They should except
+the event on standard input and perform whatever processing is required. The
+standard output and error from the external process is ignored. If it returns
+a value other than 0, it will be logged as a failure. Note that external
+commands are run in a separate thread, so will not block the subscriber from
+processing new events; however, the user is responsible for ensuring that they
+terminate in a timely fashion.
 
 Running a broker
 ================
