@@ -24,8 +24,7 @@ setup(
                 'twisted/plugins'
             ),
             [
-                'twisted/plugins/broker_plugin.py',
-                'twisted/plugins/subscriber_plugin.py'
+                'twisted/plugins/comet_plugin.py',
             ]
         )
     ]
