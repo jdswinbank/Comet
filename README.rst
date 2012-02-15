@@ -202,26 +202,25 @@ Or messages from particular senders selected::
 Event handlers
 --------------
 
-Although the ``broker`` aims to serve as a fairly complete and
-fully-functional broker, it is anticipated that those interested in
-subscribing to VOEvent feeds may have varied and unforeseen requirements. The
-``subscriber`` module provided by Comet therefore only serves as a template,
-and it is expected that subscribers will wish to develop it further to meet
+Comet aims to server as a fairly complete and fully-functional broker.
+However, it is anticipated that those interested in subscribing to VOEvent
+feeds may have many and varied requirements; it is impossible to take account
+of all of them. For these users, Comet serves as a template and
+development platform, and they are encouraged to develop it further to meet
 their needs.
 
-One way in which the ``subscriber``'s capabilties may be developed is by
-providing "event handlers": Python code which is executed when a new event is
-received. In order to make use of this facility, the developer should be
-familiar with Twisted's `component architecture
+One way in which the Comet's capabilties may be developed is by providing
+"event handlers": Python code which is executed when a new event is received.
+In order to make use of this facility, the developer should be familiar with
+Twisted's `component architecture
 <http://twistedmatrix.com/documents/current/core/howto/components.html>`_.
 Handlers may then be written to follow Comet's ``comet.icomet.IHandler``
-interface, and then installed in the ``comet/plugins`` directory.
-A simple example is provided in ``comet.plugins.eventprinter``.
+interface, and then installed in the ``comet/plugins`` directory.  A simple
+example is provided in ``comet.plugins.eventprinter``.
 
 Each handler must provide a ``name`` attribute. The user may specify the names
-of one or more handlers to use on the command line (the ``--action`` argument
-to the ``subscriber``). If no action is specified, all available handlers are
-loaded by default.
+of one or more handlers to use on the command line (the ``--action`` command
+line argument).
 
 Future plans
 ------------
