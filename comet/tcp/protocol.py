@@ -173,7 +173,10 @@ class VOEventSubscriber(EventHandler, ElementSender):
             )
             self.process_event(incoming)
         else:
-            log.err("Incomprehensible data received")
+            log.err(
+                "Incomprehensible data received from %s (role=%s)" %
+                (self.transport.getPeer(), incoming.get("role"))
+            )
 
 class VOEventSubscriberFactory(ReconnectingClientFactory):
     protocol = VOEventSubscriber
@@ -248,8 +251,10 @@ class VOEventPublisher(ElementSender):
                 for xpath in incoming.findall("Meta/filter[@type=\"xpath\"]")
             ]
         else:
-            log.err(incoming.get('role'))
-            log.err("Incomprehensible data received from %s" % str(self.transport.getPeer()))
+            log.err(
+                "Incomprehensible data received from %s (role=%s)" %
+                (self.transport.getPeer(), incoming.get("role"))
+            )
 
     def send_event(self, event):
         # Check the event against our filters and, if one or more pass, then
@@ -323,7 +328,10 @@ class VOEventSender(ElementSender):
         elif incoming.get('role') == "nak":
             log.err("Nak received: %s refused to accept VOEvent" % str(self.transport.getPeer()))
         else:
-            log.err("Incomprehensible data received from %s" % str(self.transport.getPeer()))
+            log.err(
+                "Incomprehensible data received from %s (role=%s)" %
+                (self.transport.getPeer(), incoming.get("role"))
+            )
 
         # After receiving a message, we shut down the connection.
         self.transport.loseConnection()
@@ -360,7 +368,10 @@ class VOEventReceiver(EventHandler, ElementSender):
             )
             self.process_event(incoming)
         else:
-            log.err("Incomprehensible data received from %s" % str(self.transport.getPeer()))
+            log.err(
+                "Incomprehensible data received from %s (role=%s)" %
+                (self.transport.getPeer(), incoming.get("role"))
+            )
 
 class VOEventReceiverFactory(ServerFactory):
     protocol = VOEventReceiver
