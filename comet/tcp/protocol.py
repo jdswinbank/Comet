@@ -278,9 +278,14 @@ class VOEventPublisher(ElementSender):
                 self.send_xml(event)
             else:
                 log.msg("Event rejected by filter")
+
+        # We might get either an xml_document, in which case we need its
+        # associated element, or a plain etree element, which we use directly.
+        if hasattr(event, "element"):
+            event = event.element
         defer.DeferredList(
             [
-                deferToThread(xpath, event.element)
+                deferToThread(xpath, event)
                 for xpath in self.filters
             ],
             consumeErrors=True,
@@ -309,7 +314,7 @@ class VOEventPublisherFactory(ServerFactory):
         log.msg("Broadcasting test event")
         test_event = broker_test_message(self.local_ivo)
         for publisher in self.publishers:
-            publisher.send_xml(test_event)
+            publisher.send_event(test_event)
 
 
 class VOEventSender(ElementSender):
