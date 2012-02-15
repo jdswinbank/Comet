@@ -1,34 +1,24 @@
 import lxml.etree as ElementTree
 
 class xml_document(object):
-    __slots__ = ["_element", "_text"]
+    __slots__ = ["element", "text"]
 
     def __init__(self, document):
         if isinstance(document, ElementTree._Element):
-            self._element = document
-        else:
-            self._text = document
-
-    @property
-    def valid_signature(self):
-        return True
-
-    @property
-    def element(self):
-        if not hasattr(self, "_element"):
-            self._element = ElementTree.fromstring(self.text)
-        return self._element
-
-    @property
-    def text(self):
-        if not hasattr(self, "_text"):
-            self._text =  ElementTree.tostring(
+            self.element = document
+            self.text =  ElementTree.tostring(
                 self.element,
                 xml_declaration=True,
                 encoding="UTF-8",
                 pretty_print=True
             )
-        return self._text
+        else:
+            self.text = document
+            self.element = ElementTree.fromstring(self.text)
+
+    @property
+    def valid_signature(self):
+        return True
 
     def __getattr__(self, name):
         try:
