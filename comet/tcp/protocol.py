@@ -64,26 +64,9 @@ class ElementSender(Int32StringReceiver):
     """
     def send_xml(self, document):
         """
-        Takes a document and sents it as XML.
-
-        The document might be an ElementTree element, in which case we
-        serialise it to a (pretty, UTF-8) string, or it might be an
-        xml_document with original text, which we send directly.
-
-        Returns a deferred which fires when the event is being sent.
+        Takes an xml_document and sents it as XML.
         """
-        def get_text(document):
-            if hasattr(document, "original"):
-                return document.original
-            else:
-                return deferToThread(
-                    ElementTree.tostring,
-                    document,
-                    xml_declaration=True,
-                    encoding="UTF-8",
-                    pretty_print=True
-                )
-        defer.maybeDeferred(get_text, document).addCallback(self.sendString)
+        self.sendString(document.text)
 
 class EventHandler(Int32StringReceiver):
     """
@@ -92,8 +75,7 @@ class EventHandler(Int32StringReceiver):
     """
     def validate_event(self, event):
         """
-        Call a set of event validators on a given event (itself an ElementTree
-        element).
+        Call a set of event validators on a given event (an xml_document).
 
         If a validator raises an exception (ie, calls an errback), the event
         is invalid. Otherwise, it's ok.
@@ -279,13 +261,9 @@ class VOEventPublisher(ElementSender):
             else:
                 log.msg("Event rejected by filter")
 
-        # We might get either an xml_document, in which case we need its
-        # associated element, or a plain etree element, which we use directly.
-        if hasattr(event, "element"):
-            event = event.element
         defer.DeferredList(
             [
-                deferToThread(xpath, event)
+                deferToThread(xpath, event.element)
                 for xpath in self.filters
             ],
             consumeErrors=True,
