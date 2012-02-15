@@ -10,14 +10,12 @@ and experimentation with VOEvent transport systems. Currently, it partially
 implements the `VOEvent Transport Protocol
 <http://www.ivoa.net/Documents/Notes/VOEventTransport/>`_.
 
-Comet provides three compoents:
+The core of Comet is a multi-functional VOEvent broker. It is capable of
+receiving events either by subscribing to one or more remote brokers or by
+direct connection from publishers, and can then both process those events
+locally and forward them to its own subscribers.
 
-- A tool to publish VOEvent messages to a remote broker;
-- A subscriber, which will connect to a remote broker, subscribe to a stream
-  of VOEvents, and collect them for processing locally;
-- A broker, which will subscribe to one or more remote brokers and listen for
-  events being published by direct TCP connection, forwarding the results to
-  its own subscribers
+In addition, Comet provides a tool for publishing VOEvents to a remote broker.
 
 Requirements
 ------------
@@ -58,103 +56,53 @@ accepts command line options specifying the host and port to send to::
         --version  Display Twisted version and exit.
         --help     Display this help and exit.
 
-Subscribing to a VOEvent stream
-===============================
+The VOEvent Broker
+==================
 
-The subscriber is implemented as a Twisted application, and, as such, is run
+The Comet broker is implemented as a Twisted application, and, as such, is run
 using ``twistd(1)``. ``twistd`` is installed as part of Twisted, and provides
 support for daemonization, logging, etc: see the man page for more detail.
 
-The subscriber accepts a few command line options::
+Comet accepts a few command line options::
 
-  Usage: twistd [options] subscriber [options]
+  $ twistd comet --help
+  Usage: twistd [options] comet [options]
   Options:
-        --local-ivo=  [default: ivo://comet.broker/default_ivo]
-    -h, --host=       Host to subscribe to. [default: localhost]
-    -p, --port=       Port to subscribe to. [default: 8099]
-    -f, --filter=     XPath expression.
-        --action=     Add an event handler.
-        --cmd=        Spawn external command on event receipt.
-        --version     Display Twisted version and exit.
-        --help        Display this help and exit.
+    -r, --receiver         Listen for TCP connections from publishers.
+    -p, --publisher        Re-broadcast VOEvents received
+        --local-ivo=       [default: ivo://comet.broker/default_ivo]
+        --ivorndb=         IVORN database root. [default: /tmp]
+        --publisher-port=  TCP port for publishing events. [default: 8099]
+        --receiver-port=   TCP port for receiving events. [default: 8098]
+        --whitelist=       Network to be included in submission whitelist.
+                           [default: 0.0.0.0/0]
+        --remote=          Remote broker to subscribe to (host:port).
+        --filter=          XPath filter applied to events broadcast by remote.
+        --action=          Add an event handler.
+        --cmd=             Spawn external command on event receipt.
+        --help             Display this help and exit.
+        --version          Display Twisted version and exit.
 
-A simple invocation might thus look like::
+If the ``--receiver`` option is supplied, Comet will listen for TCP
+connections from remote publishers and accept events for distribution. The TCP
+port on which Comet will listen may be specified with the ``--receiver-port``
+option.
 
-  $ twistd -n subscriber --local-ivo=ivo://comet.test/test
+If the ``--publisher`` option is supplied, any VOEvents received (either by
+direct connection from other publishers, or by subscribing to other brokers)
+are rebroadcast to our subscribers. The TCP port on which Comet will allow
+subscribers to connect may be specified with the ``--publisher-port`` option.
 
-You should specify some sensible IVORN which your subscriber will use to
-identify itself: see the `VOEvent standard
-<http://www.ivoa.net/Documents/VOEvent/index.html>`_ for details.
+If one or more ``--remote`` options are supplied, Comet will subscribe to the
+remote broker specified and collect events.
 
-The ``-n (--nodaemon)`` flag instructs ``twistd`` to run in the foreground
-rather than daemonizing.
+If none of ``--receiver``, ``--publisher`` or ``--remote`` are supplied, there
+is no work to be done and Comet will exit immediately.
 
-It is possible to specify one or more filters, in the form of `XPath 1.0
-<http://www.w3.org/TR/xpath/>`_ expressions. The broker will evaluate the
-expression against each event it processes, and only forward the event to the
-subscriber if it produces a non-empty result. For more details see
-`Filtering`_, below.
-
-By default, when a new event is received, it will be displayed in the
-subscriber's log (the location of which may be customized through the
-``twistd`` options). It is also possible for the end user to provide their own
-"handlers" which are used to execute arbitrary code in response to a new
-event: see `Event handlers`_, below.
-
-Received events may also be sent to one or more external commands for
-processing. These are specified using the ``--cmd`` option. They should accept
-the event on standard input and perform whatever processing is required before
-exiting. The standard output and error from the external process is ignored.
-If it returns a value other than 0, it will be logged as a failure. Note that
-external commands are run in a separate thread, so will not block the
-subscriber from processing new events; however, the user is nevertheless
-responsible for ensuring that they terminate in a timely fashion.
-
-Running a broker
-================
-
-The broker is also a Twisted application controlled through ``twistd``; please
-see the notes descrbing the subscriber for a brief introduction. It also
-accepts a set of command line options::
-
-  $ twistd broker --help
-  Usage: twistd [options] broker [options]
-  Options:
-        --local-ivo=        [default: ivo://comet.broker/default_ivo]
-    -r, --receiver-port=    TCP port for receiving events. [default: 8098]
-    -p, --subscriber-port=  TCP port for publishing events. [default: 8099]
-    -i, --ivorndb=          IVORN database root. [default: /tmp]
-        --whitelist=        Network to be included in submission whitelist (CIDR).
-        --remote=           Remote broker to subscribe to (host:port).
-        --version           Display Twisted version and exit.
-        --help              Display this help and exit.
-
-The broker will listen for publishers (such as ``coment-sendvo``) connecting
-on the receiver port specified. Currently, no authentication or filtering of
-publishers is performed. Events are only accepted for publication if they are
-valid according to the `VOEvent 2.0 schema
-<http://www.ivoa.net/xml/VOEvent/VOEvent-v2.0.xsd>`_. When an event is
-received and accepted, it is broadcast to all the broker's subscribers.
-
-The broker will listen for subscribers (such as the subscriber application
-described above) connecting on the subscriber port specified. When the broker
-receives and validates a new event, it is distributed to all subscribers.
-
-The broker may subscribe to any number of remote brokers and will
-re-broadcast to its subscribers any events it receives. Remote brokers should
-be specified on the command line using the ``--remote`` option in the form of
-a hostname, followed by a colon, followed by a port number. For example:
-``--remote voevent.transientskp.org:8099``. This option may be specified
-multiple times.
-
-The broker will only accept new events for publication from hosts which have
-been specified as "whitelisted". Hosts (or, indeed, networks) may be included
-in the whitelist using the ``--whitelist`` option. This option accepts either
-`CIDR <https://en.wikipedia.org/wiki/CIDR_notation>`_ or dot-decimal notation
-including a subnet mask. For example, ``--whitelist 127.0.0.1/32`` and
-``--whitelist 127.0.0.1/255.255.255.255`` would both enable the local host
-to submit events to the broker. This option may be specified multiple times.
-To accept submissions from any host, specify ``--whitelist 0.0.0.0/0``.
+All modes of operation identify themselves by means of an IVORN: see the
+`VOEvent standard <http://www.ivoa.net/Documents/VOEvent/index.html>`_ for
+details. You should specify some appropriate IVORN for your site using the
+``--local-ivo`` option.
 
 In order to prevent looping on the network (ie, two brokers exchanging the
 same event ad infinitum), a database of previously seen event IVORNs is
@@ -164,6 +112,38 @@ looping would degrade the quality of the VOEvent network for all users! Note
 that the current implementation of the database will grown indefinitely: if
 the broker is in a situation where an extremely high volume of VOEvent
 messages are expected, the current implementation will not be adequate.
+
+The Comet receiver will only accept new events for publication from hosts
+which have been specified as "whitelisted". Hosts (or, indeed, networks) may
+be included in the whitelist using the ``--whitelist`` option. This option
+accepts either `CIDR <https://en.wikipedia.org/wiki/CIDR_notation>`_ or
+dot-decimal notation including a subnet mask. For example, ``--whitelist
+127.0.0.1/32`` and ``--whitelist 127.0.0.1/255.255.255.255`` would both enable
+the local host to submit events to the broker. This option may be specified
+multiple times.  To accept submissions from any host, specify ``--whitelist
+0.0.0.0/0``; this is the default.
+
+When connecting to a remote broker (with ``--remote``), one or more filters
+may be specified which limit the events which will be received. These filters
+are specified with ``--filter``, in the form of `XPath 1.0
+<http://www.w3.org/TR/xpath/>`_ expressions. The broker will evaluate the
+expression against each event it processes, and only forward the event to the
+subscriber if it produces a non-empty result. For more details see
+`Filtering`_, below.
+
+Custom code may be run to perform local processing on an event when it is
+received. This is specifed by the ``--action`` option. For more details, see
+`Event handlers`_, below.
+
+In addition, received events may be sent to one or more external commands for
+processing. These are specified using the ``--cmd`` option. They should accept
+the event on standard input and perform whatever processing is required before
+exiting. The standard output and error from the external process is ignored.
+If it returns a value other than 0, it will be logged as a failure. Note that
+external commands are run in a separate thread, so will not block the
+subscriber from processing new events; however, the user is nevertheless
+responsible for ensuring that they terminate in a timely fashion.
+
 
 Filtering
 ---------

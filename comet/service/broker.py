@@ -35,8 +35,8 @@ from ..utility.spawn import SpawnCommand
 
 class Options(BaseOptions):
     optFlags = [
-        ["publisher", "p", "Re-broadcast VOEvents received"],
-        ["receiver", "r", "Listen for TCP connections from publishers."]
+        ["receiver", "r", "Listen for TCP connections from publishers."],
+        ["publisher", "p", "Re-broadcast VOEvents received."]
     ]
 
     optParameters = [
