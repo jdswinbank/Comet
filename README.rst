@@ -21,7 +21,7 @@ Requirements
 ------------
 
 Comet is developed targeting Python 2.6 and 2.7. It depends upon `Twisted
-<http://twistedmatrix.com/>`_ (versions >= 11), `lxml <http://lxml.de/>`_
+<http://twistedmatrix.com/>`_ (versions >= 11.1.0), `lxml <http://lxml.de/>`_
 (versions >= 2.3) and `ipaddr-py <https://code.google.com/p/ipaddr-py/>`_.
 
 Installation
