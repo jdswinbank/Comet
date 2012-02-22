@@ -64,7 +64,7 @@ class ElementSender(Int32StringReceiver):
     """
     def send_xml(self, document):
         """
-        Takes an xml_document and sents it as text.
+        Takes an xml_document and sends it as text.
         """
         self.sendString(document.text)
 
