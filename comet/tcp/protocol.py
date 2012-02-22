@@ -64,15 +64,10 @@ class ElementSender(Int32StringReceiver):
     """
     def send_xml(self, document):
         """
-        Takes an xml_document and sents it as XML.
+        Takes an xml_document and sents it as text.
         """
         self.sendString(document.text)
 
-class EventHandler(Int32StringReceiver):
-    """
-    Superclass for protocols which will receive events (ie, Subscriber and
-    Receiver) providing event handling support.
-    """
     def lengthLimitExceeded(self, length):
         """
         This is called when a remote tries to send a massive string.
@@ -83,6 +78,12 @@ class EventHandler(Int32StringReceiver):
         log.msg("Length limit exceeded (%d bytes)." % (length,))
         Int32StringReceiver.lengthLimitExceeded(self, length)
 
+
+class EventHandler(Int32StringReceiver):
+    """
+    Superclass for protocols which will receive events (ie, Subscriber and
+    Receiver) providing event handling support.
+    """
     def validate_event(self, event):
         """
         Call a set of event validators on a given event (an xml_document).
@@ -131,7 +132,7 @@ class EventHandler(Int32StringReceiver):
         self.validate_event(event).addCallbacks(handle_valid, handle_invalid)
 
 
-class VOEventSubscriber(EventHandler, ElementSender):
+class VOEventSubscriber(ElementSender, EventHandler):
     ALIVE_INTERVAL = 120 # If we get no iamalive for ALIVE_INTERVAL seconds,
                          # assume our peer forgot us.
     def __init__(self, filters=[]):
@@ -352,7 +353,7 @@ class VOEventSenderFactory(ClientFactory):
         self.event = event
 
 
-class VOEventReceiver(EventHandler, ElementSender):
+class VOEventReceiver(ElementSender, EventHandler):
     """
     A receiver waits for a one-shot submission from a connecting client.
     """
