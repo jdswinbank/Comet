@@ -23,10 +23,15 @@ class Options(usage.Options):
     optParameters = [
         ["host", "h", "localhost", "Host to send to."],
         ["port", "p", 8098, "Port to send to.", int],
-        ["file", "f", "-", "Where to read XML text to send."]
+        ["file", "f", "-", "Where to read XML text to send (- is stdin)."]
     ]
 
 class OneShotSender(VOEventSenderFactory):
+    """
+    A factory that shuts down the reactor when we lose the connection to the
+    remote host. That either means that our event has been sent or that we
+    failed.
+    """
     def clientConnectionLost(self, connector, reason):
         reactor.stop()
 
@@ -35,25 +40,34 @@ class OneShotSender(VOEventSenderFactory):
         reactor.stop()
 
 if __name__ == "__main__":
+    log.startLogging(sys.stdout)
+
     config = Options()
     config.parseOptions()
 
-    log.startLogging(sys.stdout)
     if config["file"] == "-":
         f = sys.stdin
     else:
         f = open(config["file"])
+
     try:
         factory = OneShotSender(xml_document(f.read()))
-        reactor.connectTCP(config['host'], config['port'], factory)
     except IOError:
         log.err("Reading XML document failed")
         reactor.callWhenRunning(reactor.stop)
     except ElementTree.Error:
         log.err("Could not parse event text")
         reactor.callWhenRunning(reactor.stop)
+    else:
+        reactor.connectTCP(config['host'], config['port'], factory)
     finally:
         f.close()
+
     reactor.run()
-    if not factory.ack:
+
+    # If our factory didn't get an acknowledgement of receipt, we'll exit with
+    # status 1.
+    if locals().has_key("factory") and factory.ack:
+        sys.exit(0)
+    else:
         sys.exit(1)
