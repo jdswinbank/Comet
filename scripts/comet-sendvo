@@ -22,16 +22,14 @@ import lxml.etree as ElementTree
 class Options(usage.Options):
     optParameters = [
         ["host", "h", "localhost", "Host to send to."],
-        ["port", "p", 8098, "Port to send to."],
+        ["port", "p", 8098, "Port to send to.", int],
         ["file", "f", "-", "Where to read XML text to send."]
     ]
-
-    def postOptions(self):
-        self["port"] = int(self["port"])
 
 class OneShotSender(VOEventSenderFactory):
     def clientConnectionLost(self, connector, reason):
         reactor.stop()
+
     def clientConnectionFailed(self, connector, reason):
         log.err("Connection failed")
         reactor.stop()
@@ -46,18 +44,16 @@ if __name__ == "__main__":
     else:
         f = open(config["file"])
     try:
-        xmldoc = xml_document(f.read())
-        reactor.connectTCP(
-            config['host'],
-            config['port'],
-            OneShotSender(xmldoc)
-        )
+        factory = OneShotSender(xml_document(f.read()))
+        reactor.connectTCP(config['host'], config['port'], factory)
     except IOError:
-        log.msg("Reading XML document failed")
+        log.err("Reading XML document failed")
         reactor.callWhenRunning(reactor.stop)
     except ElementTree.Error:
-        log.msg("Could not parse event text")
+        log.err("Could not parse event text")
         reactor.callWhenRunning(reactor.stop)
     finally:
         f.close()
     reactor.run()
+    if not factory.ack:
+        sys.exit(1)

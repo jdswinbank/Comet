@@ -319,38 +319,53 @@ class VOEventSender(ElementSender):
     All messages consist of a 4-byte network ordered payload size followed by
     the payload data. Twisted's Int32StringReceiver handles this for us
     automatically.
+
+    The sender connects to a remote host, sends a message, waits for an
+    acknowledgement, and disconnects.
     """
     def connectionMade(self):
         self.send_xml(self.factory.event)
 
     def stringReceived(self, data):
         """
-        Called when a complete new message is received.
+        Called when we receive a string.
+
+        The sender should only ever receive an ack or a nak, after which it
+        should disconnect.
         """
         log.msg("Got response from %s" % str(self.transport.getPeer()))
         try:
             incoming = xml_document(data)
+
+            if incoming.get('role') == "ack":
+                log.msg("Acknowledgement received from %s" % str(self.transport.getPeer()))
+                self.factory.ack = True
+            elif incoming.get('role') == "nak":
+                log.err("Nak received: %s refused to accept VOEvent" % str(self.transport.getPeer()))
+            else:
+                log.err(
+                    "Incomprehensible data received from %s (role=%s)" %
+                    (self.transport.getPeer(), incoming.get("role"))
+                )
+
         except ElementTree.ParseError:
             log.err("Unparsable message received from %s" % str(self.transport.getPeer()))
-            return
 
-        if incoming.get('role') == "ack":
-            log.msg("Acknowledgement received from %s" % str(self.transport.getPeer()))
-        elif incoming.get('role') == "nak":
-            log.err("Nak received: %s refused to accept VOEvent" % str(self.transport.getPeer()))
-        else:
-            log.err(
-                "Incomprehensible data received from %s (role=%s)" %
-                (self.transport.getPeer(), incoming.get("role"))
-            )
-
-        # After receiving a message, we shut down the connection.
-        self.transport.loseConnection()
+        finally:
+            # After receiving a message, we shut down the connection.
+            self.transport.loseConnection()
 
 class VOEventSenderFactory(ClientFactory):
     protocol = VOEventSender
     def __init__(self, event):
         self.event = event
+        self.ack = False
+
+    def stopFactory(self):
+        if self.ack:
+            log.msg("Event was sent successfully")
+        else:
+            log.err("Event was NOT sent successfully")
 
 
 class VOEventReceiver(ElementSender, EventHandler):
