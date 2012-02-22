@@ -73,6 +73,16 @@ class EventHandler(Int32StringReceiver):
     Superclass for protocols which will receive events (ie, Subscriber and
     Receiver) providing event handling support.
     """
+    def lengthLimitExceeded(self, length):
+        """
+        This is called when a remote tries to send a massive string.
+
+        Quite likely that's because it sends the prefix in little endian
+        (rather than network) byte order.
+        """
+        log.msg("Length limit exceeded (%d bytes)." % (length,))
+        Int32StringReceiver.lengthLimitExceeded(self, length)
+
     def validate_event(self, event):
         """
         Call a set of event validators on a given event (an xml_document).
