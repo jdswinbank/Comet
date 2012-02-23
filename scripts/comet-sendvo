@@ -40,10 +40,10 @@ class OneShotSender(VOEventSenderFactory):
         reactor.stop()
 
 if __name__ == "__main__":
-    log.startLogging(sys.stdout)
-
     config = Options()
     config.parseOptions()
+
+    log.startLogging(sys.stdout)
 
     if config["file"] == "-":
         f = sys.stdin

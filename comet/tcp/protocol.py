@@ -41,7 +41,7 @@ There are four different VOEvent protocols to implement:
 
     * Opens connection to remote broker, receives VOEvent messages.
 
-* VOEventPublisher
+* VOEventBroadcaster
 
     * Listens for connections from subscribers, sends VOEvent messages.
 
@@ -53,7 +53,7 @@ There are four different VOEvent protocols to implement:
 
     * Receives messages from VOEventSender.
 
-To implement the broker, we need the Subscriber, Publisher & Receiver, but not
+To implement the broker, we need the Subscriber, Broadcaster & Receiver, but not
 the Sender. All four are implemented here for completeness.
 """
 
@@ -205,7 +205,7 @@ class VOEventSubscriberFactory(ReconnectingClientFactory):
         return p
 
 
-class VOEventPublisher(ElementSender):
+class VOEventBroadcaster(ElementSender):
     MAX_ALIVE_COUNT = 1      # Drop connection if peer misses too many iamalives
     MAX_OUTSTANDING_ACK = 10 # Drop connection if peer misses too many acks
 
@@ -214,14 +214,14 @@ class VOEventPublisher(ElementSender):
 
     def connectionMade(self):
         log.msg("New subscriber at %s" % str(self.transport.getPeer()))
-        self.factory.publishers.append(self)
+        self.factory.broadcasters.append(self)
         self.alive_count = 0
         self.send_xml(authenticate(self.factory.local_ivo))
         self.outstanding_ack = 0
 
     def connectionLost(self, reason):
         log.msg("Subscriber at %s disconnected" % str(self.transport.getPeer()))
-        self.factory.publishers.remove(self)
+        self.factory.broadcasters.remove(self)
 
     def sendIAmAlive(self):
         if self.alive_count > self.MAX_ALIVE_COUNT:
@@ -286,14 +286,14 @@ class VOEventPublisher(ElementSender):
         ).addCallback(check_filters)
 
 
-class VOEventPublisherFactory(ServerFactory):
+class VOEventBroadcasterFactory(ServerFactory):
     IAMALIVE_INTERVAL = 60 # Sent iamalive every IAMALIVE_INTERVAL seconds
     TEST_INTERVAL = 3600   # Sent test event every TEST_INTERVAL seconds
-    protocol = VOEventPublisher
+    protocol = VOEventBroadcaster
 
     def __init__(self, local_ivo):
         self.local_ivo = local_ivo
-        self.publishers = []
+        self.broadcasters = []
         self.alive_loop = LoopingCall(self.sendIAmAlive)
         self.alive_loop.start(self.IAMALIVE_INTERVAL)
         self.test_loop = LoopingCall(self.sendTestEvent)
@@ -301,14 +301,14 @@ class VOEventPublisherFactory(ServerFactory):
 
     def sendIAmAlive(self):
         log.msg("Broadcasting iamalive")
-        for publisher in self.publishers:
-            publisher.sendIAmAlive()
+        for broadcaster in self.broadcasters:
+            broadcaste.sendIAmAlive()
 
     def sendTestEvent(self):
         log.msg("Broadcasting test event")
         test_event = broker_test_message(self.local_ivo)
-        for publisher in self.publishers:
-            publisher.send_event(test_event)
+        for broadcaster in self.broadcasters:
+            broadcaster.send_event(test_event)
 
 
 class VOEventSender(ElementSender):

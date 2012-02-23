@@ -8,11 +8,11 @@ A VOEvent Broker
 Comet is designed to serve as a development testbed for rapid prototyping of
 and experimentation with VOEvent transport systems. Currently, it partially
 implements the `VOEvent Transport Protocol
-<http://www.ivoa.net/Documents/Notes/VOEventTransport/>`_.
+<http://www.ivoa.net/Documents/Notes/VOEventTransport/>`_ (vTCP).
 
 The core of Comet is a multi-functional VOEvent broker. It is capable of
 receiving events either by subscribing to one or more remote brokers or by
-direct connection from publishers, and can then both process those events
+direct connection from authors, and can then both process those events
 locally and forward them to its own subscribers.
 
 In addition, Comet provides a tool for publishing VOEvents to a remote broker.
@@ -38,21 +38,28 @@ See also::
 
 for more details.
 
+Terminology
+-----------
+
+The vTCP system defines three types of nodes -- Author, Broker and Subscriber
+-- and two types of connection -- Author to Broker and Broker to Subscriber.
+
 Usage
 -----
 Publishing VOEvents
 ===================
 
-The ``comet-sendvo`` command is used to publish an event to a remote broker.
-It can read the event to send either from a file or from standard input, and
-accepts command line options specifying the host and port to send to::
+The ``comet-sendvo`` command acts fulfils the Author role in an Author to
+Broker connection. It can read an event to send either from a file or from
+standard input, and accepts command line options specifying the host and port
+to send to::
 
   $ comet-sendvo --help
   Usage: comet-sendvo [options]
   Options:
     -h, --host=    Host to send to. [default: localhost]
     -p, --port=    Port to send to. [default: 8098]
-    -f, --file=    Where to read XML text to send. [default: -]
+    -f, --file=    Where to read XML text to send (- is stdin). [default: -]
         --version  Display Twisted version and exit.
         --help     Display this help and exit.
 
@@ -68,36 +75,43 @@ Comet accepts a few command line options::
   $ twistd comet --help
   Usage: twistd [options] comet [options]
   Options:
-    -r, --receiver         Listen for TCP connections from publishers.
-    -p, --publisher        Re-broadcast VOEvents received
+    -r, --receive          Listen for TCP connections from authors.
+    -b, --broadcast        Re-broadcast VOEvents received.
         --local-ivo=       [default: ivo://comet.broker/default_ivo]
         --ivorndb=         IVORN database root. [default: /tmp]
-        --publisher-port=  TCP port for publishing events. [default: 8099]
-        --receiver-port=   TCP port for receiving events. [default: 8098]
+        --receive-port=    TCP port for receiving events. [default: 8098]
+        --broadcast-port=  TCP port for broadcasting events. [default: 8099]
         --whitelist=       Network to be included in submission whitelist.
                            [default: 0.0.0.0/0]
-        --remote=          Remote broker to subscribe to (host:port).
+        --remote=          Remote broadcaster to subscribe to (host:port).
         --filter=          XPath filter applied to events broadcast by remote.
         --action=          Add an event handler.
         --cmd=             Spawn external command on event receipt.
         --help             Display this help and exit.
         --version          Display Twisted version and exit.
 
-If the ``--receiver`` option is supplied, Comet will listen for TCP
-connections from remote publishers and accept events for distribution. The TCP
-port on which Comet will listen may be specified with the ``--receiver-port``
+If the ``--receive`` option is supplied, Comet will fulfil the Broker role in
+an Author to Broker connection. In other words, it will listen for TCP
+connections from remote authors and accept events for distribution. The TCP
+port on which Comet will listen may be specified with the ``--receive-port``
 option.
 
-If the ``--publisher`` option is supplied, any VOEvents received (either by
-direct connection from other publishers, or by subscribing to other brokers)
-are rebroadcast to our subscribers. The TCP port on which Comet will allow
-subscribers to connect may be specified with the ``--publisher-port`` option.
+If the ``--broadcast`` option is supplied, Comet will allow Subscribers to
+connect and then it will fulfil the Broker role in a Broker to Subscriber
+connection with each of the Subscribers.  Any VOEvents received (either by
+direct connection from authors, or by subscribing to remote brokers) are
+rebroadcast to subscribers. The TCP port on which Comet will allow subscribers
+to connect may be specified with the ``--broadcast-port`` option.
 
 If one or more ``--remote`` options are supplied, Comet will subscribe to the
-remote broker specified and collect events.
+remote host specified and fulfil the Subscriber role in the resulting Broker
+to Subscriber connection.
 
-If none of ``--receiver``, ``--publisher`` or ``--remote`` are supplied, there
-is no work to be done and Comet will exit immediately.
+A single Comet daemon will accept any combination ``--receiver``,
+``--broadcast`` and one or more ``--remote`` options and play all of these
+roles simultaneously.  If none of ``--receiver``, ``--broadcast`` or
+``--remote`` are supplied, there is no work to be done and Comet will exit
+immediately.
 
 All modes of operation identify themselves by means of an IVORN: see the
 `VOEvent standard <http://www.ivoa.net/Documents/VOEvent/index.html>`_ for

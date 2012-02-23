@@ -19,7 +19,7 @@ from twisted.application.internet import TCPServer
 # Comet broker routines
 import comet
 from ..config.options import BaseOptions
-from ..tcp.protocol import VOEventPublisherFactory
+from ..tcp.protocol import VOEventBroadcasterFactory
 from ..tcp.protocol import VOEventReceiverFactory
 from ..tcp.protocol import VOEventSubscriberFactory
 from ..utility.relay import EventRelay
@@ -35,26 +35,17 @@ from ..utility.spawn import SpawnCommand
 
 class Options(BaseOptions):
     optFlags = [
-        ["receiver", "r", "Listen for TCP connections from publishers."],
-        ["publisher", "p", "Re-broadcast VOEvents received."]
+        ["receive", "r", "Listen for TCP connections from authors."],
+        ["broadcast", "b", "Re-broadcast VOEvents received."]
     ]
 
     optParameters = [
-        # General options
         ["ivorndb", None, "/tmp", "IVORN database root."],
-
-        # Provide a publisher
-        ["publisher-port", None, 8099, "TCP port for publishing events.", int],
-
-        # Provide a receiver
-        ["receiver-port", None, 8098, "TCP port for receiving events.", int],
+        ["receive-port", None, 8098, "TCP port for receiving events.", int],
+        ["broadcast-port", None, 8099, "TCP port for broadcasting events.", int],
         ["whitelist", None, "0.0.0.0/0", "Network to be included in submission whitelist."],
-
-        # Subscribe to (potentially) multiple remote brokers
-        ["remote", None, None, "Remote broker to subscribe to (host:port)."],
+        ["remote", None, None, "Remote broadcaster to subscribe to (host:port)."],
         ["filter", None, None, "XPath filter applied to events broadcast by remote."],
-
-        # Actions taken when a new event is received
         ["action", None, None, "Add an event handler."],
         ["cmd", None, None, "Spawn external command on event receipt."]
     ]
@@ -89,7 +80,7 @@ class Options(BaseOptions):
         self['whitelist'].append(IPNetwork(network))
 
     def postOptions(self):
-        if not (self['remotes'] or self['publisher'] or self['receiver']):
+        if not (self['remotes'] or self['broadcast'] or self['receive']):
             reactor.callWhenRunning(log.err, "No services requested; stopping.")
             reactor.callWhenRunning(reactor.stop)
 
@@ -104,20 +95,20 @@ def makeService(config):
     ivorn_db = IVORN_DB(config['ivorndb'])
 
     broker_service = MultiService()
-    if config['publisher']:
-        publisher_factory = VOEventPublisherFactory(config["local-ivo"])
+    if config['broadcast']:
+        broadcaster_factory = VOEventBroadcasterFactory(config["local-ivo"])
         TCPServer(
-            config['publisher-port'],
-            publisher_factory
+            config['broadcast-port'],
+            broadcaster_factory
         ).setServiceParent(broker_service)
 
-        # If we're running a publisher, we will rebroadcast any events we
+        # If we're running a broadcast, we will rebroadcast any events we
         # receive to it.
-        config['handlers'].append(EventRelay(publisher_factory))
+        config['handlers'].append(EventRelay(broadcaster_factory))
 
-    if config['receiver']:
+    if config['receive']:
         TCPServer(
-            config['receiver-port'],
+            config['receive-port'],
             WhitelistingReceiverFactory(
                 local_ivo=config["local-ivo"],
                 whitelist=config["whitelist"],
