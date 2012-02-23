@@ -43,6 +43,7 @@ Terminology
 
 The vTCP system defines three types of nodes -- Author, Broker and Subscriber
 -- and two types of connection -- Author to Broker and Broker to Subscriber.
+Comet has the capabilty to act in all of these roles.
 
 Usage
 -----
