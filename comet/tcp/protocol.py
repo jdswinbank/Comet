@@ -302,7 +302,7 @@ class VOEventBroadcasterFactory(ServerFactory):
     def sendIAmAlive(self):
         log.msg("Broadcasting iamalive")
         for broadcaster in self.broadcasters:
-            broadcaste.sendIAmAlive()
+            broadcaster.sendIAmAlive()
 
     def sendTestEvent(self):
         log.msg("Broadcasting test event")
