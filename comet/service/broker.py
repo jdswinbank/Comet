@@ -12,6 +12,7 @@ from twisted.internet import reactor
 from twisted.python import log
 from twisted.python import usage
 from twisted.plugin import getPlugins
+from twisted.internet.task import LoopingCall
 from twisted.application.service import MultiService
 from twisted.application.internet import TCPClient
 from twisted.application.internet import TCPServer
@@ -32,6 +33,10 @@ from ..utility.ivorn_db import IVORN_DB
 import comet.plugins
 from ..icomet import IHandler
 from ..utility.spawn import SpawnCommand
+
+# Constants
+MAX_AGE = 30.0 * 24 * 60 * 60 # Forget IVORNs after 30 days
+PRUNE_INTERVAL = 60           # Prune the IVORN db every 60 seconds
 
 class Options(BaseOptions):
     optFlags = [
@@ -93,6 +98,7 @@ class WhitelistingReceiverFactory(VOEventReceiverFactory, WhitelistingFactory):
 
 def makeService(config):
     ivorn_db = IVORN_DB(config['ivorndb'])
+    LoopingCall(ivorn_db.prune, MAX_AGE).start(PRUNE_INTERVAL)
 
     broker_service = MultiService()
     if config['broadcast']:
