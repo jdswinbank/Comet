@@ -10,6 +10,7 @@ from collections import defaultdict
 
 from twisted.python import log
 from twisted.internet.threads import deferToThread
+from twisted.internet.defer import DeferredList
 
 from zope.interface import implements
 from ..icomet import IValidator
@@ -44,7 +45,7 @@ class IVORN_DB(object):
         """
         Remove entries older than expiry_time seconds from the database.
         """
-        for db_path, lock in self.databases.iteritems():
+        def expire_db(db_path, lock):
             remove = []
             lock.acquire()
             db = anydbm.open(os.path.join(self.root, db_path), 'c')
@@ -67,6 +68,14 @@ class IVORN_DB(object):
             for key in remove: del db[key]
             db.close()
             lock.release()
+
+        return DeferredList(
+            [
+                deferToThread(expire_db, db_path, lock)
+                for db_path, lock in self.databases.iteritems()
+            ],
+            consumeErrors=True
+        )
 
 
 class CheckPreviouslySeen(object):
