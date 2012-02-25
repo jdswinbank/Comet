@@ -124,9 +124,8 @@ same event ad infinitum), a database of previously seen event IVORNs is
 maintained. This database is written to the filesystem in the location
 specified by the ``-i (--ivorndb)`` option. This database is important:
 looping would degrade the quality of the VOEvent network for all users! Note
-that the current implementation of the database will grown indefinitely: if
-the broker is in a situation where an extremely high volume of VOEvent
-messages are expected, the current implementation will not be adequate.
+that IVORNs persist in the database for 30 days, after which they are expired
+to save space.
 
 The Comet receiver will only accept new events for publication from hosts
 which have been specified as "whitelisted". Hosts (or, indeed, networks) may
