@@ -20,19 +20,5 @@ class SchemaValidator(object):
         self.schema = etree.XMLSchema(etree.parse(schema))
 
     def __call__(self, event):
-        def check_validity(is_valid):
-            if is_valid:
-                log.msg("Schema validation passed")
-                return True
-            else:
-                log.msg("Schema validation failed")
-                raise Exception("Schema validation failed")
+        return deferToThread(self.schema.assertValid, event.element)
 
-        def schema_failure(failure):
-            log.err("Schema validator failed!")
-            return failure
-
-        return deferToThread(
-            self.schema.validate,
-            event.element
-        ).addCallbacks(check_validity, schema_failure)
