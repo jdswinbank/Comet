@@ -126,9 +126,12 @@ class EventHandler(Int32StringReceiver):
             # Should unpack exception from failure to include useful output
             # in Nak
             self.send_xml(
-                nak(self.factory.local_ivo, event.attrib['ivorn'])
+                nak(
+                    self.factory.local_ivo, event.attrib['ivorn'],
+                    "Event rejected: %s" % (failure.value.subFailure.getErrorMessage(),)
+                )
             )
-            log.msg("Event invalid; discarding")
+            log.msg("Event rejected (%s); discarding" % (failure.value.subFailure.getErrorMessage(),))
         self.validate_event(event).addCallbacks(handle_valid, handle_invalid)
 
 
@@ -341,7 +344,12 @@ class VOEventSender(ElementSender):
                 log.msg("Acknowledgement received from %s" % str(self.transport.getPeer()))
                 self.factory.ack = True
             elif incoming.get('role') == "nak":
-                log.err("Nak received: %s refused to accept VOEvent" % str(self.transport.getPeer()))
+                log.err("Nak received: %s refused to accept VOEvent (%s)" %
+                    (
+                        str(self.transport.getPeer()),
+                        incoming.findtext("Meta/result", default="no reason given")
+                    )
+                )
             else:
                 log.err(
                     "Incomprehensible data received from %s (role=%s)" %

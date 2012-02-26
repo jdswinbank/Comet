@@ -53,9 +53,13 @@ def ack(local_ivo, remote_ivo):
     root_element.set("role", "ack")
     return xml_document(root_element)
 
-def nak(local_ivo, remote_ivo):
+def nak(local_ivo, remote_ivo, result=None):
     root_element = origin_response_message(local_ivo, remote_ivo).element
     root_element.set("role", "nak")
+    if result:
+        meta = ElementTree.SubElement(root_element, "Meta")
+        result_element = ElementTree.SubElement(meta, "result")
+        result_element.text = result
     return xml_document(root_element)
 
 def authenticate(local_ivo):

@@ -90,7 +90,7 @@ class CheckPreviouslySeen(object):
                 return True
             else:
                 log.msg("Event HAS been previously seen")
-                raise Exception("Previously seen event")
+                raise Exception("Previously seen by this broker")
 
         def db_failure(failure):
             log.err("IVORN DB lookup failed!")
