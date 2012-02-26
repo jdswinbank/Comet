@@ -112,8 +112,20 @@ class EventHandler(Int32StringReceiver):
             consumeErrors=True
         )
 
-    def process_event(self, event):
+    def process_event(self, event, can_nak=True):
+        """
+        Validate and (if appropriate) handle an event.
+
+        If can_nak is False, we send an ACK (rather than a NAK) even if the
+        event is invalid. This may be appropriate if we are a subscriber
+        rather than a receiver: we should invalidate duplicate VOEvents
+        received from multiple upstream brokers, but not respond to each with
+        a NAK or they might shut off our connection as per the vTCP note (6.4
+        -- "If there is an error (nak received...) [...] this would result in
+        the broker removing the subscriber from its distribution list.
+        """
         def handle_valid(status):
+            log.msg("Sending ACK to %s" % (self.transport.getPeer()))
             self.send_xml(
                 ack(self.factory.local_ivo, event.attrib['ivorn'])
             )
@@ -123,15 +135,20 @@ class EventHandler(Int32StringReceiver):
             )
 
         def handle_invalid(failure):
-            # Should unpack exception from failure to include useful output
-            # in Nak
-            self.send_xml(
-                nak(
-                    self.factory.local_ivo, event.attrib['ivorn'],
-                    "Event rejected: %s" % (failure.value.subFailure.getErrorMessage(),)
-                )
-            )
             log.msg("Event rejected (%s); discarding" % (failure.value.subFailure.getErrorMessage(),))
+            if can_nak:
+                log.msg("Sending NAK to %s" % (self.transport.getPeer()))
+                self.send_xml(
+                    nak(
+                        self.factory.local_ivo, event.attrib['ivorn'],
+                        "Event rejected: %s" % (failure.value.subFailure.getErrorMessage(),)
+                    )
+                )
+            else:
+                log.msg("Sending ACK to %s" % (self.transport.getPeer()))
+                self.send_xml(
+                    ack(self.factory.local_ivo, event.attrib['ivorn'])
+                )
         self.validate_event(event).addCallbacks(handle_valid, handle_invalid)
 
 
@@ -185,7 +202,9 @@ class VOEventSubscriber(ElementSender, EventHandler):
                     str(self.transport.getPeer())
                 )
             )
-            self.process_event(incoming)
+            # We don't send a NAK even if the event is invalid since we don't
+            # want to be removed from upstream's distribution list.
+            self.process_event(incoming, can_nak=False)
         else:
             log.err(
                 "Incomprehensible data received from %s (role=%s)" %
