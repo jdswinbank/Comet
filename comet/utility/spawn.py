@@ -30,4 +30,4 @@ class SpawnCommand(object):
                 raise subprocess.CalledProcessError(process.returncode, cmd)
             else:
                 return process.returncode
-        return deferToThread(run_cmd, self.cmd, event.original)
+        return deferToThread(run_cmd, self.cmd, event.text)
