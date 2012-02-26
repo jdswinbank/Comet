@@ -36,7 +36,7 @@ from ..utility.spawn import SpawnCommand
 
 # Constants
 MAX_AGE = 30.0 * 24 * 60 * 60 # Forget IVORNs after 30 days
-PRUNE_INTERVAL = 60           # Prune the IVORN db every 60 seconds
+PRUNE_INTERVAL = 6 * 60 * 60  # Prune the IVORN db every 6 hours
 
 class Options(BaseOptions):
     optFlags = [
