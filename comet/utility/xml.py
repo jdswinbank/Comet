@@ -18,7 +18,7 @@ class xml_document(object):
 
     @property
     def valid_signature(self):
-        return True
+        return False
 
     def __getattr__(self, name):
         try:
