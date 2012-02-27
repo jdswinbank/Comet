@@ -96,7 +96,7 @@ class EventHandler(Int32StringReceiver):
                 defer.maybeDeferred(validator, event)
                 for validator in self.factory.validators
             ],
-            consumeErrors=True,
+            consumeErrors=True
         )
 
     def handle_event(self, event):

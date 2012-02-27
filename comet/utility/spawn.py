@@ -2,13 +2,29 @@
 # Event handler to send an event to an external tool.
 # John Swinbank, <swinbank@transientskp.org>, 2012.
 
-from subprocess import Popen, PIPE, CalledProcessError
-
 from twisted.python import log
-from twisted.internet.threads import deferToThread
+from twisted.internet import reactor
+from twisted.internet import defer
+from twisted.internet.protocol import ProcessProtocol
 
 from zope.interface import implements
 from ..icomet import IHandler
+
+class SpawnCommandProtocol(ProcessProtocol):
+    def __init__(self, deferred, text):
+        self.deferred = deferred
+        self.text = text
+
+    def connectionMade(self):
+        self.transport.write(self.text)
+        self.transport.closeStdin()
+
+    def processEnded(self, reason):
+        if reason.value.exitCode:
+            self.deferred.errback(
+                "Process returned non-zero (%d)" % (reason.value.exitCode,)
+            )
+        else: self.deferred.callback(True)
 
 class SpawnCommand(object):
     """
@@ -21,13 +37,6 @@ class SpawnCommand(object):
         self.cmd = cmd
 
     def __call__(self, event):
-        def run_cmd(cmd, text):
-            log.msg("Running external command: %s" % (self.cmd,))
-            process = Popen([self.cmd], stdin=PIPE)
-            process.communicate(text)
-            process.wait()
-            if process.returncode:
-                raise subprocess.CalledProcessError(process.returncode, cmd)
-            else:
-                return process.returncode
-        return deferToThread(run_cmd, self.cmd, event.text)
+        d = defer.Deferred()
+        reactor.spawnProcess(SpawnCommandProtocol(d, event.text), self.cmd)
+        return d
