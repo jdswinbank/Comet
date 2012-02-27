@@ -13,7 +13,8 @@ setup(
         'comet.plugins',
         'comet.service',
         'comet.tcp',
-        'comet.utility'
+        'comet.utility',
+        'comet.utility.test'
     ],
     scripts=['scripts/comet-sendvo'],
     package_data={'comet': ['schema/*.xsd']},
