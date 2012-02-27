@@ -38,5 +38,6 @@ class SpawnCommand(object):
 
     def __call__(self, event):
         d = defer.Deferred()
+        log.msg("Running external command: %s" % (self.cmd,))
         reactor.spawnProcess(SpawnCommandProtocol(d, event.text), self.cmd)
         return d
