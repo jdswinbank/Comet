@@ -17,7 +17,10 @@ setup(
         'comet.utility.test'
     ],
     scripts=['scripts/comet-sendvo'],
-    package_data={'comet': ['schema/*.xsd']},
+    package_data={
+        'comet': ['schema/*.xsd']
+        'comet.utility.test': ['test_spawn.sh']
+    },
     data_files=[
         (
             os.path.join(

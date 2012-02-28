@@ -31,7 +31,7 @@ class SpawnCommandProtocolTestCase(unittest.TestCase):
                 self.assertEqual(f.read(), TEXT)
             finally:
                 f.close()
-        spawn = SpawnCommand(util.sibpath(__file__, "test_spawn.sh"))
+        spawn = SpawnCommand('/bin/sh', util.sibpath(__file__, "test_spawn.sh"))
         d = spawn(DummyEvent(TEXT))
         d.addCallback(read_data)
         return d

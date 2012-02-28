@@ -2,6 +2,8 @@
 # Event handler to send an event to an external tool.
 # John Swinbank, <swinbank@transientskp.org>, 2012.
 
+import os
+
 from twisted.python import log
 from twisted.internet import reactor
 from twisted.internet import defer
@@ -33,11 +35,18 @@ class SpawnCommand(object):
     implements(IHandler)
     name = "spawn-command"
 
-    def __init__(self, cmd):
+    def __init__(self, cmd, *args):
         self.cmd = cmd
+        self.args = [cmd]
+        self.args.extend(args)
 
     def __call__(self, event):
         d = defer.Deferred()
         log.msg("Running external command: %s" % (self.cmd,))
-        reactor.spawnProcess(SpawnCommandProtocol(d, event.text), self.cmd)
+        reactor.spawnProcess(
+            SpawnCommandProtocol(d, event.text),
+            self.cmd,
+            args=self.args,
+            env=os.environ
+        )
         return d
