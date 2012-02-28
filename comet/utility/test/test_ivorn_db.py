@@ -1,10 +1,7 @@
 import os
-import sys
 
-from twisted.python import log
 from twisted.trial import unittest
 from twisted.python import failure
-from twisted.python import util
 
 from ..ivorn_db import IVORN_DB
 from ..ivorn_db import CheckPreviouslySeen
