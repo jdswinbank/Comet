@@ -1,3 +1,4 @@
+import os
 import sys
 
 from twisted.trial import unittest
@@ -5,6 +6,8 @@ from twisted.python import failure
 from twisted.python import util
 
 from ..spawn import SpawnCommand
+
+SHELL = '/bin/sh'
 
 class DummyEvent(object):
     def __init__(self, text=None):
@@ -24,6 +27,8 @@ class SpawnCommandProtocolTestCase(unittest.TestCase):
         return d
 
     def test_write_data(self):
+        if not os.access(SHELL, os.X_OK):
+            raise unittest.SkipTest("Shell not available")
         TEXT = "Test spawn process"
         def read_data(result):
             f = open("spawnfile.txt")
