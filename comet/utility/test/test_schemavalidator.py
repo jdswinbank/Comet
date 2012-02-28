@@ -3,6 +3,7 @@ import os
 from twisted.trial import unittest
 
 import comet
+from ...icomet import IValidator
 from ..schemavalidator import SchemaValidator
 from ..xml import xml_document
 
@@ -31,3 +32,6 @@ class SchemaValidatorTestCase(unittest.TestCase):
 
     def test_invalid(self):
         self.assertTrue(self.validator(xml_document(BAD_EVENT_TEXT)))
+
+    def test_interface(self):
+        self.assertTrue(IValidator.providedBy(self.validator))

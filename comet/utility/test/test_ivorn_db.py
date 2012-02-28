@@ -3,6 +3,7 @@ import os
 from twisted.trial import unittest
 from twisted.python import failure
 
+from ...icomet import IValidator
 from ..ivorn_db import IVORN_DB
 from ..ivorn_db import CheckPreviouslySeen
 
@@ -51,6 +52,9 @@ class CheckPreviouslySeenTestCase(unittest.TestCase):
         d = self.checker(self.event)
         d.addErrback(self.assertIsInstance, failure.Failure)
         return d
+
+    def test_interface(self):
+        self.assertTrue(IValidator.providedBy(self.checker))
 
     def tearDown(self):
         for database in self.checker.ivorn_db.databases.iterkeys():

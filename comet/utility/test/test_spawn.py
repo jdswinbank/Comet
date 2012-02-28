@@ -5,6 +5,7 @@ from twisted.trial import unittest
 from twisted.python import failure
 from twisted.python import util
 
+from ...icomet import IHandler
 from ..spawn import SpawnCommand
 
 SHELL = '/bin/sh'
@@ -14,6 +15,9 @@ class DummyEvent(object):
         self.text = text
 
 class SpawnCommandProtocolTestCase(unittest.TestCase):
+    def test_interface(self):
+        self.assertTrue(IHandler.implementedBy(SpawnCommand))
+
     def test_good_process(self):
         spawn = SpawnCommand(sys.executable)
         d = spawn(DummyEvent())
