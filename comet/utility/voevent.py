@@ -7,7 +7,7 @@ from datetime import datetime
 # XML parsing using lxml
 import lxml.etree as ElementTree
 
-from ..utility.xml import xml_document
+from .xml import xml_document
 
 ElementTree.register_namespace("voe", "http://www.ivoa.net/xml/VOEvent/v2.0")
 
