@@ -226,6 +226,14 @@ class VOEventSubscriberFactory(ReconnectingClientFactory):
         p.factory = self
         return p
 
+    def clientConnectionFailed(self, connector, reason):
+        log.msg("Connection to %s failed; will retry" % (connector.getDestination(),))
+        ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
+
+    def clientConnectionLost(self, connector, reason):
+        log.msg("Connection to %s lost; will retry" % (connector.getDestination(),))
+        ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
+
 
 class VOEventBroadcaster(ElementSender):
     MAX_ALIVE_COUNT = 1      # Drop connection if peer misses too many iamalives
