@@ -4,12 +4,9 @@ from twisted.trial import unittest
 from twisted.test import proto_helpers
 from twisted.internet.protocol import ServerFactory
 
+from ...test.support import DummyEvent
+
 from ..protocol import ElementSender
-
-DUMMY_IVORN = "ivo://comet.broker/test#1234567890"
-
-class DummyElement(object):
-    text = "Dummy Text"
 
 class ElementSenderFactory(ServerFactory):
     protocol = ElementSender
@@ -22,7 +19,7 @@ class ElementSenderTestCase(unittest.TestCase):
         self.proto.makeConnection(self.tr)
 
     def test_send_xml(self):
-        dummy_element = DummyElement()
+        dummy_element = DummyEvent()
         self.proto.send_xml(dummy_element)
         self.assertEqual(
             self.tr.value(),
@@ -31,7 +28,7 @@ class ElementSenderTestCase(unittest.TestCase):
 
     def test_lengthLimitExceeded(self):
         self.assertEqual(self.tr.disconnecting, False)
-        dummy_element = DummyElement()
+        dummy_element = DummyEvent()
         self.proto.dataReceived(
             struct.pack("<i", len(dummy_element.text)) + dummy_element.text
         )

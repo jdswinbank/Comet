@@ -5,14 +5,12 @@ import shutil
 from twisted.trial import unittest
 from twisted.python import failure
 
+from ...test.support import DUMMY_EVENT_IVORN as DUMMY_IVORN
+from ...test.support import DummyEvent
+
 from ...icomet import IValidator
 from ..ivorn_db import IVORN_DB
 from ..ivorn_db import CheckPreviouslySeen
-
-DUMMY_IVORN = "ivo://comet.broker/test#1234567890"
-
-class DummyEvent(object):
-    attrib = {'ivorn': DUMMY_IVORN}
 
 class IVORN_DB_TestCase(unittest.TestCase):
     def setUp(self):

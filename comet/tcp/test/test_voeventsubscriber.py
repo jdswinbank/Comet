@@ -1,10 +1,10 @@
 from twisted.trial import unittest
 from twisted.test import proto_helpers
 
+from ...test.support import DUMMY_EVENT_IVORN as DUMMY_IVORN
+
 from ..protocol import VOEventSubscriber
 from ..protocol import VOEventSubscriberFactory
-
-DUMMY_IVORN = "ivo://comet.broker/test#1234567890"
 
 class VOEventSubscriberFactoryTestCase(unittest.TestCase):
     def setUp(self):

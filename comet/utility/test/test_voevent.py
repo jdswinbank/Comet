@@ -3,10 +3,10 @@ import lxml.etree as etree
 
 from twisted.trial import unittest
 
+from ...test.support import DUMMY_SERVICE_IVORN as DUMMY_IVORN
+
 import comet
 from ..voevent import broker_test_message
-
-DUMMY_IVORN = "ivo://comet.broker/test"
 
 class broker_test_messageTestCase(unittest.TestCase):
     def setUp(self):

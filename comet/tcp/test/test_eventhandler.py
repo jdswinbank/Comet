@@ -5,9 +5,10 @@ from twisted.python import failure
 from twisted.test import proto_helpers
 from twisted.internet.protocol import ServerFactory
 
-from ..protocol import EventHandler
+from ...test.support import DUMMY_EVENT_IVORN as DUMMY_IVORN
+from ...test.support import DummyEvent
 
-DUMMY_IVORN = "ivo://comet.broker/test#1234567890"
+from ..protocol import EventHandler
 
 class EventHandlerFactory(ServerFactory):
     protocol = EventHandler
@@ -24,9 +25,6 @@ class Fails(object):
     def __call__(self, event):
         self.has_run = True
         raise Exception(self.has_run)
-
-class DummyEvent(object):
-    attrib = {'ivorn': DUMMY_IVORN}
 
 class EventHandlerTestCase(unittest.TestCase):
     def setUp(self):
