@@ -161,6 +161,11 @@ class VOEventSubscriber(EventHandler):
         self.check_alive = reactor.callLater(self.ALIVE_INTERVAL, self.timed_out)
         self.filters = filters
 
+    def connectionLost(self, *args):
+        # Don't leave the reactor in an unclean state when we exit.
+        self.check_alive.cancel()
+        return EventHandler.connectionLost(self, *args)
+
     def timed_out(self):
         log.msg(
             "No iamalive received for %d seconds; disconecting" %
