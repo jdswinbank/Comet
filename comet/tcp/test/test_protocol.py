@@ -28,6 +28,7 @@ class ElementSenderTestCase(unittest.TestCase):
         )
 
     def test_lengthLimitExceeded(self):
+        self.assertEqual(self.tr.disconnecting, False)
         dummy_element = DummyElement()
         self.proto.dataReceived(
             struct.pack("<i", len(dummy_element.text)) + dummy_element.text
