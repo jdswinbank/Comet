@@ -89,7 +89,12 @@ class VOEventSubscriberTestCase(unittest.TestCase):
         self.assertEqual(DUMMY_SERVICE_IVORN, received_element.find('Response').text)
         self.assertEqual(DUMMY_IVORN, received_element.find('Origin').text)
 
-#
-#    def test_receive_invalid_voevent(self):
-#        # This should not be accepted, but *should not* generate a NAK.
-#        pass
+    def test_receive_invalid_voevent(self):
+        # This should not be accepted, but *should not* generate a NAK.
+        def invalid(event): raise Exception("Failed")
+        self.proto.factory.validators.append(invalid)
+        self.proto.stringReceived(DUMMY_VOEVENT)
+        received_element = etree.fromstring(self.tr.value()[4:])
+        self.assertEqual("ack", received_element.attrib['role'])
+        self.assertEqual(DUMMY_SERVICE_IVORN, received_element.find('Response').text)
+        self.assertEqual(DUMMY_IVORN, received_element.find('Origin').text)
