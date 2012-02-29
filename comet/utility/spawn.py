@@ -24,7 +24,9 @@ class SpawnCommandProtocol(ProcessProtocol):
     def processEnded(self, reason):
         if reason.value.exitCode:
             self.deferred.errback(
-                "Process returned non-zero (%d)" % (reason.value.exitCode,)
+                Exception(
+                    "Process returned non-zero (%d)" % (reason.value.exitCode,)
+                )
             )
         else: self.deferred.callback(True)
 
