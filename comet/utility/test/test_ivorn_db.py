@@ -50,9 +50,7 @@ class CheckPreviouslySeenTestCase(unittest.TestCase):
 
     def test_seen(self):
         self.checker.ivorn_db.check_ivorn(self.event.attrib['ivorn'])
-        d = self.checker(self.event)
-        d.addErrback(self.assertIsInstance, failure.Failure)
-        return d
+        return self.assertFailure(self.checker(self.event), Exception)
 
     def test_interface(self):
         self.assertTrue(IValidator.providedBy(self.checker))

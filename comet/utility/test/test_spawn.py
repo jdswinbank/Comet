@@ -27,9 +27,7 @@ class SpawnCommandProtocolTestCase(unittest.TestCase):
 
     def test_bad_process(self):
         spawn = SpawnCommand("/not/a/real/executable")
-        d = spawn(DummyEvent())
-        d.addErrback(self.assertIsInstance, failure.Failure)
-        return d
+        return self.assertFailure(spawn(DummyEvent()), Exception)
 
     def test_write_data(self):
         if not os.access(SHELL, os.X_OK):

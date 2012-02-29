@@ -1,7 +1,7 @@
 import lxml.etree as etree
 
 from twisted.trial import unittest
-from twisted.python import failure
+from twisted.internet import defer
 from twisted.test import proto_helpers
 from twisted.internet.protocol import ServerFactory
 
@@ -36,26 +36,22 @@ class EventHandlerTestCase(unittest.TestCase):
     def test_validate_event_valid(self):
         self.proto.factory.validators = [Succeeds()]
         d = self.proto.validate_event(True)
-        d.addCallback(self.assertNotIsInstance, failure.Failure)
+        d.addCallback(self.assertEqual, [True])
         return d
 
     def test_validate_event_invalid(self):
         self.proto.factory.validators = [Fails()]
-        d = self.proto.validate_event(True)
-        d.addErrback(self.assertIsInstance, failure.Failure)
-        return d
+        return self.assertFailure(self.proto.validate_event(True), defer.FirstError)
 
     def test_handle_event_succeeds(self):
         self.proto.factory.handlers = [Succeeds()]
         d = self.proto.handle_event(True)
-        d.addCallback(self.assertNotIsInstance, failure.Failure)
+        d.addCallback(self.assertEqual, [True])
         return d
 
     def test_handle_event_fails(self):
         self.proto.factory.handlers = [Fails()]
-        d = self.proto.handle_event(True)
-        d.addErrback(self.assertIsInstance, failure.Failure)
-        return d
+        return self.assertFailure(self.proto.handle_event(True), defer.FirstError)
 
     def _check_for_role(self, result, role):
         self.assertEqual(
