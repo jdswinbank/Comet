@@ -149,7 +149,7 @@ class EventHandler(ElementSender):
                 self.send_xml(
                     ack(self.factory.local_ivo, event.attrib['ivorn'])
                 )
-        self.validate_event(event).addCallbacks(handle_valid, handle_invalid)
+        return self.validate_event(event).addCallbacks(handle_valid, handle_invalid)
 
 
 class VOEventSubscriber(EventHandler):
