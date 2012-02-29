@@ -1,3 +1,4 @@
+from twisted.internet import task
 from twisted.trial import unittest
 from twisted.test import proto_helpers
 
@@ -17,3 +18,16 @@ class VOEventSubscriberFactoryTestCase(unittest.TestCase):
 
     def tearDown(self):
         self.proto.connectionLost()
+
+class VOEventSubscriberTimeoutTestCase(unittest.TestCase):
+    def setUp(self):
+        factory = VOEventSubscriberFactory(DUMMY_IVORN)
+        self.proto = factory.buildProtocol(('127.0.0.1', 0))
+        self.clock = task.Clock()
+        self.proto.callLater = self.clock.callLater
+        self.tr = proto_helpers.StringTransport()
+        self.proto.makeConnection(self.tr)
+
+    def test_timeout(self):
+        self.clock.advance(self.proto.ALIVE_INTERVAL)
+        self.assertEqual(self.tr.disconnecting, True)
