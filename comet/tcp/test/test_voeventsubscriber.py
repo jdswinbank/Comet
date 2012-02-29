@@ -1,8 +1,12 @@
+import lxml.etree as etree
+
 from twisted.internet import task
 from twisted.trial import unittest
 from twisted.test import proto_helpers
 
 from ...test.support import DUMMY_EVENT_IVORN as DUMMY_IVORN
+from ...test.support import DUMMY_IAMALIVE
+from ...test.support import DUMMY_AUTHENTICATE
 
 from ..protocol import VOEventSubscriber
 from ..protocol import VOEventSubscriberFactory
@@ -13,11 +17,11 @@ class VOEventSubscriberFactoryTestCase(unittest.TestCase):
         self.proto = factory.buildProtocol(('127.0.0.1', 0))
         self.proto.makeConnection(proto_helpers.StringTransport())
 
-    def test_protocol(self):
-        self.assertIsInstance(self.proto, VOEventSubscriber)
-
     def tearDown(self):
         self.proto.connectionLost()
+
+    def test_protocol(self):
+        self.assertIsInstance(self.proto, VOEventSubscriber)
 
 class VOEventSubscriberTimeoutTestCase(unittest.TestCase):
     def setUp(self):
@@ -28,6 +32,53 @@ class VOEventSubscriberTimeoutTestCase(unittest.TestCase):
         self.tr = proto_helpers.StringTransport()
         self.proto.makeConnection(self.tr)
 
+    def test_time_out_manual(self):
+        self.proto.timed_out()
+        self.assertEqual(self.tr.disconnecting, True)
+
     def test_timeout(self):
         self.clock.advance(self.proto.ALIVE_INTERVAL)
         self.assertEqual(self.tr.disconnecting, True)
+
+class VOEventSubscriberTestCase(unittest.TestCase):
+    def setUp(self):
+        factory = VOEventSubscriberFactory(DUMMY_IVORN)
+        self.proto = factory.buildProtocol(('127.0.0.1', 0))
+        self.tr = proto_helpers.StringTransport()
+        self.proto.makeConnection(self.tr)
+
+    def tearDown(self):
+        self.proto.connectionLost()
+
+    def test_receive_unparseable(self):
+        # An unparseable message should generate no response, but the
+        # transport should not disconnect.
+        unparseable = "This is not parseable"
+        self.assertRaises(etree.ParseError, etree.fromstring, unparseable)
+        self.proto.stringReceived(unparseable)
+        self.assertEqual(self.tr.value(), "")
+        self.assertEqual(self.tr.disconnecting, False)
+
+    def test_receive_incomprehensible(self):
+        # An incomprehensible message should generate no response, but the
+        # transport should not disconnect.
+        incomprehensible = "<xml/>"
+        etree.fromstring(incomprehensible) # Should not raise an error
+        self.proto.stringReceived(incomprehensible)
+        self.assertEqual(self.tr.value(), "")
+        self.assertEqual(self.tr.disconnecting, False)
+
+    def test_receive_iamalive(self):
+        self.proto.stringReceived(DUMMY_IAMALIVE)
+        received_element = etree.fromstring(self.tr.value()[4:])
+        self.assertEqual("iamalive", received_element.attrib['role'])
+        self.assertEqual(DUMMY_IVORN, received_element.find('Response').text)
+
+    def test_receive_authenticate(self):
+        self.proto.stringReceived(DUMMY_AUTHENTICATE)
+        received_element = etree.fromstring(self.tr.value()[4:])
+        self.assertEqual("authenticate", received_element.attrib['role'])
+        self.assertEqual(DUMMY_IVORN, received_element.find('Response').text)
+
+#    def test_receive_valid_voevent(self):
+#        pass
