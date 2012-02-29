@@ -38,6 +38,21 @@ See also::
 
 for more details.
 
+Testing
+-------
+
+After installation, run the test suite to check that Comet is ready to go. Use
+the ``trial(1)``` command, distributed as part of Twisted::
+
+  $ trial comet
+  [...]
+  -------------------------------------------------------------------------------
+  Ran 36 tests in 1.334s
+
+  PASSED (successes=36)
+
+(of course, more tests may well have been added since this was written!).
+
 Terminology
 -----------
 
