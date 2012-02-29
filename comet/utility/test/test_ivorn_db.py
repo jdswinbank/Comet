@@ -1,4 +1,6 @@
 import os
+import tempfile
+import shutil
 
 from twisted.trial import unittest
 from twisted.python import failure
@@ -14,7 +16,8 @@ class DummyEvent(object):
 
 class IVORN_DB_TestCase(unittest.TestCase):
     def setUp(self):
-        self.ivorn_db = IVORN_DB('.')
+        self.ivorn_db_dir = tempfile.mkdtemp()
+        self.ivorn_db = IVORN_DB(self.ivorn_db_dir)
 
     def test_unseen(self):
         # First time through, we've not seen this IVORN so this should be True.
@@ -34,12 +37,12 @@ class IVORN_DB_TestCase(unittest.TestCase):
         return d
 
     def tearDown(self):
-        for database in self.ivorn_db.databases.iterkeys():
-            os.unlink(database)
+        shutil.rmtree(self.ivorn_db_dir)
 
 class CheckPreviouslySeenTestCase(unittest.TestCase):
     def setUp(self):
-        self.checker = CheckPreviouslySeen(IVORN_DB('.'))
+        self.ivorn_db_dir = tempfile.mkdtemp()
+        self.checker = CheckPreviouslySeen(IVORN_DB(self.ivorn_db_dir))
         self.event = DummyEvent()
 
     def test_unseen(self):
@@ -57,6 +60,5 @@ class CheckPreviouslySeenTestCase(unittest.TestCase):
         self.assertTrue(IValidator.providedBy(self.checker))
 
     def tearDown(self):
-        for database in self.checker.ivorn_db.databases.iterkeys():
-            os.unlink(database)
+        shutil.rmtree(self.ivorn_db_dir)
 

@@ -1,5 +1,6 @@
 import os
 import sys
+import tempfile
 
 from twisted.trial import unittest
 from twisted.python import failure
@@ -34,13 +35,13 @@ class SpawnCommandProtocolTestCase(unittest.TestCase):
         if not os.access(SHELL, os.X_OK):
             raise unittest.SkipTest("Shell not available")
         TEXT = "Test spawn process"
+        output_file = tempfile.NamedTemporaryFile()
         def read_data(result):
-            f = open("spawnfile.txt")
             try:
-                self.assertEqual(f.read(), TEXT)
+                self.assertEqual(output_file.read(), TEXT)
             finally:
-                f.close()
-        spawn = SpawnCommand('/bin/sh', util.sibpath(__file__, "test_spawn.sh"))
+                output_file.close()
+        spawn = SpawnCommand('/bin/sh', util.sibpath(__file__, "test_spawn.sh"), output_file.name)
         d = spawn(DummyEvent(TEXT))
         d.addCallback(read_data)
         return d

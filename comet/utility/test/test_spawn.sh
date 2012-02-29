@@ -1,3 +1,3 @@
 #!/bin/sh
 
-cat /dev/stdin > spawnfile.txt
+cat /dev/stdin > ${1}
