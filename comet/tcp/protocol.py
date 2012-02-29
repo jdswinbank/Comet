@@ -79,7 +79,7 @@ class ElementSender(Int32StringReceiver):
         Int32StringReceiver.lengthLimitExceeded(self, length)
 
 
-class EventHandler(Int32StringReceiver):
+class EventHandler(ElementSender):
     """
     Superclass for protocols which will receive events (ie, Subscriber and
     Receiver) providing event handling support.
@@ -152,7 +152,7 @@ class EventHandler(Int32StringReceiver):
         self.validate_event(event).addCallbacks(handle_valid, handle_invalid)
 
 
-class VOEventSubscriber(ElementSender, EventHandler):
+class VOEventSubscriber(EventHandler):
     ALIVE_INTERVAL = 120 # If we get no iamalive for ALIVE_INTERVAL seconds,
                          # assume our peer forgot us.
     def __init__(self, filters=[]):
@@ -403,7 +403,7 @@ class VOEventSenderFactory(ClientFactory):
             log.err("Event was NOT sent successfully")
 
 
-class VOEventReceiver(ElementSender, EventHandler):
+class VOEventReceiver(EventHandler):
     """
     A receiver waits for a one-shot submission from a connecting client.
     """
