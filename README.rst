@@ -42,7 +42,7 @@ Testing
 -------
 
 After installation, run the test suite to check that Comet is ready to go. Use
-the ``trial(1)``` command, distributed as part of Twisted::
+the ``trial(1)`` command, distributed as part of Twisted::
 
   $ trial comet
   [...]
