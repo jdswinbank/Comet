@@ -157,9 +157,13 @@ class EventHandler(ElementSender):
 class VOEventSubscriber(EventHandler):
     ALIVE_INTERVAL = 120 # If we get no iamalive for ALIVE_INTERVAL seconds,
                          # assume our peer forgot us.
+    callLater = reactor.callLater
     def __init__(self, filters=[]):
-        self.check_alive = reactor.callLater(self.ALIVE_INTERVAL, self.timed_out)
         self.filters = filters
+
+    def connectionMade(self, *args):
+        self.check_alive = self.callLater(self.ALIVE_INTERVAL, self.timed_out)
+        return EventHandler.connectionMade(self, *args)
 
     def connectionLost(self, *args):
         # Don't leave the reactor in an unclean state when we exit.
