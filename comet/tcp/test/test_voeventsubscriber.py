@@ -25,22 +25,25 @@ class VOEventSubscriberFactoryTestCase(unittest.TestCase):
     def test_protocol(self):
         self.assertIsInstance(self.proto, VOEventSubscriber)
 
+
 class VOEventSubscriberTimeoutTestCase(unittest.TestCase):
     def setUp(self):
         factory = VOEventSubscriberFactory(DUMMY_IVORN)
         self.proto = factory.buildProtocol(('127.0.0.1', 0))
         self.clock = task.Clock()
         self.proto.callLater = self.clock.callLater
-        self.tr = proto_helpers.StringTransport()
+        self.tr = proto_helpers.StringTransportWithDisconnection()
         self.proto.makeConnection(self.tr)
+        self.tr.protocol = self.proto
 
     def test_time_out_manual(self):
         self.proto.timed_out()
-        self.assertEqual(self.tr.disconnecting, True)
+        self.assertEqual(self.tr.connected, False)
 
     def test_timeout(self):
         self.clock.advance(self.proto.ALIVE_INTERVAL)
-        self.assertEqual(self.tr.disconnecting, True)
+        self.assertEqual(self.tr.connected, False)
+
 
 class VOEventSubscriberTestCase(unittest.TestCase):
     def setUp(self):

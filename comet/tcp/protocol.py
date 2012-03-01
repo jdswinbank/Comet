@@ -167,7 +167,8 @@ class VOEventSubscriber(EventHandler):
 
     def connectionLost(self, *args):
         # Don't leave the reactor in an unclean state when we exit.
-        self.check_alive.cancel()
+        if self.check_alive.active():
+            self.check_alive.cancel()
         return EventHandler.connectionLost(self, *args)
 
     def timed_out(self):
