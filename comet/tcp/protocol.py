@@ -261,9 +261,10 @@ class VOEventBroadcaster(ElementSender):
         self.send_xml(authenticate(self.factory.local_ivo))
         self.outstanding_ack = 0
 
-    def connectionLost(self, reason):
+    def connectionLost(self, *args):
         log.msg("Subscriber at %s disconnected" % str(self.transport.getPeer()))
         self.factory.broadcasters.remove(self)
+        return ElementSender.connectionLost(self, *args)
 
     def sendIAmAlive(self):
         if self.alive_count > self.MAX_ALIVE_COUNT:
