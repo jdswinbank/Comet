@@ -338,9 +338,18 @@ class VOEventBroadcasterFactory(ServerFactory):
         self.local_ivo = local_ivo
         self.broadcasters = []
         self.alive_loop = LoopingCall(self.sendIAmAlive)
-        self.alive_loop.start(self.IAMALIVE_INTERVAL)
         self.test_loop = LoopingCall(self.sendTestEvent)
+
+    def startFactory(self):
+        log.msg("Start factory")
+        self.alive_loop.start(self.IAMALIVE_INTERVAL)
         self.test_loop.start(self.TEST_INTERVAL)
+        return ServerFactory.startFactory(self)
+
+    def stopFactory(self):
+        self.alive_loop.stop()
+        self.test_loop.stop()
+        return ServerFactory.stopFactory(self)
 
     def sendIAmAlive(self):
         log.msg("Broadcasting iamalive")
