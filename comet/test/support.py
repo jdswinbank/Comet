@@ -1,11 +1,8 @@
 import textwrap
+import lxml.etree as etree
 
 DUMMY_EVENT_IVORN = "ivo://comet.broker/test#1234567890"
 DUMMY_SERVICE_IVORN = "ivo://comet.broker/test"
-
-class DummyEvent(object):
-    attrib = {'ivorn': DUMMY_EVENT_IVORN}
-    text = "Dummy Text"
 
 DUMMY_IAMALIVE = """
     <?xml version=\'1.0\' encoding=\'UTF-8\'?>
@@ -48,3 +45,8 @@ DUMMY_VOEVENT = """
     </voe:VOEvent>
 """ % (DUMMY_EVENT_IVORN, DUMMY_SERVICE_IVORN)
 DUMMY_VOEVENT = textwrap.dedent(DUMMY_VOEVENT).strip()
+
+class DummyEvent(object):
+    attrib = {'ivorn': DUMMY_EVENT_IVORN}
+    text = DUMMY_VOEVENT
+    element = etree.fromstring(DUMMY_VOEVENT)
