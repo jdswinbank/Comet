@@ -267,10 +267,10 @@ class VOEventBroadcaster(ElementSender):
         return ElementSender.connectionLost(self, *args)
 
     def sendIAmAlive(self):
-        if self.alive_count > self.MAX_ALIVE_COUNT:
+        if self.alive_count >= self.MAX_ALIVE_COUNT:
             log.msg("Peer appears to be dead; dropping connection")
             self.transport.loseConnection()
-        elif self.outstanding_ack > self.MAX_OUTSTANDING_ACK:
+        elif self.outstanding_ack >= self.MAX_OUTSTANDING_ACK:
             log.msg("Peer is not acknowledging events; dropping connection")
             self.transport.loseConnection()
         else:
@@ -317,6 +317,7 @@ class VOEventBroadcaster(ElementSender):
             if not self.filters or any([value for success, value in result if success]):
                 log.msg("Event matches filter criteria: forwarding")
                 self.send_xml(event)
+                self.outstanding_ack += 1
             else:
                 log.msg("Event rejected by filter")
 
