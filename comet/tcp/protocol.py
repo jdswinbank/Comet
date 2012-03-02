@@ -439,24 +439,26 @@ class VOEventReceiver(EventHandler):
             incoming = xml_document(data)
         except ElementTree.ParseError:
             log.err("Unparsable message received from %s" % str(self.transport.getPeer()))
-            return
-
-        # The root element of both VOEvent and Transport packets has a
-        # "role" element which we use to identify the type of message we
-        # have received.
-        if incoming.get('role') in VOEVENT_ROLES:
-            log.msg(
-                "VOEvent %s received from %s" % (
-                    incoming.attrib['ivorn'],
-                    str(self.transport.getPeer())
-                )
-            )
-            self.process_event(incoming)
         else:
-            log.err(
-                "Incomprehensible data received from %s (role=%s)" %
-                (self.transport.getPeer(), incoming.get("role"))
-            )
+            # The root element of both VOEvent and Transport packets has a
+            # "role" element which we use to identify the type of message we
+            # have received.
+            if incoming.get('role') in VOEVENT_ROLES:
+                log.msg(
+                    "VOEvent %s received from %s" % (
+                        incoming.attrib['ivorn'],
+                        str(self.transport.getPeer())
+                    )
+                )
+                self.process_event(incoming)
+            else:
+                log.err(
+                    "Incomprehensible data received from %s (role=%s)" %
+                    (self.transport.getPeer(), incoming.get("role"))
+                )
+        finally:
+            # Always lose the connection, whatever we received.
+            self.transport.loseConnection()
 
 class VOEventReceiverFactory(ServerFactory):
     protocol = VOEventReceiver
