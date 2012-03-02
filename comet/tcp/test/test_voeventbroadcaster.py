@@ -8,6 +8,7 @@ from twisted.test import proto_helpers
 from ...test.support import DUMMY_IAMALIVE
 from ...test.support import DUMMY_ACK
 from ...test.support import DUMMY_NAK
+from ...test.support import DUMMY_AUTHENTICATE
 from ...test.support import DUMMY_VOEVENT
 from ...test.support import DUMMY_EVENT_IVORN
 from ...test.support import DUMMY_SERVICE_IVORN
@@ -174,3 +175,23 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
         self.proto.stringReceived(DUMMY_NAK)
         self.assertEqual(self.tr.value(), "")
         self.assertEqual(self.tr.connected, False)
+
+    def test_receive_authenticate(self):
+        self.tr.clear()
+        self.assertEqual(len(self.proto.filters), 0)
+        self.proto.stringReceived(
+            DUMMY_AUTHENTICATE % "/*[local-name()=\"VOEvent\" and @role=\"test\"]"
+        )
+        self.assertEqual(self.tr.value(), "")
+        self.assertEqual(self.tr.connected, True)
+        self.assertEqual(len(self.proto.filters), 1)
+
+    def test_receive_authenticate_with_bad_filter(self):
+        self.tr.clear()
+        self.assertEqual(len(self.proto.filters), 0)
+        self.proto.stringReceived(
+            DUMMY_AUTHENTICATE % "Not a valid XPath expression"
+        )
+        self.assertEqual(self.tr.value(), "")
+        self.assertEqual(self.tr.connected, True)
+        self.assertEqual(len(self.proto.filters), 0)

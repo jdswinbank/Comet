@@ -73,6 +73,23 @@ DUMMY_NAK = """
 """ % (DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN)
 DUMMY_NAK = textwrap.dedent(DUMMY_NAK).strip()
 
+DUMMY_AUTHENTICATE = """
+    <?xml version='1.0' encoding='UTF-8'?>
+    <trn:Transport xmlns:trn="http://www.telescope-networks.org/xml/Transport/v1.1"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://telescope-networks.org/schema/Transport/v1.1
+            http://www.telescope-networks.org/schema/Transport-v1.1.xsd"
+        version="1.0" role="authenticate">
+        <Origin>%s</Origin>
+        <Response>%s</Response>
+        <TimeStamp>2012-01-01T00:00:00</TimeStamp>
+        <Meta>
+            <filter type="xpath">%s</filter>
+        </Meta>
+    </trn:Transport>
+""" % (DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN, "%s")
+DUMMY_AUTHENTICATE = textwrap.dedent(DUMMY_AUTHENTICATE).strip()
+
 class DummyEvent(object):
     attrib = {'ivorn': DUMMY_EVENT_IVORN}
     text = DUMMY_VOEVENT
