@@ -36,8 +36,7 @@ DUMMY_VOEVENT = """
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.ivoa.net/xml/VOEvent/v2.0
             http://www.ivoa.net/xml/VOEvent/VOEvent-v2.0.xsd"
-        version="2.0" role="test"
-        ivorn="%s">
+        version="2.0" role="test" ivorn="%s">
         <Who>
             <AuthorIVORN>%s</AuthorIVORN>
             <Date>2012-01-01T00:00:00</Date>
@@ -45,6 +44,34 @@ DUMMY_VOEVENT = """
     </voe:VOEvent>
 """ % (DUMMY_EVENT_IVORN, DUMMY_SERVICE_IVORN)
 DUMMY_VOEVENT = textwrap.dedent(DUMMY_VOEVENT).strip()
+
+DUMMY_ACK = """
+    <?xml version='1.0' encoding='UTF-8'?>
+    <trn:Transport xmlns:trn="http://www.telescope-networks.org/xml/Transport/v1.1"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://telescope-networks.org/schema/Transport/v1.1
+            http://www.telescope-networks.org/schema/Transport-v1.1.xsd"
+        version="1.0" role="ack">
+        <Origin>%s</Origin>
+        <Response>%s</Response>
+        <TimeStamp>2012-01-01T00:00:00</TimeStamp>
+    </trn:Transport>
+""" % (DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN)
+DUMMY_ACK = textwrap.dedent(DUMMY_ACK).strip()
+
+DUMMY_NAK = """
+    <?xml version='1.0' encoding='UTF-8'?>
+    <trn:Transport xmlns:trn="http://www.telescope-networks.org/xml/Transport/v1.1"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://telescope-networks.org/schema/Transport/v1.1
+            http://www.telescope-networks.org/schema/Transport-v1.1.xsd"
+        version="1.0" role="nak">
+        <Origin>%s</Origin>
+        <Response>%s</Response>
+        <TimeStamp>2012-01-01T00:00:00</TimeStamp>
+    </trn:Transport>
+""" % (DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN)
+DUMMY_NAK = textwrap.dedent(DUMMY_NAK).strip()
 
 class DummyEvent(object):
     attrib = {'ivorn': DUMMY_EVENT_IVORN}
