@@ -295,15 +295,16 @@ class VOEventBroadcaster(ElementSender):
             self.transport.loseConnection()
         elif incoming.get('role') == "authenticate":
             log.msg("Authentication received from %s" % str(self.transport.getPeer()))
+            self.filters = []
             for xpath in incoming.findall("Meta/filter[@type=\"xpath\"]"):
                 log.msg(
                     "Installing filter %s for %s" %
                     (xpath.text, str(self.transport.getPeer()))
                 )
-            self.filters = [
-                ElementTree.XPath(xpath.text)
-                for xpath in incoming.findall("Meta/filter[@type=\"xpath\"]")
-            ]
+                try:
+                    self.filters.append(ElementTree.XPath(xpath.text))
+                except ElementTree.XPathSyntaxError:
+                    log.msg("Filter %s is not valid XPath" % (xpath.text,))
         else:
             log.err(
                 "Incomprehensible data received from %s (role=%s)" %
