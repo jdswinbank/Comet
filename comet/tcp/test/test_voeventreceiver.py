@@ -1,7 +1,5 @@
 import lxml.etree as etree
 
-from twisted.internet import reactor
-from twisted.internet import task
 from twisted.trial import unittest
 from twisted.test import proto_helpers
 
@@ -14,10 +12,6 @@ from ..protocol import VOEventReceiverFactory
 class VOEventReceiverFactoryTestCase(unittest.TestCase):
     def setUp(self):
         self.factory = VOEventReceiverFactory(DUMMY_SERVICE_IVORN)
-        self.connector = reactor.listenTCP(0, self.factory)
-
-    def tearDown(self):
-        self.connector.stopListening()
 
     def test_protocol(self):
         self.assertEqual(self.factory.protocol, VOEventReceiver)
