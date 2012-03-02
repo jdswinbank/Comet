@@ -321,7 +321,7 @@ class VOEventBroadcaster(ElementSender):
             else:
                 log.msg("Event rejected by filter")
 
-        defer.DeferredList(
+        return defer.DeferredList(
             [
                 deferToThread(xpath, event.element)
                 for xpath in self.filters
