@@ -36,10 +36,6 @@ class VOEventSubscriberTimeoutTestCase(unittest.TestCase):
         self.proto.makeConnection(self.tr)
         self.tr.protocol = self.proto
 
-    def test_time_out_manual(self):
-        self.proto.timed_out()
-        self.assertEqual(self.tr.connected, False)
-
     def test_timeout(self):
         self.clock.advance(self.proto.ALIVE_INTERVAL)
         self.assertEqual(self.tr.connected, False)

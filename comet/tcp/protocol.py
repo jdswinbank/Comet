@@ -155,7 +155,7 @@ class EventHandler(ElementSender):
         return self.validate_event(event).addCallbacks(handle_valid, handle_invalid)
 
 
-class VOEventSubscriber(EventHandler):
+class VOEventSubscriber(EventHandler, TimeoutMixin):
     ALIVE_INTERVAL = 120 # If we get no iamalive for ALIVE_INTERVAL seconds,
                          # assume our peer forgot us.
     callLater = reactor.callLater
@@ -163,21 +163,20 @@ class VOEventSubscriber(EventHandler):
         self.filters = filters
 
     def connectionMade(self, *args):
-        self.check_alive = self.callLater(self.ALIVE_INTERVAL, self.timed_out)
+        self.setTimeout(self.ALIVE_INTERVAL)
         return EventHandler.connectionMade(self, *args)
 
     def connectionLost(self, *args):
         # Don't leave the reactor in an unclean state when we exit.
-        if self.check_alive.active():
-            self.check_alive.cancel()
+        self.setTimeout(None)
         return EventHandler.connectionLost(self, *args)
 
-    def timed_out(self):
+    def timeoutConnection(self):
         log.msg(
             "No iamalive received for %d seconds; disconecting" %
             self.ALIVE_INTERVAL
         )
-        self.transport.loseConnection()
+        return TimeoutMixin.timeoutConnection(self)
 
     def stringReceived(self, data):
         """
@@ -194,11 +193,10 @@ class VOEventSubscriber(EventHandler):
         # have received.
         if incoming.get('role') == "iamalive":
             log.msg("IAmAlive received from %s" % str(self.transport.getPeer()))
-            self.check_alive.cancel()
             self.send_xml(
                 iamaliveresponse(self.factory.local_ivo, incoming.find('Origin').text)
             )
-            self.check_alive = reactor.callLater(self.ALIVE_INTERVAL, self.timed_out)
+            self.resetTimeout()
         elif incoming.get('role') == "authenticate":
             log.msg("Authenticate received from %s" % str(self.transport.getPeer()))
             self.send_xml(
@@ -437,6 +435,11 @@ class VOEventReceiver(EventHandler, TimeoutMixin):
     def connectionMade(self):
         log.msg("New connection from %s" % str(self.transport.getPeer()))
         self.setTimeout(self.TIMEOUT)
+
+    def connectionLost(self, *args):
+        # Don't leave the reactor in an unclean state when we exit.
+        self.setTimeout(None)
+        return EventHandler.connectionLost(self, *args)
 
     def timeoutConnection(self):
         log.msg(
