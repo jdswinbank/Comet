@@ -20,6 +20,7 @@ from twisted.application.internet import TCPServer
 # Comet broker routines
 import comet
 from ..config.options import BaseOptions
+from ..tcp.protocol import VOEventReceiver
 from ..tcp.protocol import VOEventBroadcasterFactory
 from ..tcp.protocol import VOEventReceiverFactory
 from ..tcp.protocol import VOEventSubscriberFactory
@@ -58,7 +59,7 @@ class Options(BaseOptions):
     def __init__(self):
         BaseOptions.__init__(self)
         self['remotes'] = []
-        self['whitelist'] = []
+        self['running_whitelist'] = []
         self['filters'] = []
         self['handlers'] = []
 
@@ -82,15 +83,21 @@ class Options(BaseOptions):
 
     def opt_whitelist(self, network):
         reactor.callWhenRunning(log.msg, "Whitelisting %s" % network)
-        self['whitelist'].append(IPNetwork(network))
+        self['running_whitelist'].append(IPNetwork(network))
 
     def postOptions(self):
+        if self['running_whitelist']:
+            self['whitelist'] = self['running_whitelist']
+        else:
+            self['whitelist'] = [IPNetwork(self['whitelist'])]
         if not (self['remotes'] or self['broadcast'] or self['receive']):
             reactor.callWhenRunning(log.err, "No services requested; stopping.")
             reactor.callWhenRunning(reactor.stop)
 
 
-class WhitelistingReceiverFactory(VOEventReceiverFactory, WhitelistingFactory):
+class WhitelistingReceiverFactory(WhitelistingFactory, VOEventReceiverFactory):
+    protocol = VOEventReceiver
+
     def __init__(self, local_ivo, whitelist, validators=[], handlers=[]):
         VOEventReceiverFactory.__init__(self, local_ivo, validators, handlers)
         WhitelistingFactory.__init__(self, whitelist)
