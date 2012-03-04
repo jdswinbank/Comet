@@ -10,6 +10,7 @@ from twisted.internet import reactor
 from twisted.internet import defer
 from twisted.internet.threads import deferToThread
 from twisted.protocols.basic import Int32StringReceiver
+from twisted.protocols.policies import TimeoutMixin
 from twisted.internet.task import LoopingCall
 from twisted.internet.protocol import ClientFactory
 from twisted.internet.protocol import ServerFactory
@@ -427,10 +428,23 @@ class VOEventSenderFactory(ClientFactory):
             log.err("Event was NOT sent successfully")
 
 
-class VOEventReceiver(EventHandler):
+class VOEventReceiver(EventHandler, TimeoutMixin):
     """
     A receiver waits for a one-shot submission from a connecting client.
     """
+    TIMEOUT = 20 # Drop the connection if we hear nothing in TIMEOUT seconds.
+
+    def connectionMade(self):
+        log.msg("New connection from %s" % str(self.transport.getPeer()))
+        self.setTimeout(self.TIMEOUT)
+
+    def timeoutConnection(self):
+        log.msg(
+            "%s timed out after %d seconds" %
+            (str(self.transport.getPeer()), self.TIMEOUT)
+        )
+        return TimeoutMixin.timeoutConnection(self)
+
     def stringReceived(self, data):
         """
         Called when a complete new message is received.

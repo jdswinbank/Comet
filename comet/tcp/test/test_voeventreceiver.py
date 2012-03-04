@@ -1,5 +1,6 @@
 import lxml.etree as etree
 
+from twisted.internet import task
 from twisted.trial import unittest
 from twisted.test import proto_helpers
 
@@ -25,6 +26,8 @@ class VOEventReceiverTestCase(unittest.TestCase):
     def setUp(self):
         self.factory = VOEventReceiverFactory(DUMMY_SERVICE_IVORN)
         self.proto = self.factory.buildProtocol(('127.0.0.1', 0))
+        self.clock = task.Clock()
+        self.proto.callLater = self.clock.callLater
         self.tr = proto_helpers.StringTransportWithDisconnection()
         self.proto.makeConnection(self.tr)
         self.tr.protocol = self.proto
@@ -68,4 +71,8 @@ class VOEventReceiverTestCase(unittest.TestCase):
             etree.fromstring(self.tr.value()[4:]).attrib['role'],
             "nak"
         )
+        self.assertEqual(self.tr.connected, False)
+
+    def test_timeout(self):
+        self.clock.advance(self.proto.TIMEOUT)
         self.assertEqual(self.tr.connected, False)
