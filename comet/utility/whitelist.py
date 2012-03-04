@@ -5,16 +5,17 @@
 from ipaddr import IPAddress
 
 from twisted.python import log
-from twisted.internet.protocol import ServerFactory
+from twisted.protocols.policies import WrappingFactory
 
-class WhitelistingFactory(ServerFactory):
-    def __init__(self, whitelist):
+class WhitelistingFactory(WrappingFactory):
+    def __init__(self, wrappedFactory, whitelist):
         self.whitelist = whitelist
+        WrappingFactory.__init__(self, wrappedFactory)
 
     def buildProtocol(self, addr):
         remote_ip = IPAddress(addr.host)
         if any(remote_ip in network for network in self.whitelist):
-            return ServerFactory.buildProtocol(self, addr)
+            return WrappingFactory.buildProtocol(self, addr)
         else:
             log.msg("Attempted submission from non-whitelisted %s" % str(addr))
             return None

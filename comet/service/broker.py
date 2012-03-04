@@ -20,12 +20,11 @@ from twisted.application.internet import TCPServer
 # Comet broker routines
 import comet
 from ..config.options import BaseOptions
-from ..tcp.protocol import VOEventReceiver
 from ..tcp.protocol import VOEventBroadcasterFactory
 from ..tcp.protocol import VOEventReceiverFactory
 from ..tcp.protocol import VOEventSubscriberFactory
-from ..utility.relay import EventRelay
 from ..utility.whitelist import WhitelistingFactory
+from ..utility.relay import EventRelay
 from ..utility.schemavalidator import SchemaValidator
 from ..utility.ivorn_db import CheckPreviouslySeen
 from ..utility.ivorn_db import IVORN_DB
@@ -95,14 +94,6 @@ class Options(BaseOptions):
             reactor.callWhenRunning(reactor.stop)
 
 
-class WhitelistingReceiverFactory(WhitelistingFactory, VOEventReceiverFactory):
-    protocol = VOEventReceiver
-
-    def __init__(self, local_ivo, whitelist, validators=[], handlers=[]):
-        VOEventReceiverFactory.__init__(self, local_ivo, validators, handlers)
-        WhitelistingFactory.__init__(self, whitelist)
-
-
 def makeService(config):
     ivorn_db = IVORN_DB(config['ivorndb'])
     LoopingCall(ivorn_db.prune, MAX_AGE).start(PRUNE_INTERVAL)
@@ -122,16 +113,18 @@ def makeService(config):
     if config['receive']:
         TCPServer(
             config['receive-port'],
-            WhitelistingReceiverFactory(
-                local_ivo=config["local-ivo"],
-                whitelist=config["whitelist"],
-                validators=[
-                    CheckPreviouslySeen(ivorn_db),
-                    SchemaValidator(
-                        os.path.join(comet.__path__[0], "schema/VOEvent-v2.0.xsd")
-                    )
-                ],
-                handlers=config['handlers']
+            WhitelistingFactory(
+                VOEventReceiverFactory(
+                    local_ivo=config['local-ivo'],
+                    validators=[
+                        CheckPreviouslySeen(ivorn_db),
+                        SchemaValidator(
+                            os.path.join(comet.__path__[0], "schema/VOEvent-v2.0.xsd")
+                        )
+                    ],
+                    handlers=config['handlers']
+                ),
+                config['whitelist']
             )
         ).setServiceParent(broker_service)
 
