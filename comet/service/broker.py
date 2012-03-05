@@ -37,6 +37,7 @@ from ..utility.spawn import SpawnCommand
 # Constants
 MAX_AGE = 30.0 * 24 * 60 * 60 # Forget IVORNs after 30 days
 PRUNE_INTERVAL = 6 * 60 * 60  # Prune the IVORN db every 6 hours
+DEFAULT_REMOTE_PORT = 8099    # If the user doesn't specify
 
 class Options(BaseOptions):
     optFlags = [
@@ -49,7 +50,7 @@ class Options(BaseOptions):
         ["receive-port", None, 8098, "TCP port for receiving events.", int],
         ["broadcast-port", None, 8099, "TCP port for broadcasting events.", int],
         ["whitelist", None, "0.0.0.0/0", "Network to be included in submission whitelist."],
-        ["remote", None, None, "Remote broadcaster to subscribe to (host:port)."],
+        ["remote", None, None, "Remote broadcaster to subscribe to (host[:port])."],
         ["filter", None, None, "XPath filter applied to events broadcast by remote."],
         ["action", None, None, "Add an event handler."],
         ["cmd", None, None, "Spawn external command on event receipt."]
@@ -76,8 +77,14 @@ class Options(BaseOptions):
         self['filters'].append(my_filter)
 
     def opt_remote(self, remote):
-        reactor.callWhenRunning(log.msg, "Subscribing to remote broker %s" % remote)
-        host, port = remote.split(":")
+        try:
+            host, port = remote.split(":")
+        except:
+            host, port = remote, DEFAULT_REMOTE_PORT
+        reactor.callWhenRunning(
+            log.msg,
+            "Subscribing to remote broker %s:%d" % (host, port)
+        )
         self['remotes'].append((host, int(port)))
 
     def opt_whitelist(self, network):
