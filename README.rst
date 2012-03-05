@@ -99,7 +99,7 @@ Comet accepts a few command line options::
         --broadcast-port=  TCP port for broadcasting events. [default: 8099]
         --whitelist=       Network to be included in submission whitelist.
                            [default: 0.0.0.0/0]
-        --remote=          Remote broadcaster to subscribe to (host:port).
+        --remote=          Remote broadcaster to subscribe to (host[:port]).
         --filter=          XPath filter applied to events broadcast by remote.
         --action=          Add an event handler.
         --cmd=             Spawn external command on event receipt.
@@ -121,7 +121,9 @@ to connect may be specified with the ``--broadcast-port`` option.
 
 If one or more ``--remote`` options are supplied, Comet will subscribe to the
 remote host specified and fulfil the Subscriber role in the resulting Broker
-to Subscriber connection.
+to Subscriber connection. If just given a hostname Comet will attempt to
+subscribe on port 8099. Optionally, a different port may be specified by
+appending it to the hostname, separated by a ``:``.
 
 A single Comet daemon will accept any combination ``--receiver``,
 ``--broadcast`` and one or more ``--remote`` options and play all of these

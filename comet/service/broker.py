@@ -79,7 +79,7 @@ class Options(BaseOptions):
     def opt_remote(self, remote):
         try:
             host, port = remote.split(":")
-        except:
+        except ValueError:
             host, port = remote, DEFAULT_REMOTE_PORT
         reactor.callWhenRunning(
             log.msg,
