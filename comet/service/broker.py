@@ -83,7 +83,7 @@ class Options(BaseOptions):
             host, port = remote, DEFAULT_REMOTE_PORT
         reactor.callWhenRunning(
             log.msg,
-            "Subscribing to remote broker %s:%d" % (host, port)
+            "Subscribing to remote broker %s:%d" % (host, int(port))
         )
         self['remotes'].append((host, int(port)))
 
