@@ -2,12 +2,13 @@
 # Schema validator.
 # John Swinbank, <swinbank@transientskp.org>, 2012.
 
-from twisted.python import log
 from twisted.internet.threads import deferToThread
 import lxml.etree as etree
 
 from zope.interface import implements
 from ..icomet import IValidator
+
+from ..log import log
 
 class SchemaValidator(object):
     """

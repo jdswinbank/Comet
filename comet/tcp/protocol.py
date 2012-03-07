@@ -5,7 +5,6 @@
 import lxml.etree as ElementTree
 
 # Twisted protocol definition
-from twisted.python import log
 from twisted.internet import reactor
 from twisted.internet import defer
 from twisted.internet.threads import deferToThread
@@ -24,6 +23,7 @@ from .messages import authenticate, authenticateresponse
 # Constructor for our perodic test events
 from ..utility.voevent import broker_test_message
 
+from ..log import log
 from ..utility.xml import xml_document
 
 # Constants
@@ -128,7 +128,7 @@ class EventHandler(ElementSender):
         def handle_valid(status):
             # TODO: Check what happens if event handler fails. Can we call
             # another errback?
-            log.msg("Sending ACK to %s" % (self.transport.getPeer()))
+            log.debug("Sending ACK to %s" % (self.transport.getPeer()))
             self.send_xml(
                 ack(self.factory.local_ivo, event.attrib['ivorn'])
             )
@@ -140,7 +140,7 @@ class EventHandler(ElementSender):
         def handle_invalid(failure):
             log.msg("Event rejected (%s); discarding" % (failure.value.subFailure.getErrorMessage(),))
             if can_nak:
-                log.msg("Sending NAK to %s" % (self.transport.getPeer()))
+                log.debug("Sending NAK to %s" % (self.transport.getPeer()))
                 self.send_xml(
                     nak(
                         self.factory.local_ivo, event.attrib['ivorn'],
@@ -148,7 +148,7 @@ class EventHandler(ElementSender):
                     )
                 )
             else:
-                log.msg("Sending ACK to %s" % (self.transport.getPeer()))
+                log.debug("Sending ACK to %s" % (self.transport.getPeer()))
                 self.send_xml(
                     ack(self.factory.local_ivo, event.attrib['ivorn'])
                 )
@@ -192,13 +192,13 @@ class VOEventSubscriber(EventHandler, TimeoutMixin):
         # "role" element which we use to identify the type of message we
         # have received.
         if incoming.get('role') == "iamalive":
-            log.msg("IAmAlive received from %s" % str(self.transport.getPeer()))
+            log.debug("IAmAlive received from %s" % str(self.transport.getPeer()))
             self.send_xml(
                 iamaliveresponse(self.factory.local_ivo, incoming.find('Origin').text)
             )
             self.resetTimeout()
         elif incoming.get('role') == "authenticate":
-            log.msg("Authenticate received from %s" % str(self.transport.getPeer()))
+            log.debug("Authenticate received from %s" % str(self.transport.getPeer()))
             self.send_xml(
                 authenticateresponse(
                     self.factory.local_ivo,
@@ -284,16 +284,16 @@ class VOEventBroadcaster(ElementSender):
             return
 
         if incoming.get('role') == "iamalive":
-            log.msg("IAmAlive received from %s" % str(self.transport.getPeer()))
+            log.debug("IAmAlive received from %s" % str(self.transport.getPeer()))
             self.alive_count -= 1
         elif incoming.get('role') == "ack":
-            log.msg("Ack received from %s" % str(self.transport.getPeer()))
+            log.debug("Ack received from %s" % str(self.transport.getPeer()))
             self.outstanding_ack -= 1
         elif incoming.get('role') == "nak":
             log.msg("Nak received from %s; terminating" % str(self.transport.getPeer()))
             self.transport.loseConnection()
         elif incoming.get('role') == "authenticate":
-            log.msg("Authentication received from %s" % str(self.transport.getPeer()))
+            log.debug("Authentication received from %s" % str(self.transport.getPeer()))
             self.filters = []
             for xpath in incoming.findall("Meta/filter[@type=\"xpath\"]"):
                 log.msg(
@@ -315,7 +315,7 @@ class VOEventBroadcaster(ElementSender):
         # we send the event to our subscriber.
         def check_filters(result):
             if not self.filters or any([value for success, value in result if success]):
-                log.msg("Event matches filter criteria: forwarding")
+                log.msg("Event matches filter criteria: forwarding to %s" % (str(self.transport.getPeer()),))
                 self.send_xml(event)
                 self.outstanding_ack += 1
             else:
@@ -352,12 +352,12 @@ class VOEventBroadcasterFactory(ServerFactory):
         return ServerFactory.stopFactory(self)
 
     def sendIAmAlive(self):
-        log.msg("Broadcasting iamalive")
+        log.debug("Broadcasting iamalive")
         for broadcaster in self.broadcasters:
             broadcaster.sendIAmAlive()
 
     def sendTestEvent(self):
-        log.msg("Broadcasting test event")
+        log.debug("Broadcasting test event")
         test_event = broker_test_message(self.local_ivo)
         for broadcaster in self.broadcasters:
             broadcaster.send_event(test_event)
@@ -385,7 +385,7 @@ class VOEventSender(ElementSender):
         The sender should only ever receive an ack or a nak, after which it
         should disconnect.
         """
-        log.msg("Got response from %s" % str(self.transport.getPeer()))
+        log.debug("Got response from %s" % str(self.transport.getPeer()))
         try:
             incoming = xml_document(data)
 

@@ -7,7 +7,6 @@
 import sys
 
 # Twisted
-from twisted.python import log
 from twisted.python import usage
 from twisted.internet import reactor
 from twisted.internet.endpoints import clientFromString
@@ -16,6 +15,7 @@ from twisted.internet.endpoints import clientFromString
 from comet.tcp.protocol import VOEventSenderFactory
 
 # Encapsulation of event
+from comet.log import log
 from comet.utility.xml import xml_document
 import lxml.etree as ElementTree
 

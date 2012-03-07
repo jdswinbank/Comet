@@ -9,7 +9,6 @@ from ipaddr import IPNetwork
 
 # Twisted
 from twisted.internet import reactor
-from twisted.python import log
 from twisted.python import usage
 from twisted.plugin import getPlugins
 from twisted.internet.task import LoopingCall
@@ -19,6 +18,7 @@ from twisted.application.internet import TCPServer
 
 # Comet broker routines
 import comet
+from ..log import log
 from ..config.options import BaseOptions
 from ..tcp.protocol import VOEventBroadcasterFactory
 from ..tcp.protocol import VOEventReceiverFactory
@@ -42,7 +42,9 @@ DEFAULT_REMOTE_PORT = 8099    # If the user doesn't specify
 class Options(BaseOptions):
     optFlags = [
         ["receive", "r", "Listen for TCP connections from authors."],
-        ["broadcast", "b", "Re-broadcast VOEvents received."]
+        ["broadcast", "b", "Re-broadcast VOEvents received."],
+        ["verbose", "v", "Increase verbosity."],
+        ["quiet", "q", "Decrease verbosity."]
     ]
 
     optParameters = [
@@ -62,6 +64,15 @@ class Options(BaseOptions):
         self['running_whitelist'] = []
         self['filters'] = []
         self['handlers'] = []
+        self['verbosity'] = 1
+
+    def opt_quiet(self):
+        self['verbosity'] -= 1
+    opt_q = opt_quiet
+
+    def opt_verbose(self):
+        self['verbosity'] += 1
+    opt_v = opt_verbose
 
     def opt_action(self, action):
         plugin = [plugin for plugin in getPlugins(IHandler, comet.plugins) if plugin.name == action]
@@ -96,6 +107,13 @@ class Options(BaseOptions):
             self['whitelist'] = self['running_whitelist']
         else:
             self['whitelist'] = [IPNetwork(self['whitelist'])]
+
+        if self['verbosity'] >= 2:
+            log.LEVEL = log.Levels.DEBUG
+        elif self['verbosity'] == 1:
+            log.LEVEL = log.Levels.INFO
+        else:
+            log.LEVEL = log.Levels.ERROR
 
 
 def makeService(config):

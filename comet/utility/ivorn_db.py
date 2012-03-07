@@ -8,12 +8,13 @@ import time
 from threading import Lock
 from collections import defaultdict
 
-from twisted.python import log
 from twisted.internet.threads import deferToThread
 from twisted.internet.defer import DeferredList
 
 from zope.interface import implements
 from ..icomet import IValidator
+
+from ..log import log
 
 class IVORN_DB(object):
     def __init__(self, root):

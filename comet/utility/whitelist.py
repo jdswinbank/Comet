@@ -4,8 +4,9 @@
 
 from ipaddr import IPAddress
 
-from twisted.python import log
 from twisted.protocols.policies import WrappingFactory
+
+from ..log import log
 
 class WhitelistingFactory(WrappingFactory):
     def __init__(self, wrappedFactory, whitelist):

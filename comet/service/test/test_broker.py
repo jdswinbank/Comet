@@ -3,7 +3,6 @@ from ipaddr import IPNetwork
 from twisted.trial import unittest
 from twisted.python import usage
 from twisted.internet import reactor
-from twisted.python import log
 
 from ..broker import DEFAULT_REMOTE_PORT
 from ..broker import Options
@@ -83,13 +82,10 @@ class ServiceTestCase(unittest.TestCase):
         self.service = makeService(config)
 
     def test_has_receiver(self):
-        log.msg(self.service.namedServices.keys())
         for service in (
             "Receiver", "Broadcaster",
             "Remote %s:%d" % ('dummy', DEFAULT_REMOTE_PORT)
         ):
-            log.msg(service)
-            log.msg(self.service.namedServices.has_key(service))
             self.assertTrue(self.service.namedServices.has_key(service))
 
     def tearDown(self):

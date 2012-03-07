@@ -4,13 +4,14 @@
 
 import os
 
-from twisted.python import log
 from twisted.internet import reactor
 from twisted.internet import defer
 from twisted.internet.protocol import ProcessProtocol
 
 from zope.interface import implements
 from ..icomet import IHandler
+
+from ..log import log
 
 class SpawnCommandProtocol(ProcessProtocol):
     def __init__(self, deferred, text):
