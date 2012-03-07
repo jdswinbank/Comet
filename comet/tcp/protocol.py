@@ -342,7 +342,6 @@ class VOEventBroadcasterFactory(ServerFactory):
         self.test_loop = LoopingCall(self.sendTestEvent)
 
     def startFactory(self):
-        log.msg("Start factory")
         self.alive_loop.start(self.IAMALIVE_INTERVAL)
         self.test_loop.start(self.TEST_INTERVAL)
         return ServerFactory.startFactory(self)
