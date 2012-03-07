@@ -32,7 +32,7 @@ def log(level, message):
         if level >= Levels.ERROR:
             twisted_log.err("[ERROR] %s" % (message,))
         elif level >= Levels.INFO:
-            twisted_log.msg(" [INFO] %s" % (message,))
+            twisted_log.msg("[INFO] %s" % (message,))
         else:
             twisted_log.msg("[DEBUG] %s" % (message,))
 
