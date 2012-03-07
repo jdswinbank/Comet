@@ -8,7 +8,7 @@ A VOEvent Broker
 Comet is designed to serve as a development testbed for rapid prototyping of
 and experimentation with VOEvent transport systems. Currently, it partially
 implements the `VOEvent Transport Protocol
-<http://www.ivoa.net/Documents/Notes/VOEventTransport/>`_ (vTCP).
+<http://www.ivoa.net/Documents/Notes/VOEventTransport/>`_ (VTP).
 
 The core of Comet is a multi-functional VOEvent broker. It is capable of
 receiving events either by subscribing to one or more remote brokers or by
@@ -56,7 +56,7 @@ the ``trial(1)`` command, distributed as part of Twisted::
 Terminology
 -----------
 
-The vTCP system defines three types of nodes -- Author, Broker and Subscriber
+The VTP system defines three types of nodes -- Author, Broker and Subscriber
 -- and two types of connection -- Author to Broker and Broker to Subscriber.
 Comet has the capabilty to act in all of these roles.
 

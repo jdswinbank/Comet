@@ -121,7 +121,7 @@ class EventHandler(ElementSender):
         event is invalid. This may be appropriate if we are a subscriber
         rather than a receiver: we should invalidate duplicate VOEvents
         received from multiple upstream brokers, but not respond to each with
-        a NAK or they might shut off our connection as per the vTCP note (6.4
+        a NAK or they might shut off our connection as per the VTP note (6.4
         -- "If there is an error (nak received...) [...] this would result in
         the broker removing the subscriber from its distribution list.
         """
