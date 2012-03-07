@@ -108,17 +108,19 @@ def makeService(config):
     broker_service = MultiService()
     if config['broadcast']:
         broadcaster_factory = VOEventBroadcasterFactory(config["local-ivo"])
-        TCPServer(
+        broadcaster_service = TCPServer(
             config['broadcast-port'],
             broadcaster_factory
-        ).setServiceParent(broker_service)
+        )
+        broadcaster_service.setName("Broadcaster")
+        broadcaster_service.setServiceParent(broker_service)
 
         # If we're running a broadcast, we will rebroadcast any events we
         # receive to it.
         config['handlers'].append(EventRelay(broadcaster_factory))
 
     if config['receive']:
-        TCPServer(
+        receiver_service = TCPServer(
             config['receive-port'],
             WhitelistingFactory(
                 VOEventReceiverFactory(
@@ -133,10 +135,12 @@ def makeService(config):
                 ),
                 config['whitelist']
             )
-        ).setServiceParent(broker_service)
+        )
+        receiver_service.setName("Receiver")
+        receiver_service.setServiceParent(broker_service)
 
     for host, port in config["remotes"]:
-        TCPClient(
+        remote_service = TCPClient(
             host, port,
             VOEventSubscriberFactory(
                 local_ivo=config["local-ivo"],
@@ -144,6 +148,8 @@ def makeService(config):
                 handlers=config['handlers'],
                 filters=config['filters']
             )
-        ).setServiceParent(broker_service)
+        )
+        remote_service.setName("Remote %s:%d" % (host, port))
+        remote_service.setServiceParent(broker_service)
 
     return broker_service
