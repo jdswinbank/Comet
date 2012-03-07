@@ -96,9 +96,6 @@ class Options(BaseOptions):
             self['whitelist'] = self['running_whitelist']
         else:
             self['whitelist'] = [IPNetwork(self['whitelist'])]
-        if not (self['remotes'] or self['broadcast'] or self['receive']):
-            reactor.callWhenRunning(log.err, "No services requested; stopping.")
-            reactor.callWhenRunning(reactor.stop)
 
 
 def makeService(config):
@@ -152,4 +149,7 @@ def makeService(config):
         remote_service.setName("Remote %s:%d" % (host, port))
         remote_service.setServiceParent(broker_service)
 
+    if not broker_service.services:
+        reactor.callWhenRunning(log.err, "No services requested; stopping.")
+        reactor.callWhenRunning(reactor.stop)
     return broker_service
