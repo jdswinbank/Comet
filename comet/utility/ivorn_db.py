@@ -87,10 +87,10 @@ class CheckPreviouslySeen(object):
     def __call__(self, event):
         def check_validity(is_valid):
             if is_valid:
-                log.msg("Event not previously seen")
+                log.debug("Event not previously seen")
                 return True
             else:
-                log.msg("Event HAS been previously seen")
+                log.debug("Event HAS been previously seen")
                 raise Exception("Previously seen by this broker")
 
         def db_failure(failure):
