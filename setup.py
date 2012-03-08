@@ -9,10 +9,16 @@ setup(
     author_email="swinbank@transientskp.org",
     packages=[
         'comet',
+        'comet.test',
         'comet.config',
+        'comet.log',
+        'comet.log.test',
         'comet.plugins',
+        'comet.plugins.test',
         'comet.service',
+        'comet.service.test',
         'comet.tcp',
+        'comet.tcp.test',
         'comet.utility',
         'comet.utility.test'
     ],
