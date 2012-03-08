@@ -4,6 +4,8 @@ from twisted.trial import unittest
 from twisted.python import usage
 from twisted.internet import reactor
 
+from ...log import log
+
 from ..broker import DEFAULT_REMOTE_PORT
 from ..broker import Options
 from ..broker import makeService
@@ -74,6 +76,25 @@ class DefaultOptionsTestCase(unittest.TestCase):
         cmd_line = ["--cmd", "foo", "--cmd", "bar"]
         self.config.parseOptions(cmd_line)
         self.assertEqual(len(self.config['handlers']), 2)
+
+    def test_verbose_default(self):
+        self.config.parseOptions([])
+        self.assertEqual(log.LEVEL, log.DEFAULT_LEVEL)
+
+    def test_verbose_verbose(self):
+        cmd_line = ['-v']
+        self.config.parseOptions(cmd_line)
+        self.assertEqual(log.LEVEL, log.Levels.DEBUG)
+
+    def test_verbose_quiet(self):
+        cmd_line = ['-q']
+        self.config.parseOptions(cmd_line)
+        self.assertEqual(log.LEVEL, log.Levels.WARNING)
+
+    def test_verbose_contradictory(self):
+        cmd_line = ['-q', '-v']
+        self.config.parseOptions(cmd_line)
+        self.assertEqual(log.LEVEL, log.DEFAULT_LEVEL)
 
 class ServiceTestCase(unittest.TestCase):
     def setUp(self):

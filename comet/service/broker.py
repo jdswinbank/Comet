@@ -113,7 +113,7 @@ class Options(BaseOptions):
         elif self['verbosity'] == 1:
             log.LEVEL = log.Levels.INFO
         else:
-            log.LEVEL = log.Levels.ERROR
+            log.LEVEL = log.Levels.WARNING
 
 
 def makeService(config):
