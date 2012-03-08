@@ -93,6 +93,8 @@ Comet accepts a few command line options::
   Options:
     -r, --receive          Listen for TCP connections from authors.
     -b, --broadcast        Re-broadcast VOEvents received.
+    -v, --verbose          Increase verbosity.
+    -q, --quiet            Decrease verbosity.
         --local-ivo=       [default: ivo://comet.broker/default_ivo]
         --ivorndb=         IVORN database root. [default: /tmp]
         --receive-port=    TCP port for receiving events. [default: 8098]
@@ -175,6 +177,8 @@ external commands are run in a separate thread, so will not block the
 subscriber from processing new events; however, the user is nevertheless
 responsible for ensuring that they terminate in a timely fashion.
 
+The amount of information Comet writes to its log may be adjusted using the
+``--verbose`` and ``--quiet`` options.
 
 Filtering
 ---------
