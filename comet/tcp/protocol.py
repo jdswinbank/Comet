@@ -240,14 +240,17 @@ class VOEventSubscriberFactory(ReconnectingClientFactory):
     def clientConnectionFailed(self, connector, reason):
         log.msg(
             "Connection to %s failed; will retry in %d second%s" %
-            (connector.getDestination(), self.delay, "" if self.delay == 1 else "s")
+            (connector.getDestination(), self.delay, "" if self.delay == 1 else "s"),
+            system="VOEventSubscriberFactory"
+
         )
         ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
 
     def clientConnectionLost(self, connector, reason):
         log.msg(
             "Connection to %s lost; will retry in %d second%s" %
-            (connector.getDestination(), self.delay, "" if self.delay == 1 else "s")
+            (connector.getDestination(), self.delay, "" if self.delay == 1 else "s"),
+            system="VOEventSubscriberFactory"
         )
         ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
 
