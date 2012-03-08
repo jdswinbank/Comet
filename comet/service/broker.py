@@ -147,10 +147,9 @@ def makeService(config):
             handlers=config['handlers']
         )
         if log.LEVEL >= log.Levels.INFO: receiver_factory.noisy = False
-        receiver_service = TCPServer(
-            config['receive-port'],
-            WhitelistingFactory(receiver_factory, config['whitelist'])
-        )
+        whitelisting_factory = WhitelistingFactory(receiver_factory, config['whitelist'])
+        if log.LEVEL >= log.Levels.INFO: whitelisting_factory.noisy = False
+        receiver_service = TCPServer(config['receive-port'], whitelisting_factory)
         receiver_service.setName("Receiver")
         receiver_service.setServiceParent(broker_service)
 
