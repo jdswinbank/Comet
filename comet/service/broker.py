@@ -123,6 +123,7 @@ def makeService(config):
     broker_service = MultiService()
     if config['broadcast']:
         broadcaster_factory = VOEventBroadcasterFactory(config["local-ivo"])
+        if log.LEVEL >= log.Levels.INFO: broadcaster_factory.noisy = False
         broadcaster_service = TCPServer(
             config['broadcast-port'],
             broadcaster_factory
@@ -135,35 +136,33 @@ def makeService(config):
         config['handlers'].append(EventRelay(broadcaster_factory))
 
     if config['receive']:
+        receiver_factory = VOEventReceiverFactory(
+            local_ivo=config['local-ivo'],
+            validators=[
+                CheckPreviouslySeen(ivorn_db),
+                SchemaValidator(
+                    os.path.join(comet.__path__[0], "schema/VOEvent-v2.0.xsd")
+                )
+            ],
+            handlers=config['handlers']
+        )
+        if log.LEVEL >= log.Levels.INFO: receiver_factory.noisy = False
         receiver_service = TCPServer(
             config['receive-port'],
-            WhitelistingFactory(
-                VOEventReceiverFactory(
-                    local_ivo=config['local-ivo'],
-                    validators=[
-                        CheckPreviouslySeen(ivorn_db),
-                        SchemaValidator(
-                            os.path.join(comet.__path__[0], "schema/VOEvent-v2.0.xsd")
-                        )
-                    ],
-                    handlers=config['handlers']
-                ),
-                config['whitelist']
-            )
+            WhitelistingFactory(receiver_factory, config['whitelist'])
         )
         receiver_service.setName("Receiver")
         receiver_service.setServiceParent(broker_service)
 
     for host, port in config["remotes"]:
-        remote_service = TCPClient(
-            host, port,
-            VOEventSubscriberFactory(
-                local_ivo=config["local-ivo"],
-                validators=[CheckPreviouslySeen(ivorn_db)],
-                handlers=config['handlers'],
-                filters=config['filters']
-            )
+        subscriber_factory = VOEventSubscriberFactory(
+            local_ivo=config["local-ivo"],
+            validators=[CheckPreviouslySeen(ivorn_db)],
+            handlers=config['handlers'],
+            filters=config['filters']
         )
+        if log.LEVEL >= log.Levels.INFO: subscriber_factory.noisy = False
+        remote_service = TCPClient(host, port, subscriber_factory)
         remote_service.setName("Remote %s:%d" % (host, port))
         remote_service.setServiceParent(broker_service)
 
