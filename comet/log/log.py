@@ -7,6 +7,7 @@
 # through to the Twisted logging system as appropriate.
 
 from twisted.python import log as twisted_log
+from twisted.python import context
 
 class Levels(object):
     """
@@ -24,31 +25,33 @@ except NameError:
     LEVEL = DEFAULT_LEVEL
 
 # The basic logging function.
-def log(level, message):
+def log(level, message, system=None):
     """
     Write a message to the Twisted log with an appropriate prefix, assuming it
     meets our verbosity criteria.
     """
+    if not system:
+        system = context.get(twisted_log.ILogContext)['system']
     if level >= LEVEL:
         if level >= Levels.WARNING:
-            twisted_log.msg("[WARNING] %s" % (str(message),))
+            twisted_log.msg(message, system="WARNING %s" % (system,))
         elif level >= Levels.INFO:
-            twisted_log.msg("[INFO] %s" % (str(message),))
+            twisted_log.msg(message, system="INFO %s" % (system,))
         else:
-            twisted_log.msg("[DEBUG] %s" % (str(message),))
+            twisted_log.msg(message, system="DEBUG %s" % (system,))
 
 # Shortcuts to enable easy logging at the given level.
-def warning(message):
-    log(Levels.WARNING, message)
+def warning(message, system=None):
+    log(Levels.WARNING, message, system)
 warn = warning
 
-def info(message):
-    log(Levels.INFO, message)
+def info(message, system=None):
+    log(Levels.INFO, message, system)
 # Alias for twisted.python.log compatibility
 msg = info
 
-def debug(message):
-    log(Levels.DEBUG, message)
+def debug(message, system=None):
+    log(Levels.DEBUG, message, system)
 
 # Errors override our logging mechanism and get dumped straight into Twisted's
 # log handlers, which can handle stack traces etc.
