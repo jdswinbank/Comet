@@ -246,7 +246,7 @@ class VOEventSubscriberFactory(ReconnectingClientFactory):
 
     def clientConnectionLost(self, connector, reason):
         log.msg(
-            "Connection to %s lost; will retry in %d seconds" %
+            "Connection to %s lost; will retry in %d second%s" %
             (connector.getDestination(), self.delay, "" if self.delay == 1 else "s")
         )
         ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
