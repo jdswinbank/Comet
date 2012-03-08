@@ -133,7 +133,7 @@ class EventHandler(ElementSender):
                 ack(self.factory.local_ivo, event.attrib['ivorn'])
             )
             self.handle_event(event).addCallbacks(
-                lambda x: log.msg("Event processed"),
+                lambda x: log.debug("Event processed"),
                 lambda x: log.warning("Event handlers failed")
             )
 
@@ -173,8 +173,9 @@ class VOEventSubscriber(EventHandler, TimeoutMixin):
 
     def timeoutConnection(self):
         log.msg(
-            "No iamalive received for %d seconds; disconecting" %
-            self.ALIVE_INTERVAL
+            "No iamalive received from %s for %d seconds; disconecting" %
+            (self.transport.getPeer(), self.ALIVE_INTERVAL),
+            system="VOEventSubscriber"
         )
         return TimeoutMixin.timeoutConnection(self)
 
