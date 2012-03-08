@@ -94,7 +94,8 @@ class CheckPreviouslySeen(object):
                 raise Exception("Previously seen by this broker")
 
         def db_failure(failure):
-            log.err("IVORN DB lookup failed!")
+            log.warning("IVORN DB lookup failed!")
+            log.err(failure)
             return failure
 
         return deferToThread(

@@ -36,7 +36,7 @@ class OneShotSender(VOEventSenderFactory):
         reactor.stop()
 
     def clientConnectionFailed(self, connector, reason):
-        log.err("Connection failed")
+        log.warning("Connection failed")
         reactor.stop()
 
 if __name__ == "__main__":
@@ -53,10 +53,10 @@ if __name__ == "__main__":
     try:
         factory = OneShotSender(xml_document(f.read()))
     except IOError:
-        log.err("Reading XML document failed")
+        log.warning("Reading XML document failed")
         reactor.callWhenRunning(reactor.stop)
     except ElementTree.Error:
-        log.err("Could not parse event text")
+        log.warning("Could not parse event text")
         reactor.callWhenRunning(reactor.stop)
     else:
         reactor.connectTCP(config['host'], config['port'], factory)

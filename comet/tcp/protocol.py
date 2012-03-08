@@ -134,7 +134,7 @@ class EventHandler(ElementSender):
             )
             self.handle_event(event).addCallbacks(
                 lambda x: log.msg("Event processed"),
-                lambda x: log.err("Event handlers failed")
+                lambda x: log.warning("Event handlers failed")
             )
 
         def handle_invalid(failure):
@@ -185,7 +185,7 @@ class VOEventSubscriber(EventHandler, TimeoutMixin):
         try:
             incoming = xml_document(data)
         except ElementTree.ParseError:
-            log.err("Unparsable message received")
+            log.warning("Unparsable message received")
             return
 
         # The root element of both VOEvent and Transport packets has a
@@ -217,7 +217,7 @@ class VOEventSubscriber(EventHandler, TimeoutMixin):
             # want to be removed from upstream's distribution list.
             self.process_event(incoming, can_nak=False)
         else:
-            log.err(
+            log.warning(
                 "Incomprehensible data received from %s (role=%s)" %
                 (self.transport.getPeer(), incoming.get("role"))
             )
@@ -280,7 +280,7 @@ class VOEventBroadcaster(ElementSender):
         try:
             incoming = xml_document(data)
         except ElementTree.ParseError:
-            log.err("Unparsable message received")
+            log.warning("Unparsable message received")
             return
 
         if incoming.get('role') == "iamalive":
@@ -305,7 +305,7 @@ class VOEventBroadcaster(ElementSender):
                 except ElementTree.XPathSyntaxError:
                     log.msg("Filter %s is not valid XPath" % (xpath.text,))
         else:
-            log.err(
+            log.warning(
                 "Incomprehensible data received from %s (role=%s)" %
                 (self.transport.getPeer(), incoming.get("role"))
             )
@@ -393,20 +393,20 @@ class VOEventSender(ElementSender):
                 log.msg("Acknowledgement received from %s" % str(self.transport.getPeer()))
                 self.factory.ack = True
             elif incoming.get('role') == "nak":
-                log.err("Nak received: %s refused to accept VOEvent (%s)" %
+                log.warning("Nak received: %s refused to accept VOEvent (%s)" %
                     (
                         str(self.transport.getPeer()),
                         incoming.findtext("Meta/result", default="no reason given")
                     )
                 )
             else:
-                log.err(
+                log.warning(
                     "Incomprehensible data received from %s (role=%s)" %
                     (self.transport.getPeer(), incoming.get("role"))
                 )
 
         except ElementTree.ParseError:
-            log.err("Unparsable message received from %s" % str(self.transport.getPeer()))
+            log.warning("Unparsable message received from %s" % str(self.transport.getPeer()))
 
         finally:
             # After receiving a message, we shut down the connection.
@@ -422,7 +422,7 @@ class VOEventSenderFactory(ClientFactory):
         if self.ack:
             log.msg("Event was sent successfully")
         else:
-            log.err("Event was NOT sent successfully")
+            log.warning("Event was NOT sent successfully")
 
 
 class VOEventReceiver(EventHandler, TimeoutMixin):
@@ -454,7 +454,7 @@ class VOEventReceiver(EventHandler, TimeoutMixin):
         try:
             incoming = xml_document(data)
         except ElementTree.ParseError:
-            log.err("Unparsable message received from %s" % str(self.transport.getPeer()))
+            log.warning("Unparsable message received from %s" % str(self.transport.getPeer()))
         else:
             # The root element of both VOEvent and Transport packets has a
             # "role" element which we use to identify the type of message we
@@ -468,7 +468,7 @@ class VOEventReceiver(EventHandler, TimeoutMixin):
                 )
                 self.process_event(incoming)
             else:
-                log.err(
+                log.warning(
                     "Incomprehensible data received from %s (role=%s)" %
                     (self.transport.getPeer(), incoming.get("role"))
                 )

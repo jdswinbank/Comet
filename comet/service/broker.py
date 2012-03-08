@@ -77,7 +77,7 @@ class Options(BaseOptions):
     def opt_action(self, action):
         plugin = [plugin for plugin in getPlugins(IHandler, comet.plugins) if plugin.name == action]
         if not plugin:
-            reactor.callWhenRunning(log.err, "Action %s not available" % (action))
+            reactor.callWhenRunning(log.warning, "Action %s not available" % (action))
         else:
             self['handlers'].extend(plugin)
 
@@ -168,6 +168,6 @@ def makeService(config):
         remote_service.setServiceParent(broker_service)
 
     if not broker_service.services:
-        reactor.callWhenRunning(log.err, "No services requested; stopping.")
+        reactor.callWhenRunning(log.warning, "No services requested; stopping.")
         reactor.callWhenRunning(reactor.stop)
     return broker_service

@@ -14,13 +14,14 @@ class Levels(object):
     """
     DEBUG = 100
     INFO  = 200
-    ERROR = 300
+    WARNING = 300
 
 # Levels.INFO is the default level.
+DEFAULT_LEVEL = Levels.INFO
 try:
     LEVEL
 except NameError:
-    LEVEL = Levels.INFO
+    LEVEL = DEFAULT_LEVEL
 
 # The basic logging function.
 def log(level, message):
@@ -29,18 +30,17 @@ def log(level, message):
     meets our verbosity criteria.
     """
     if level >= LEVEL:
-        if level >= Levels.ERROR:
-            twisted_log.err("[ERROR] %s" % (message,))
+        if level >= Levels.WARNING:
+            twisted_log.msg("[WARNING] %s" % (str(message),))
         elif level >= Levels.INFO:
-            twisted_log.msg("[INFO] %s" % (message,))
+            twisted_log.msg("[INFO] %s" % (str(message),))
         else:
-            twisted_log.msg("[DEBUG] %s" % (message,))
+            twisted_log.msg("[DEBUG] %s" % (str(message),))
 
 # Shortcuts to enable easy logging at the given level.
-def error(message):
-    log(Levels.ERROR, message)
-# Alias for twisted.python.log compatibility
-err = error
+def warning(message):
+    log(Levels.WARNING, message)
+warn = warning
 
 def info(message):
     log(Levels.INFO, message)
@@ -49,3 +49,7 @@ msg = info
 
 def debug(message):
     log(Levels.DEBUG, message)
+
+# Errors override our logging mechanism and get dumped straight into Twisted's
+# log handlers, which can handle stack traces etc.
+err = twisted_log.err
