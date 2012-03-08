@@ -44,7 +44,7 @@ class IVORN_DB(object):
 
     def prune(self, expiry_time):
         """
-        Remove entries older than expiry_time seconds from the database.
+        Remove entries with age at least expiry_time seconds from the database.
         """
         def expire_db(db_path, lock):
             remove = []
@@ -63,7 +63,10 @@ class IVORN_DB(object):
                     ) + float('0.' + fractional_part)
                     # ...and update db to new format.
                     db[key] = str(db_time)
-                if time.time() - db_time > expiry_time:
+                if int(time.time() - db_time) >= expiry_time:
+                    # Rounding to nearest int avoids an issue when we call
+                    # call prune(0) *immediately* after an insertion and might
+                    # get hit by floating point weirdness.
                     remove.append(key)
             log.msg("Expiring %d IVORNs from %s" % (len(remove), db_path))
             for key in remove: del db[key]
