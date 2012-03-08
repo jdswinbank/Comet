@@ -238,11 +238,17 @@ class VOEventSubscriberFactory(ReconnectingClientFactory):
         return p
 
     def clientConnectionFailed(self, connector, reason):
-        log.msg("Connection to %s failed; will retry" % (connector.getDestination(),))
+        log.msg(
+            "Connection to %s failed; will retry in %d seconds" %
+            (connector.getDestination(), self.delay)
+        )
         ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
 
     def clientConnectionLost(self, connector, reason):
-        log.msg("Connection to %s lost; will retry" % (connector.getDestination(),))
+        log.msg(
+            "Connection to %s lost; will retry in %d seconds" %
+            (connector.getDestination(), self.delay)
+        )
         ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
 
 
