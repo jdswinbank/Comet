@@ -1,5 +1,3 @@
-import os
-import distutils.sysconfig
 from distutils.core import setup
 
 setup(
@@ -20,22 +18,13 @@ setup(
         'comet.tcp',
         'comet.tcp.test',
         'comet.utility',
-        'comet.utility.test'
+        'comet.utility.test',
+        'twisted'
     ],
     scripts=['scripts/comet-sendvo'],
     package_data={
         'comet': ['schema/*.xsd'],
-        'comet.utility.test': ['test_spawn.sh']
-    },
-    data_files=[
-        (
-            os.path.join(
-                distutils.sysconfig.get_python_lib(prefix=''),
-                'twisted/plugins'
-            ),
-            [
-                'twisted/plugins/comet_plugin.py',
-            ]
-        )
-    ]
+        'comet.utility.test': ['test_spawn.sh'],
+        'twisted': ['plugins/comet_plugin.py']
+    }
 )
