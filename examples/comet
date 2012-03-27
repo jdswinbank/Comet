@@ -24,6 +24,8 @@ DAEMON_ARGS="--pidfile ${PIDFILE} --logfile ${LOGFILE} comet -b --ivorndb ${IVOR
 # Site specific configuration
 LOCAL_IVORN="ivo://comet.broker/default_ivo"
 REMOTES="--remote voevent.voevent.transientskp.org"
+COMET_USER="comet"
+DAEMON_ARGS="--uid `id -u ${COMET_USER}` --gid `id -g ${COMET_USER}` --pidfile ${PIDFILE} --logfile ${LOGFILE} comet -b --ivorndb ${IVORNDB}"
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0
@@ -39,8 +41,8 @@ do_start()
     [ $LOCAL_IVORN ]  || return 2
 
     # Create directory for log file and ivorn database
-    mkdir -p `dirname $LOGFILE` || return 2
-    mkdir -p $IVORNDB || return 2
+    mkdir -p `dirname $LOGFILE` && chown -R ${COMET_USER} `dirname $LOGFILE` || return 2
+    mkdir -p $IVORNDB && chown -R ${COMET_USER} ${IVORNDB} || return 2
 
     start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --test > /dev/null \
         || return 1
@@ -57,7 +59,9 @@ do_stop()
     #   2 if daemon could not be stopped
     #   other if a failure occurred
     start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE
-    return "$?"
+    RETVAL=$?
+    [ $RETVAL -ne 2 ] && rm -f $PIDFILE
+    return $RETVAL
 }
 
 case "$1" in
@@ -71,8 +75,8 @@ case "$1" in
   stop)
     do_stop
     case "$?" in
-        0|1) exit 0 ;;
-        2)   exit 1 ;;
+        0|1) exit 0 ;; # Stopped (or not running)
+        2)   exit 1 ;; # Could not stop
     esac
     ;;
   restart|force-reload)

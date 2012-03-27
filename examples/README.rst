@@ -14,8 +14,13 @@ then be used to start Comet, and ``invoke-rc.d comet stop`` to shut it down.
 These scripts will automatically be run at system startup/shutdown.  Logs will
 be stored in ``/var/log/comet``.
 
-Installation proceeds as follows::
+For security reasons, Comet should be set to run as an unprivileged user. You
+should create this user yourself. On an Ubuntu system, for example::
 
-  $ vi comet.sh                # Customise to local requirements
-  $ cp comet.sh /etc/init.d
+  $ sudo adduser --system --home /var/run/comet comet
+
+Installation then proceeds as follows::
+
+  $ vi cometh                  # Customise to local requirements
+  $ cp comet /etc/init.d
   $ update-rc.d comet defaults
