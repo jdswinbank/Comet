@@ -464,7 +464,7 @@ class VOEventReceiver(EventHandler, TimeoutMixin):
         try:
             incoming = xml_document(data)
         except ElementTree.ParseError:
-            log.warning("Unparsable message received from %s" % str(self.transport.getPeer()))
+            d = log.warning("Unparsable message received from %s" % str(self.transport.getPeer()))
         else:
             # The root element of both VOEvent and Transport packets has a
             # "role" element which we use to identify the type of message we
@@ -476,15 +476,15 @@ class VOEventReceiver(EventHandler, TimeoutMixin):
                         str(self.transport.getPeer())
                     )
                 )
-                self.process_event(incoming)
+                d = self.process_event(incoming)
             else:
-                log.warning(
+                d = log.warning(
                     "Incomprehensible data received from %s (role=%s)" %
                     (self.transport.getPeer(), incoming.get("role"))
                 )
         finally:
-            # Always lose the connection, whatever we received.
-            self.transport.loseConnection()
+            # Always shut down the connection when done.
+            d.addCallback(lambda x: self.transport.loseConnection())
 
 class VOEventReceiverFactory(ServerFactory):
     protocol = VOEventReceiver
