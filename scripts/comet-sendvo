@@ -7,6 +7,7 @@
 import sys
 
 # Twisted
+from twisted.python.log import startLogging
 from twisted.python import usage
 from twisted.internet import reactor
 from twisted.internet.endpoints import clientFromString
@@ -43,7 +44,7 @@ if __name__ == "__main__":
     config = Options()
     config.parseOptions()
 
-    log.startLogging(sys.stdout)
+    startLogging(sys.stdout)
 
     if config["file"] == "-":
         f = sys.stdin
