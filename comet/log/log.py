@@ -8,6 +8,7 @@
 
 from twisted.python import log as twisted_log
 from twisted.python import context
+from twisted.internet import defer
 
 class Levels(object):
     """
@@ -40,18 +41,26 @@ def log(level, message, system=None):
         else:
             twisted_log.msg(message, system="DEBUG %s" % (system,))
 
+class LogWithDeferred(object):
+    """
+    Forward a message to log(), above, and return a Deferred which we can
+    chain off.
+    """
+    def __init__(self, level):
+        self.level = level
+
+    def __call__(self, message, system=None):
+        log(self.level, message, system)
+        return defer.succeed(None)
+
 # Shortcuts to enable easy logging at the given level.
-def warning(message, system=None):
-    log(Levels.WARNING, message, system)
+warning = LogWithDeferred(Levels.WARNING)
 warn = warning
 
-def info(message, system=None):
-    log(Levels.INFO, message, system)
-# Alias for twisted.python.log compatibility
+info = LogWithDeferred(Levels.INFO)
 msg = info
 
-def debug(message, system=None):
-    log(Levels.DEBUG, message, system)
+debug = LogWithDeferred(Levels.DEBUG)
 
 # Errors override our logging mechanism and get dumped straight into Twisted's
 # log handlers, which can handle stack traces etc.
