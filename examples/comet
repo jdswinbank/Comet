@@ -40,9 +40,9 @@ do_start()
     # Exit if we don't have a local ivorn
     [ $LOCAL_IVORN ]  || return 2
 
-    # Create directory for log file and ivorn database
+    # Create directory for log file and event database
     mkdir -p `dirname $LOGFILE` && chown -R ${COMET_USER} `dirname $LOGFILE` || return 2
-    mkdir -p $IVORNDB && chown -R ${COMET_USER} ${IVORNDB} || return 2
+    mkdir -p $EVENTDB && chown -R ${COMET_USER} ${IVORNDB} || return 2
 
     start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --test > /dev/null \
         || return 1
