@@ -19,13 +19,12 @@ PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
 LOGFILE=/var/log/comet/comet.log
 EVENTDB=/var/run/comet
-DAEMON_ARGS="--pidfile ${PIDFILE} --logfile ${LOGFILE} comet -b --eventdb ${EVENTDB}"
 
 # Site specific configuration
 LOCAL_IVORN="ivo://comet.broker/default_ivo"
 REMOTES="--remote voevent.voevent.transientskp.org"
 COMET_USER="comet"
-DAEMON_ARGS="--uid `id -u ${COMET_USER}` --gid `id -g ${COMET_USER}` --pidfile ${PIDFILE} --logfile ${LOGFILE} comet -b --ivorndb ${IVORNDB}"
+DAEMON_ARGS="--uid `id -u ${COMET_USER}` --gid `id -g ${COMET_USER}` --pidfile ${PIDFILE} --logfile ${LOGFILE} comet -b --eventdb ${EVENTDB}"
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0
@@ -42,7 +41,7 @@ do_start()
 
     # Create directory for log file and event database
     mkdir -p `dirname $LOGFILE` && chown -R ${COMET_USER} `dirname $LOGFILE` || return 2
-    mkdir -p $EVENTDB && chown -R ${COMET_USER} ${IVORNDB} || return 2
+    mkdir -p $EVENTDB && chown -R ${COMET_USER} ${EVENTDB} || return 2
 
     start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --test > /dev/null \
         || return 1
