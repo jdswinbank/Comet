@@ -1,10 +1,11 @@
 # Comet VOEvent Broker.
-# IVORN database.
+# Event database.
 # John Swinbank, <swinbank@transientskp.org>, 2012.
 
 import os
 import anydbm
 import time
+from hashlib import sha1
 from threading import Lock
 from collections import defaultdict
 
@@ -16,18 +17,18 @@ from ..icomet import IValidator
 
 from ..log import log
 
-class IVORN_DB(object):
+class Event_DB(object):
     def __init__(self, root):
         self.root = root
         self.databases = defaultdict(Lock)
 
-    def check_ivorn(self, ivorn):
+    def check_event(self, event):
         """
-        Returns True if ivorn is unseen (and hence good to forward), False
+        Returns True if event is unseen (and hence good to forward), False
         otherwise.
         """
-        db_path, key = ivorn.split('//')[1].split('#')
-        db_path = db_path.replace(os.path.sep, "_")
+        db_path = event.attrib['ivorn'].split('//')[1].split('#')[0].replace(os.path.sep, "_")
+        key = sha1(event.text).hexdigest()
         try:
             self.databases[db_path].acquire()
             db = anydbm.open(os.path.join(self.root, db_path), 'c')
@@ -68,7 +69,7 @@ class IVORN_DB(object):
                     # call prune(0) *immediately* after an insertion and might
                     # get hit by floating point weirdness.
                     remove.append(key)
-            log.msg("Expiring %d IVORNs from %s" % (len(remove), db_path))
+            log.msg("Expiring %d events from %s" % (len(remove), db_path))
             for key in remove: del db[key]
             db.close()
             lock.release()
@@ -84,8 +85,8 @@ class IVORN_DB(object):
 
 class CheckPreviouslySeen(object):
     implements(IValidator)
-    def __init__(self, ivorn_db):
-        self.ivorn_db = ivorn_db
+    def __init__(self, event_db):
+        self.event_db = event_db
 
     def __call__(self, event):
         def check_validity(is_valid):
@@ -97,11 +98,11 @@ class CheckPreviouslySeen(object):
                 raise Exception("Previously seen by this broker")
 
         def db_failure(failure):
-            log.warning("IVORN DB lookup failed!")
+            log.warning("Event DB lookup failed!")
             log.err(failure)
             return failure
 
         return deferToThread(
-            self.ivorn_db.check_ivorn,
-            event.attrib['ivorn']
+            self.event_db.check_event,
+            event,
         ).addCallbacks(check_validity, db_failure)

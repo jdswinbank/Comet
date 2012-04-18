@@ -18,8 +18,8 @@ DAEMON=/usr/bin/twistd
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
 LOGFILE=/var/log/comet/comet.log
-IVORNDB=/var/run/comet
-DAEMON_ARGS="--pidfile ${PIDFILE} --logfile ${LOGFILE} comet -b --ivorndb ${IVORNDB}"
+EVENTDB=/var/run/comet
+DAEMON_ARGS="--pidfile ${PIDFILE} --logfile ${LOGFILE} comet -b --eventdb ${EVENTDB}"
 
 # Site specific configuration
 LOCAL_IVORN="ivo://comet.broker/default_ivo"

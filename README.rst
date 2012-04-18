@@ -96,7 +96,7 @@ Comet accepts a few command line options::
     -v, --verbose          Increase verbosity.
     -q, --quiet            Decrease verbosity.
         --local-ivo=       [default: ivo://comet.broker/default_ivo]
-        --ivorndb=         IVORN database root. [default: /tmp]
+        --eventdb=         Event database root. [default: /tmp]
         --receive-port=    TCP port for receiving events. [default: 8098]
         --broadcast-port=  TCP port for broadcasting events. [default: 8099]
         --whitelist=       Network to be included in submission whitelist.
@@ -139,12 +139,14 @@ details. You should specify some appropriate IVORN for your site using the
 ``--local-ivo`` option.
 
 In order to prevent looping on the network (ie, two brokers exchanging the
-same event ad infinitum), a database of previously seen event IVORNs is
-maintained. This database is written to the filesystem in the location
-specified by the ``-i (--ivorndb)`` option. This database is important:
-looping would degrade the quality of the VOEvent network for all users! Note
-that IVORNs persist in the database for 30 days, after which they are expired
-to save space.
+same event ad infinitum), a database of previously seen event is maintained.
+This database is written to the filesystem in the location specified by the
+``--eventdb`` option. This database is important: looping would degrade the
+quality of the VOEvent network for all users! Note that events persist in the
+database for 30 days, after which they are expired to save space. Further,
+note that events are compared using checksums, so a single character
+difference (eg, an additional space) between otherwise identical events will
+cause them to be regarded as distinct.
 
 The Comet receiver will only accept new events for publication from hosts
 which have been specified as "whitelisted". Hosts (or, indeed, networks) may

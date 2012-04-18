@@ -26,8 +26,8 @@ from ..tcp.protocol import VOEventSubscriberFactory
 from ..utility.whitelist import WhitelistingFactory
 from ..utility.relay import EventRelay
 from ..utility.schemavalidator import SchemaValidator
-from ..utility.ivorn_db import CheckPreviouslySeen
-from ..utility.ivorn_db import IVORN_DB
+from ..utility.event_db import CheckPreviouslySeen
+from ..utility.event_db import Event_DB
 
 # Handlers and plugins
 import comet.plugins
@@ -35,8 +35,8 @@ from ..icomet import IHandler
 from ..utility.spawn import SpawnCommand
 
 # Constants
-MAX_AGE = 30.0 * 24 * 60 * 60 # Forget IVORNs after 30 days
-PRUNE_INTERVAL = 6 * 60 * 60  # Prune the IVORN db every 6 hours
+MAX_AGE = 30.0 * 24 * 60 * 60 # Forget events after 30 days
+PRUNE_INTERVAL = 6 * 60 * 60  # Prune the event db every 6 hours
 DEFAULT_REMOTE_PORT = 8099    # If the user doesn't specify
 
 class Options(BaseOptions):
@@ -48,7 +48,7 @@ class Options(BaseOptions):
     ]
 
     optParameters = [
-        ["ivorndb", None, "/tmp", "IVORN database root."],
+        ["eventdb", None, "/tmp", "Event database root."],
         ["receive-port", None, 8098, "TCP port for receiving events.", int],
         ["broadcast-port", None, 8099, "TCP port for broadcasting events.", int],
         ["whitelist", None, "0.0.0.0/0", "Network to be included in submission whitelist."],
@@ -117,8 +117,8 @@ class Options(BaseOptions):
 
 
 def makeService(config):
-    ivorn_db = IVORN_DB(config['ivorndb'])
-    LoopingCall(ivorn_db.prune, MAX_AGE).start(PRUNE_INTERVAL)
+    event_db = Event_DB(config['eventdb'])
+    LoopingCall(event_db.prune, MAX_AGE).start(PRUNE_INTERVAL)
 
     broker_service = MultiService()
     if config['broadcast']:
@@ -139,7 +139,7 @@ def makeService(config):
         receiver_factory = VOEventReceiverFactory(
             local_ivo=config['local-ivo'],
             validators=[
-                CheckPreviouslySeen(ivorn_db),
+                CheckPreviouslySeen(event_db),
                 SchemaValidator(
                     os.path.join(comet.__path__[0], "schema/VOEvent-v2.0.xsd")
                 )
@@ -156,7 +156,7 @@ def makeService(config):
     for host, port in config["remotes"]:
         subscriber_factory = VOEventSubscriberFactory(
             local_ivo=config["local-ivo"],
-            validators=[CheckPreviouslySeen(ivorn_db)],
+            validators=[CheckPreviouslySeen(event_db)],
             handlers=config['handlers'],
             filters=config['filters']
         )
