@@ -19,8 +19,8 @@ from ..protocol import VOEventBroadcasterFactory
 
 class DummyBroadcaster(object):
     def __init__(self):
-        received_alive = False
-        received_event = False
+        self.received_alive = False
+        self.received_event = False
 
     def sendIAmAlive(self):
         self.received_alive = True
