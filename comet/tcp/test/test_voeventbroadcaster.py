@@ -50,7 +50,7 @@ class VOEventBroadcasterFactoryTestCase(unittest.TestCase):
 
     def test_sendTestEvent(self):
         self.assertEqual(self.factory.test_loop.running, True)
-        self.factory.alive_loop.clock.advance(self.factory.TEST_INTERVAL)
+        self.factory.test_loop.clock.advance(self.factory.TEST_INTERVAL)
         for broadcaster in self.factory.broadcasters:
             self.assertEqual(broadcaster.received_event, True)
 
