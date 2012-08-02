@@ -93,4 +93,6 @@ DUMMY_AUTHENTICATE = textwrap.dedent(DUMMY_AUTHENTICATE).strip()
 class DummyEvent(object):
     attrib = {'ivorn': DUMMY_EVENT_IVORN}
     text = DUMMY_VOEVENT
+    signature = None
+    voevent_element_text = DUMMY_VOEVENT
     element = etree.fromstring(DUMMY_VOEVENT)
