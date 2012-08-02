@@ -1,3 +1,6 @@
+import os
+import re
+import io
 import lxml.etree as ElementTree
 
 class xml_document(object):
@@ -28,9 +31,66 @@ class xml_document(object):
         )
     element = property(get_element, set_element)
 
+    def sign(self, passphrase, key_id=None):
+        import gpgme
+        passphrase_cb = lambda uid_hint, passphrase_info, pre_was_bad, fd: os.write(fd, "%s\n" % passphrase)
+
+        input_stream = io.BytesIO(self.voevent_element_text)
+        output_stream = io.BytesIO()
+
+        ctx = gpgme.Context()
+        ctx.armor = True
+        ctx.passphrase_cb = passphrase_cb
+
+        signature = ctx.sign(input_stream, output_stream, gpgme.SIG_MODE_DETACH)
+
+        sig_text = output_stream.getvalue().replace(
+            "-----BEGIN PGP SIGNATURE-----",
+            "=====BEGIN PGP SIGNATURE====="
+        ).replace(
+            "-----END PGP SIGNATURE-----",
+            "=====END PGP SIGNATURE====="
+        )
+        self.text = "%s<!--\n%s\n-->" % (self.voevent_element_text, sig_text)
+
     @property
     def valid_signature(self):
-        return False
+        import gpgme
+        plaintext = io.BytesIO(self.voevent_element_text)
+        signature = io.BytesIO(self.signature)
+        ctx = gpgme.Context()
+        good_sig = False
+        try:
+            [sig] = ctx.verify(signature, plaintext, None)
+            if sig.validity in (gpgme.VALIDITY_FULL, gpgme.VALIDITY_ULTIMATE):
+                good_sig = True
+        except gpgme.GpgmeError:
+            pass
+        finally:
+            return good_sig
+
+    @property
+    def voevent_element_text(self):
+        return re.search(r"(<(\S*)VOEvent.*>.*</(\2)VOEvent>)",
+            self.text, re.DOTALL | re.IGNORECASE | re.MULTILINE
+        ).groups()[0]
+
+    @property
+    def signature(self):
+        sig_match = re.search(
+            r"(=====BEGIN PGP SIGNATURE=====.*=====END PGP SIGNATURE=====)",
+            self.text, re.DOTALL | re.MULTILINE
+        )
+        if sig_match:
+            return sig_match.groups()[0].replace(
+                "=====BEGIN PGP SIGNATURE=====",
+                "-----BEGIN PGP SIGNATURE-----"
+            ).replace(
+                "=====END PGP SIGNATURE=====",
+                "-----END PGP SIGNATURE-----"
+            )
+        else:
+            return None
 
     def __getattr__(self, name):
         try:
