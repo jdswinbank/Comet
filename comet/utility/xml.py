@@ -72,9 +72,13 @@ class xml_document(object):
 
     @property
     def voevent_element_text(self):
-        return re.search(r"(<(\S*)VOEvent.*>.*</(\2)VOEvent>)",
+        voe_match = re.search(r"(<(\S*)VOEvent.*>.*</(\2)VOEvent>)",
             self.text, re.DOTALL | re.IGNORECASE | re.MULTILINE
-        ).groups()[0]
+        )
+        if voe_match:
+            return voe_match.groups()[0]
+        else:
+            return None
 
     @property
     def signature(self):

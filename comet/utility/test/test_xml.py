@@ -22,7 +22,7 @@ class mutable_element_tests(unittest.TestCase):
 
 class xml_document_tests(object):
     def test_signature(self):
-        self.assertFalse(self.doc.valid_signature)
+        self.assertFalse(self.doc.valid_signature())
 
     def test_element(self):
         self.assertIsInstance(self.doc.element, ElementTree._Element)
