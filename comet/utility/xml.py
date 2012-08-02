@@ -55,7 +55,6 @@ class xml_document(object):
         )
         self.text = "%s<!--\n%s\n-->" % (self.voevent_element_text, sig_text)
 
-    @property
     def valid_signature(self):
         import gpgme
         plaintext = io.BytesIO(self.voevent_element_text)

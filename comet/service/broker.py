@@ -27,6 +27,7 @@ from ..utility.whitelist import WhitelistingFactory
 from ..utility.event_db import Event_DB
 from ..validator.schema import CheckSchema
 from ..validator.previously_seen import CheckPreviouslySeen
+from ..utility.signature import CheckSignature
 
 # Handlers and plugins
 import comet.plugins
@@ -170,7 +171,8 @@ def makeService(config):
                 CheckPreviouslySeen(event_db),
                 CheckSchema(
                     os.path.join(comet.__path__[0], "schema/VOEvent-v2.0.xsd")
-                )
+                ),
+                CheckSignature()
             ],
             handlers=config['handlers']
         )
