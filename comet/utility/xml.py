@@ -41,6 +41,8 @@ class xml_document(object):
         ctx = gpgme.Context()
         ctx.armor = True
         ctx.passphrase_cb = passphrase_cb
+        if key_id:
+            [ctx.signers] = ctx.get_key(key_id)
 
         signature = ctx.sign(input_stream, output_stream, gpgme.SIG_MODE_DETACH)
 
