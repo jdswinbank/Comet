@@ -14,6 +14,7 @@ from twisted.internet.endpoints import clientFromString
 
 # VOEvent transport protocol
 from comet.tcp.protocol import VOEventSenderFactory
+from comet.utility.gpg import sign_voevent
 
 # Encapsulation of event
 from comet.utility.xml import xml_document
@@ -22,10 +23,16 @@ import lxml.etree as ElementTree
 from comet.utility import log
 
 class Options(usage.Options):
+    optFlags = [
+        ["sign", "s", "Sign event with GnuPG."]
+    ]
+
     optParameters = [
         ["host", "h", "localhost", "Host to send to."],
         ["port", "p", 8098, "Port to send to.", int],
-        ["file", "f", "-", "Where to read XML text to send (- is stdin)."]
+        ["file", "f", "-", "Where to read XML text to send (- is stdin)."],
+        ["passphrase", None, None, "GnuPG passprhase"],
+        ["key", None, None, "GnuPG key id"]
     ]
 
 class OneShotSender(VOEventSenderFactory):
@@ -52,8 +59,12 @@ if __name__ == "__main__":
     else:
         f = open(config["file"])
 
+    voevent = xml_document(f.read())
+    if config["sign"]:
+        voevent.sign(config["passphrase"], config["key"])
+
     try:
-        factory = OneShotSender(xml_document(f.read()))
+        factory = OneShotSender(voevent)
     except IOError:
         log.warning("Reading XML document failed")
         reactor.callWhenRunning(reactor.stop)
