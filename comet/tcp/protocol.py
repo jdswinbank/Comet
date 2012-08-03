@@ -207,6 +207,7 @@ class VOEventSubscriber(EventHandler, TimeoutMixin):
                     self.filters
                 )
             )
+            self.resetTimeout()
         elif incoming.get('role') in VOEVENT_ROLES:
             log.msg(
                 "VOEvent %s received from %s" % (
@@ -217,6 +218,7 @@ class VOEventSubscriber(EventHandler, TimeoutMixin):
             # We don't send a NAK even if the event is invalid since we don't
             # want to be removed from upstream's distribution list.
             self.process_event(incoming, can_nak=False)
+            self.resetTimeout()
         else:
             log.warning(
                 "Incomprehensible data received from %s (role=%s)" %
