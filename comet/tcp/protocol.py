@@ -156,7 +156,7 @@ class EventHandler(ElementSender):
 
 
 class VOEventSubscriber(EventHandler, TimeoutMixin):
-    ALIVE_INTERVAL = 120 # If we get no iamalive for ALIVE_INTERVAL seconds,
+    ALIVE_INTERVAL = 120 # If we get no traffic for ALIVE_INTERVAL seconds,
                          # assume our peer forgot us.
     callLater = reactor.callLater
     def __init__(self, filters=[]):
@@ -189,6 +189,10 @@ class VOEventSubscriber(EventHandler, TimeoutMixin):
             log.warning("Unparsable message received")
             return
 
+        # Reset the timeout counter and wait another 120 seconds before
+        # disconnecting due to inactivity.
+        self.resetTimeout()
+
         # The root element of both VOEvent and Transport packets has a
         # "role" element which we use to identify the type of message we
         # have received.
@@ -197,7 +201,6 @@ class VOEventSubscriber(EventHandler, TimeoutMixin):
             self.send_xml(
                 iamaliveresponse(self.factory.local_ivo, incoming.find('Origin').text)
             )
-            self.resetTimeout()
         elif incoming.get('role') == "authenticate":
             log.debug("Authenticate received from %s" % str(self.transport.getPeer()))
             self.send_xml(
@@ -207,7 +210,6 @@ class VOEventSubscriber(EventHandler, TimeoutMixin):
                     self.filters
                 )
             )
-            self.resetTimeout()
         elif incoming.get('role') in VOEVENT_ROLES:
             log.msg(
                 "VOEvent %s received from %s" % (
@@ -218,7 +220,6 @@ class VOEventSubscriber(EventHandler, TimeoutMixin):
             # We don't send a NAK even if the event is invalid since we don't
             # want to be removed from upstream's distribution list.
             self.process_event(incoming, can_nak=False)
-            self.resetTimeout()
         else:
             log.warning(
                 "Incomprehensible data received from %s (role=%s)" %
