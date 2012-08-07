@@ -272,6 +272,5 @@ Comet was developed by `John Swinbank <mailto:swinbank@transientskp.org>`_ as
 part of the `LOFAR <http://www.lofar.org/>`_ `Transients Key Project
 <http://www.transientskp.org/>`_. Comments and corrections welcome.
 
-Comet is intended priarily as a research system. See the `Dakota VOEvent Tools
-<http://voevent.dc3.com/>`_ for a complete, high-quality VOEvent distribution
-system.
+See also the `Dakota VOEvent Tools <http://voevent.dc3.com/>`_ for an
+alternative high-quality VOEvent distribution system.
