@@ -14,7 +14,6 @@ from twisted.internet.endpoints import clientFromString
 
 # VOEvent transport protocol
 from comet.tcp.protocol import VOEventSenderFactory
-from comet.utility.gpg import sign_voevent
 
 # Encapsulation of event
 from comet.utility.xml import xml_document
