@@ -23,10 +23,13 @@ application of cryptographic signatures to XML documents is non-trivial: the
 "standard" solution defined in the W3C recommendation `XML Signature Syntax
 and Processing`_ (hereafter "XML-DSig") is long, complex and `widely
 criticised`_, and library support for many common programming langauges is
-hard to come by.
+hard to come by. Further, adopting the "enveloped" signature system described
+by XML-DSig would require changes to the existing `VOEvent schema`_, while the
+alternative "detached" mechanism introduces extra complexity for transport
+protocols.
 
-Work has already been done on this topic within the VOEvent community. `Allen
-et al.`_ have described the application of XML-DSig to VOEvent messages, while
+Work has already been done on this topic within the VOEvent community.
+`Allen`_ described the application of XML-DSig to VOEvent messages, while
 `Denny`_ proposed an alternative approach based on the `OpenPGP`_ system.
 Denny describes the infrastructure around the OpenPGP system in some detail,
 and the reader is encouraged to familiarize themself with that document for an
@@ -224,7 +227,7 @@ imagine that this time would be substantially reduced.
 
 .. _XML Signature Syntax and Processing: http://www.w3.org/TR/xmldsig-core/
 .. _widely criticised: http://www.cs.auckland.ac.nz/~pgut001/pubs/xmlsec.txt
-.. _Allen et al.: http://www3.interscience.wiley.com/cgi-bin/fulltext/117927641/PDFSTART
+.. _Allen: http://www3.interscience.wiley.com/cgi-bin/fulltext/117927641/PDFSTART
 .. _Denny: http://www.ivoa.net/Documents/latest/VOEventDigiSig.html
 .. _OpenPGP: http://www.openpgp.org/
 .. _relevant standards: http://www.ivoa.net/Documents/VOEvent/index.html
@@ -241,3 +244,4 @@ imagine that this time would be substantially reduced.
 .. _Comet: http://comet.transientskp.org/
 .. _by design: http://www.gnupg.org/faq/GnuPG-FAQ.html#cant-we-have-a-gpg-library
 .. _OS X: https://www.apple.com/osx/
+.. _VOEvent schema: http://www.ivoa.net/xml/VOEvent/VOEvent-v2.0.xsd
