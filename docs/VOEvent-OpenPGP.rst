@@ -236,7 +236,7 @@ imagine that this time would be substantially reduced.
 .. _RFC 4880: https://tools.ietf.org/html/rfc4880
 .. _cleartext signature framework: https://tools.ietf.org/html/rfc4880#section-7
 .. _detached signature: https://tools.ietf.org/html/rfc4880#section-11.4
-.. _which are permitted in ASCII armoured OpenPGP signatures: https://tools.ietf.org/html/rfc4880#section-11.4
+.. _which are permitted in ASCII armoured OpenPGP signatures: https://tools.ietf.org/html/rfc4880#section-6.3
 .. _GNU Privacy Guard: http://www.gnupg.org/
 .. _GNU General Public License: https://www.gnu.org/copyleft/gpl.html
 .. _Dakota VOEvent Tools: http://voevent.dc3.com/
