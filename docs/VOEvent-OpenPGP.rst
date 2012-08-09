@@ -200,7 +200,7 @@ while writing this document have been carried out using the `GNU Privacy
 Guard`_, which is freely available and licensed under the `GNU General Public
 License`_.
 
-The `Dakota VOEvent Tools`_ provide a working implmentation of the `earlier
+The `Dakota VOEvent Tools`_ provide a working implementation of the `earlier
 proposal by Denny`_.
 
 A version of Comet with basic support for this system is now being tested, and
