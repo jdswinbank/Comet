@@ -39,3 +39,10 @@ class IValidator(Interface):
         If the event validates, we return normally. If the event is invalid,
         raise an exception.
         """
+
+class IAuthenticatable(Interface):
+    """
+    Provides attributes which can be used for authentication.
+    """
+    authenticated = Attribute("Is authenticated")
+    must_auth = Attribute("Must authenticate")
