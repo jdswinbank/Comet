@@ -1,5 +1,5 @@
 from twisted.trial import unittest
-from zope.interface import implements
+from zope.interface import implementer
 
 from ..auth import check_auth
 from ...icomet import IAuthenticatable
@@ -13,8 +13,9 @@ class DummyClass(object):
     def test_function(self):
         return True
 
+@implementer(IAuthenticatable)
 class AuthenticatableDummyClass(DummyClass):
-    implements(IAuthenticatable)
+    pass
 
 class CheckAuthTestCase(unittest.TestCase):
     def test_bad_interface(self):

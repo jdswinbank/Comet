@@ -4,13 +4,13 @@
 
 from twisted.internet.threads import deferToThread
 
-from zope.interface import implements
+from zope.interface import implementer
 from ..icomet import IValidator
 
 from ..log import log
 
+@implementer(IValidator)
 class CheckSignature(object):
-    implements(IValidator)
     def __call__(self, event):
         def check_validity(is_valid):
             if is_valid:
