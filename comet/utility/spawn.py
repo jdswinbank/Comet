@@ -8,7 +8,7 @@ from twisted.internet import reactor
 from twisted.internet import defer
 from twisted.internet.protocol import ProcessProtocol
 
-from zope.interface import implements
+from zope.interface import implementer
 from ..icomet import IHandler
 
 from ..log import log
@@ -31,11 +31,11 @@ class SpawnCommandProtocol(ProcessProtocol):
             )
         else: self.deferred.callback(True)
 
+@implementer(IHandler)
 class SpawnCommand(object):
     """
     Send a VOEvent to standard input of an external command.
     """
-    implements(IHandler)
     name = "spawn-command"
 
     def __init__(self, cmd, *args):

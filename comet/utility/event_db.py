@@ -12,7 +12,7 @@ from collections import defaultdict
 from twisted.internet.threads import deferToThread
 from twisted.internet.defer import DeferredList
 
-from zope.interface import implements
+from zope.interface import implementer
 from ..icomet import IValidator
 
 from ..log import log
@@ -83,8 +83,8 @@ class Event_DB(object):
         )
 
 
+@implementer(IValidator)
 class CheckPreviouslySeen(object):
-    implements(IValidator)
     def __init__(self, event_db):
         self.event_db = event_db
 

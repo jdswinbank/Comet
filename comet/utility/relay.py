@@ -2,14 +2,14 @@
 # Event relaying tools.
 # John Swinbank, <swinbank@transientskp.org>, 2012.
 
-from zope.interface import implements
+from zope.interface import implementer
 from ..icomet import IHandler
 
+@implementer(IHandler)
 class EventRelay(object):
     """
     Forward an event to all subscribers.
     """
-    implements(IHandler)
     name = "event-relay"
 
     def __init__(self, broadcaster_factory):
