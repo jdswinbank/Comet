@@ -1,6 +1,8 @@
 from twisted.trial import unittest
+from zope.interface import implements
 
 from ..auth import check_auth
+from ...icomet import IAuthenticatable
 
 class DummyClass(object):
     def __init__(self, must_auth, authenticated):
@@ -11,17 +13,28 @@ class DummyClass(object):
     def test_function(self):
         return True
 
+class AuthenticatableDummyClass(DummyClass):
+    implements(IAuthenticatable)
+
 class CheckAuthTestCase(unittest.TestCase):
-    def test_no_auth_required(self):
+    def test_bad_interface(self):
         dummy = DummyClass(False, False)
-        self.assertEqual(dummy.test_function(), True)
+        self.assertEqual(dummy.test_function(), None)
         dummy = DummyClass(False, True)
+        self.assertEqual(dummy.test_function(), None)
+        dummy = DummyClass(True, True)
+        self.assertEqual(dummy.test_function(), None)
+
+    def test_no_auth_required(self):
+        dummy = AuthenticatableDummyClass(False, False)
+        self.assertEqual(dummy.test_function(), True)
+        dummy = AuthenticatableDummyClass(False, True)
         self.assertEqual(dummy.test_function(), True)
 
     def test_auth_valid(self):
-        dummy = DummyClass(True, True)
+        dummy = AuthenticatableDummyClass(True, True)
         self.assertEqual(dummy.test_function(), True)
 
     def test_auth_invalid(self):
-        dummy = DummyClass(True, False)
-        self.assertNotEqual(dummy.test_function(), True)
+        dummy = AuthenticatableDummyClass(True, False)
+        self.assertEqual(dummy.test_function(), None)
