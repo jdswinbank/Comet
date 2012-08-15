@@ -4,6 +4,9 @@
 # XML parsing using lxml
 import lxml.etree as ElementTree
 
+# Zope interface definitions
+from zope.interface import implementer
+
 # Twisted protocol definition
 from twisted.internet import reactor
 from twisted.internet import defer
@@ -23,8 +26,10 @@ from .messages import authenticate, authenticateresponse
 # Constructor for our perodic test events
 from ..utility.voevent import broker_test_message
 
+from ..icomet import IAuthenticatable
 from ..utility import log
 from ..utility.xml import xml_document
+from ..utility.auth import check_auth
 
 # Constants
 VOEVENT_ROLES = ('observation', 'prediction', 'utility', 'test')
@@ -259,12 +264,15 @@ class VOEventSubscriberFactory(ReconnectingClientFactory):
         ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
 
 
+@implementer(IAuthenticatable)
 class VOEventBroadcaster(ElementSender):
     MAX_ALIVE_COUNT = 1      # Drop connection if peer misses too many iamalives
     MAX_OUTSTANDING_ACK = 10 # Drop connection if peer misses too many acks
 
-    def __init__(self):
+    def __init__(self, must_auth=False):
         self.filters = []
+        self.must_auth = must_auth
+        self.authenticated = False
 
     def connectionMade(self):
         log.msg("New subscriber at %s" % str(self.transport.getPeer()))
@@ -323,6 +331,7 @@ class VOEventBroadcaster(ElementSender):
                 (self.transport.getPeer(), incoming.get("role"))
             )
 
+    @check_auth
     def send_event(self, event):
         # Check the event against our filters and, if one or more pass, then
         # we send the event to our subscriber.
@@ -347,7 +356,7 @@ class VOEventBroadcasterFactory(ServerFactory):
     IAMALIVE_INTERVAL = 60 # Sent iamalive every IAMALIVE_INTERVAL seconds
     protocol = VOEventBroadcaster
 
-    def __init__(self, local_ivo, test_interval):
+    def __init__(self, local_ivo, test_interval, authenticating=False):
         # test_interval is the time in seconds between sending test events to
         # the network. 0 to disable.
         self.local_ivo = local_ivo
@@ -355,6 +364,12 @@ class VOEventBroadcasterFactory(ServerFactory):
         self.broadcasters = []
         self.alive_loop = LoopingCall(self.sendIAmAlive)
         self.test_loop = LoopingCall(self.sendTestEvent)
+        self.authenticating = authenticating
+
+    def buildProtocol(self, addr):
+        p = self.protocol(must_auth=self.authenticating)
+        p.factory = self
+        return p
 
     def startFactory(self):
         self.alive_loop.start(self.IAMALIVE_INTERVAL)

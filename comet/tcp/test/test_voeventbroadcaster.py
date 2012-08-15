@@ -43,8 +43,10 @@ class VOEventBroadcasterFactoryTestCaseBase(unittest.TestCase):
     def tearDown(self):
         self.connector.stopListening()
 
-
 class VOEventBroadcasterFactoryTestCase(VOEventBroadcasterFactoryTestCaseBase):
+    def test_must_auth(self):
+        self.assertEqual(self.factory.authenticating, False)
+
     def test_protocol(self):
         self.assertEqual(self.factory.protocol, VOEventBroadcaster)
 
@@ -74,6 +76,14 @@ class VOEventBroadcasterFactoryNoTestEventsTestCase(VOEventBroadcasterFactoryTes
             self.assertEqual(broadcaster.received_event, False)
 
 
+class AuthenticatingVOEventBroadcasterFactoryTestCase(unittest.TestCase):
+    def setUp(self):
+        self.factory = VOEventBroadcasterFactory(DUMMY_SERVICE_IVORN, True)
+
+    def test_must_auth(self):
+        self.assertEqual(self.factory.authenticating, True)
+
+
 class VOEventBroadcasterTestCase(unittest.TestCase):
     def setUp(self):
         self.factory = VOEventBroadcasterFactory(
@@ -95,6 +105,7 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
         self.assertIn(self.proto, self.factory.broadcasters)
 
     def test_sent_authenticate(self):
+        # authenticate has been automatically sent on connection
         received_element = etree.fromstring(self.tr.value()[4:])
         self.assertEqual("authenticate", received_element.attrib['role'])
         self.assertEqual(DUMMY_SERVICE_IVORN, received_element.find('Origin').text)
@@ -198,6 +209,10 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
         self.assertEqual(self.tr.value(), "")
         self.assertEqual(self.tr.connected, False)
 
+    def test_default_auth_settings(self):
+        self.assertEqual(self.proto.must_auth, False)
+        self.assertEqual(self.proto.authenticated, False)
+
     def test_receive_authenticate(self):
         self.tr.clear()
         self.assertEqual(len(self.proto.filters), 0)
@@ -217,3 +232,34 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
         self.assertEqual(self.tr.value(), "")
         self.assertEqual(self.tr.connected, True)
         self.assertEqual(len(self.proto.filters), 0)
+
+class AuthenticatingVOEventBroadcasterTestCase(unittest.TestCase):
+    def setUp(self):
+        self.factory = VOEventBroadcasterFactory(DUMMY_SERVICE_IVORN, True)
+        self.factory.alive_loop.clock = task.Clock()
+        self.factory.test_loop.clock = task.Clock()
+        self.connector = reactor.listenTCP(0, self.factory)
+        self.proto = self.factory.buildProtocol(('127.0.0.1', 0))
+        self.tr = proto_helpers.StringTransportWithDisconnection()
+        self.proto.makeConnection(self.tr)
+        self.tr.protocol = self.proto
+
+    def tearDown(self):
+        self.connector.stopListening()
+
+    def test_default_auth_settings(self):
+        self.assertEqual(self.proto.must_auth, True)
+        self.assertEqual(self.proto.authenticated, False)
+
+    def test_unauthenticated_send_event(self):
+        # No event should be sent since the client is not authenticated
+        self.tr.clear()
+        self.proto.send_event(DummyEvent())
+        self.assertEqual(self.tr.value(), "")
+
+    def test_authenticated_send_event(self):
+        # Client is authenticated; event should be sent
+        self.tr.clear()
+        self.proto.authenticated = True
+        self.proto.send_event(DummyEvent())
+        self.assertNotEqual(self.tr.value(), "")
