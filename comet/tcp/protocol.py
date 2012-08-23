@@ -29,7 +29,7 @@ from ..utility.voevent import broker_test_message
 from ..icomet import IAuthenticatable
 from ..utility import log
 from ..utility.xml import xml_document
-from ..utility.auth import check_auth
+from ..utility.auth import check_auth, CheckSignatureMixin
 
 # Constants
 VOEVENT_ROLES = ('observation', 'prediction', 'utility', 'test')
@@ -265,7 +265,7 @@ class VOEventSubscriberFactory(ReconnectingClientFactory):
 
 
 @implementer(IAuthenticatable)
-class VOEventBroadcaster(ElementSender):
+class VOEventBroadcaster(ElementSender, CheckSignatureMixin):
     MAX_ALIVE_COUNT = 1      # Drop connection if peer misses too many iamalives
     MAX_OUTSTANDING_ACK = 10 # Drop connection if peer misses too many acks
 
@@ -315,7 +315,8 @@ class VOEventBroadcaster(ElementSender):
             self.transport.loseConnection()
         elif incoming.get('role') == "authenticate":
             log.debug("Authentication received from %s" % str(self.transport.getPeer()))
-            self.authenticate(incoming)
+            if self.must_auth and not self.authenticated:
+                self.authenticate(incoming)
             self.filters = []
             for xpath in incoming.findall("Meta/filter[@type=\"xpath\"]"):
                 log.msg(
@@ -331,10 +332,6 @@ class VOEventBroadcaster(ElementSender):
                 "Incomprehensible data received from %s (role=%s)" %
                 (self.transport.getPeer(), incoming.get("role"))
             )
-
-    def authenticate(self, packet):
-        # Todo!
-        self.authenticated = True
 
     @check_auth
     def send_event(self, event):

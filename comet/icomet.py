@@ -46,3 +46,8 @@ class IAuthenticatable(Interface):
     """
     authenticated = Attribute("Is authenticated")
     must_auth = Attribute("Must authenticate")
+
+    def authenticate(packet):
+        """
+        Perform authentication against the given data packet.
+        """
