@@ -228,7 +228,6 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
         self.assertEqual(self.tr.value(), "")
         self.assertEqual(self.tr.connected, True)
         self.assertEqual(len(self.proto.filters), 1)
-        self.assertEqual(self.proto.authenticated, True)
 
     def test_receive_authenticate_with_bad_filter(self):
         self.tr.clear()
@@ -270,3 +269,11 @@ class AuthenticatingVOEventBroadcasterTestCase(unittest.TestCase):
         self.proto.authenticated = True
         self.proto.send_event(DummyEvent())
         self.assertNotEqual(self.tr.value(), "")
+
+    def test_receive_authenticate(self):
+        self.tr.clear()
+        self.assertEqual(len(self.proto.filters), 0)
+        self.proto.stringReceived(
+            DUMMY_AUTHENTICATE % "/*[local-name()=\"VOEvent\" and @role=\"test\"]"
+        )
+        self.assertTrue(self.proto.authenticated, True)
