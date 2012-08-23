@@ -271,9 +271,10 @@ class AuthenticatingVOEventBroadcasterTestCase(unittest.TestCase):
         self.assertNotEqual(self.tr.value(), "")
 
     def test_receive_authenticate(self):
+        # Event is not signed, so authentication fails
         self.tr.clear()
         self.assertEqual(len(self.proto.filters), 0)
         self.proto.stringReceived(
             DUMMY_AUTHENTICATE % "/*[local-name()=\"VOEvent\" and @role=\"test\"]"
         )
-        self.assertTrue(self.proto.authenticated, True)
+        self.assertFalse(self.proto.authenticated)

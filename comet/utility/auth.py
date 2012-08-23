@@ -2,11 +2,18 @@ from functools import wraps
 
 from ..icomet import IAuthenticatable
 from ..log import log
+from signature import sigchecker
 
 class CheckSignatureMixin(object):
     def authenticate(self, packet):
-        # Todo
-        self.authenticated = True
+        def do_authenticate(is_valid):
+            # If the subscriber is not successfully authenticated, sigchecker
+            # will errback and this code will never run. In other words, if we
+            # get here, the subscriber is good.
+            log.msg("Authenticating subscriber")
+            self.authenticated = True
+
+        return sigchecker(packet).addCallback(do_authenticate)
 
 def check_auth(f):
     @wraps(f)
