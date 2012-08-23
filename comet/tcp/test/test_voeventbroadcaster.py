@@ -5,6 +5,8 @@ from twisted.internet import task
 from twisted.trial import unittest
 from twisted.test import proto_helpers
 
+from zope.interface.verify import verifyObject
+
 from ...test.support import DUMMY_IAMALIVE
 from ...test.support import DUMMY_ACK
 from ...test.support import DUMMY_NAK
@@ -14,6 +16,7 @@ from ...test.support import DUMMY_EVENT_IVORN
 from ...test.support import DUMMY_SERVICE_IVORN
 from ...test.support import DummyEvent
 
+from ...icomet import IAuthenticatable
 from ..protocol import VOEventBroadcaster
 from ..protocol import VOEventBroadcasterFactory
 from ...service.broker import BCAST_TEST_INTERVAL
@@ -103,6 +106,9 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
     def test_register_broadcaster(self):
         # Should now be a broadcaster registered with the factory
         self.assertIn(self.proto, self.factory.broadcasters)
+
+    def test_broadcaster_interface(self):
+        self.assertTrue(verifyObject(IAuthenticatable, self.proto))
 
     def test_sent_authenticate(self):
         # authenticate has been automatically sent on connection
