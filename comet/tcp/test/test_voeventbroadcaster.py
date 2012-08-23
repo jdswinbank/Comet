@@ -222,6 +222,7 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
         self.assertEqual(self.tr.value(), "")
         self.assertEqual(self.tr.connected, True)
         self.assertEqual(len(self.proto.filters), 1)
+        self.assertEqual(self.proto.authenticated, True)
 
     def test_receive_authenticate_with_bad_filter(self):
         self.tr.clear()

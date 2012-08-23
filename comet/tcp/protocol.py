@@ -315,6 +315,7 @@ class VOEventBroadcaster(ElementSender):
             self.transport.loseConnection()
         elif incoming.get('role') == "authenticate":
             log.debug("Authentication received from %s" % str(self.transport.getPeer()))
+            self.authenticate(incoming)
             self.filters = []
             for xpath in incoming.findall("Meta/filter[@type=\"xpath\"]"):
                 log.msg(
@@ -330,6 +331,10 @@ class VOEventBroadcaster(ElementSender):
                 "Incomprehensible data received from %s (role=%s)" %
                 (self.transport.getPeer(), incoming.get("role"))
             )
+
+    def authenticate(self, packet):
+        # Todo!
+        self.authenticated = True
 
     @check_auth
     def send_event(self, event):
