@@ -9,6 +9,8 @@ try:
 except ImportError, e:
     log.debug("GPG not available (%s)" % (str(e),))
 
+from ..log import log
+
 def require(modulename):
     """
     Refuse to execute a function if the named module isn't available.
@@ -22,6 +24,24 @@ def require(modulename):
                 return f(*args, **kwargs)
         return wrapper
     return decorator
+
+def dash_escape(text):
+    """
+    Replace all instances of '^' in text with '\^', then all instances of '-'
+    with '^'.
+    """
+    return text.replace("^", "\^").replace("-", "^")
+
+def dash_unescape(text):
+    """
+    Replace all instances of '^' *not* prefixed with '\' by '-', then replace
+    all instances of '\^' by '^'.
+    """
+    # Keep repeating until all overlapping patterns have been replaced.
+    count = True
+    while count:
+        text, count = re.subn(r"(^|[^\\])\^", r"\1-", text)
+    return text.replace("\^", "^")
 
 class xml_document(object):
     __slots__ = ["_element", "_text"]
@@ -66,13 +86,7 @@ class xml_document(object):
 
         signature = ctx.sign(input_stream, output_stream, gpgme.SIG_MODE_DETACH)
 
-        sig_text = output_stream.getvalue().replace(
-            "-----BEGIN PGP SIGNATURE-----",
-            "=====BEGIN PGP SIGNATURE====="
-        ).replace(
-            "-----END PGP SIGNATURE-----",
-            "=====END PGP SIGNATURE====="
-        )
+        sig_text = dash_escape(output_stream.getvalue())
         self.text = "%s<!--\n%s\n-->" % (self.voevent_element_text, sig_text)
 
     @require("gpgme")
@@ -92,7 +106,9 @@ class xml_document(object):
 
     @property
     def voevent_element_text(self):
-        voe_match = re.search(r"(<(\S*)VOEvent.*>.*</(\2)VOEvent>)",
+        # We sign everything from the start of the XML declaration to the end
+        # of the VOEvent.
+        voe_match = re.search(r"(<\?xml.*</\S*VOEvent>)",
             self.text, re.DOTALL | re.IGNORECASE | re.MULTILINE
         )
         if voe_match:
@@ -103,17 +119,11 @@ class xml_document(object):
     @property
     def signature(self):
         sig_match = re.search(
-            r"(=====BEGIN PGP SIGNATURE=====.*=====END PGP SIGNATURE=====)",
+            r"(\^{5}BEGIN PGP SIGNATURE\^{5}.*\^{5}END PGP SIGNATURE\^{5})",
             self.text, re.DOTALL | re.MULTILINE
         )
         if sig_match:
-            return sig_match.groups()[0].replace(
-                "=====BEGIN PGP SIGNATURE=====",
-                "-----BEGIN PGP SIGNATURE-----"
-            ).replace(
-                "=====END PGP SIGNATURE=====",
-                "-----END PGP SIGNATURE-----"
-            )
+            return dash_unescape(sig_match.groups()[0])
         else:
             return None
 

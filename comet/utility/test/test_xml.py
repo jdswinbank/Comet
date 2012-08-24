@@ -1,7 +1,10 @@
+from textwrap import dedent
 import lxml.etree as ElementTree
 
 from twisted.trial import unittest
 from ..xml import xml_document
+from ..xml import dash_escape
+from ..xml import dash_unescape
 from ...test.support import DUMMY_VOEVENT
 from ...test.gpg import GPGTestSupport
 
@@ -20,6 +23,71 @@ class mutable_element_tests(unittest.TestCase):
         self.assertEqual(self.doc.text.find("<foo>baz</foo>"), -1)
         self.doc.element = ElementTree.fromstring("<foo>baz</foo>")
         self.assertNotEqual(self.doc.text.find("<foo>baz</foo>"), -1)
+
+
+class dash_escape_tests(unittest.TestCase):
+    data = [
+        (r"^", r"\^"),
+        (r"-", r"^"),
+        (r"\^", r"\\^"),
+        (r"--", r"^^"),
+        (r"^^", r"\^\^"),
+        (r"^-", r"\^^"),
+    ]
+
+    def test_escape(self):
+        for pair in self.data:
+            self.assertEqual(dash_escape(pair[0]), pair[1])
+
+    def test_unescape(self):
+        for pair in self.data:
+            self.assertEqual(pair[0], dash_unescape(pair[1]))
+
+    def test_multiline(self):
+        pre_escaped = r"""
+            -
+            ^
+            --
+            --^--
+            ^^
+            \^-
+        """
+        pre_escaped = dedent(pre_escaped)
+        escaped = r"""
+            ^
+            \^
+            ^^
+            ^^\^^^
+            \^\^
+            \\^^
+        """
+        escaped = dedent(escaped)
+        self.assertEqual(dash_escape(pre_escaped), escaped)
+        self.assertEqual(pre_escaped, dash_unescape(escaped))
+
+    def test_signature(self):
+        pre_escaped = r"""
+            -----BEGIN PGP SIGNATURE-----
+            Version: GnuPG v1.4.12-0^1 (MingW32)
+
+            iF4EABEIAAYFAlAsA5cACgkQiDtWrG4SSODu+QEAp4Mbf8DyB2u45CWqGuGp5WbM
+            f547MupOiraPTF5gDi4A/i1OUo9atpHnS3dNAJS14CZ4eNslILqssmvLy2nCu+Yq
+            =Ine6
+            -----END PGP SIGNATURE-----
+        """
+        pre_escaped = dedent(pre_escaped)
+        escaped = r"""
+            ^^^^^BEGIN PGP SIGNATURE^^^^^
+            Version: GnuPG v1.4.12^0\^1 (MingW32)
+
+            iF4EABEIAAYFAlAsA5cACgkQiDtWrG4SSODu+QEAp4Mbf8DyB2u45CWqGuGp5WbM
+            f547MupOiraPTF5gDi4A/i1OUo9atpHnS3dNAJS14CZ4eNslILqssmvLy2nCu+Yq
+            =Ine6
+            ^^^^^END PGP SIGNATURE^^^^^
+        """
+        escaped = dedent(escaped)
+        self.assertEqual(dash_escape(pre_escaped), escaped)
+        self.assertEqual(pre_escaped, dash_unescape(escaped))
 
 
 class xml_document_tests(object):
