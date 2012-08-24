@@ -10,8 +10,12 @@ class CheckSignatureMixin(object):
             # If the subscriber is not successfully authenticated, sigchecker
             # will errback and this code will never run. In other words, if we
             # get here, the subscriber is good.
-            log.msg("Authenticating subscriber")
-            self.authenticated = True
+            if is_valid:
+                log.msg("Authenticating subscriber %s" % (self.transport.getPeer(),))
+                self.authenticated = True
+            else:
+                log.warn("Authentication failed for %s" % (self.transport.getPeer(),))
+                self.transport.loseConnection()
 
         return sigchecker(packet).addCallback(do_authenticate)
 

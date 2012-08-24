@@ -9,10 +9,18 @@ from ..xml import xml_document
 from ...test.support import DUMMY_VOEVENT
 from ...test.gpg import GPGTestSupport
 
+class DummyTransport(object):
+    def getPeer(self):
+        return "(Dummy Peer)"
+
+    def loseConnection():
+        pass
+
 class DummyClass(CheckSignatureMixin):
     def __init__(self, must_auth, authenticated):
         self.must_auth = must_auth
         self.authenticated = authenticated
+        self.transport = DummyTransport()
 
     @check_auth
     def test_function(self):
