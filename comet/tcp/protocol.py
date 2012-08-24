@@ -490,6 +490,7 @@ class VOEventReceiver(EventHandler, TimeoutMixin):
         finally:
             # Always shut down the connection when done.
             d.addCallback(lambda x: self.transport.loseConnection())
+            return d
 
 class VOEventReceiverFactory(ServerFactory):
     protocol = VOEventReceiver
