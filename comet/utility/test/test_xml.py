@@ -32,12 +32,14 @@ class xml_document_tests(object):
     def test_text(self):
         self.assertIsInstance(self.doc.text, str)
 
-class xml_document_from_string_TestCase(unittest.TestCase, xml_document_tests):
+class xml_document_from_string_TestCase(GPGTestSupport, xml_document_tests):
     def setUp(self):
+        GPGTestSupport.setUp(self)
         self.doc = xml_document(EXAMPLE_XML)
 
-class xml_document_from_element_TestCase(unittest.TestCase, xml_document_tests):
+class xml_document_from_element_TestCase(GPGTestSupport, xml_document_tests):
     def setUp(self):
+        GPGTestSupport.setUp(self)
         self.doc = xml_document(ElementTree.fromstring(EXAMPLE_XML))
 
 class test_voevent_signatures(GPGTestSupport):

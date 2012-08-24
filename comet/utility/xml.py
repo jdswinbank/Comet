@@ -1,7 +1,27 @@
 import os
 import re
 import io
+import sys
 import lxml.etree as ElementTree
+from functools import wraps
+try:
+    import gpgme
+except ImportError, e:
+    log.debug("GPG not available (%s)" % (str(e),))
+
+def require(modulename):
+    """
+    Refuse to execute a function if the named module isn't available.
+    """
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            if not modulename in sys.modules:
+                raise NotImplementedError("%s not available." % (modulename,))
+            else:
+                return f(*args, **kwargs)
+        return wrapper
+    return decorator
 
 class xml_document(object):
     __slots__ = ["_element", "_text"]
@@ -31,8 +51,8 @@ class xml_document(object):
         )
     element = property(get_element, set_element)
 
+    @require("gpgme")
     def sign(self, passphrase, key_id=None):
-        import gpgme
         passphrase_cb = lambda uid_hint, passphrase_info, pre_was_bad, fd: os.write(fd, "%s\n" % passphrase)
 
         input_stream = io.BytesIO(self.voevent_element_text)
@@ -55,8 +75,8 @@ class xml_document(object):
         )
         self.text = "%s<!--\n%s\n-->" % (self.voevent_element_text, sig_text)
 
+    @require("gpgme")
     def valid_signature(self):
-        import gpgme
         plaintext = io.BytesIO(self.voevent_element_text)
         signature = io.BytesIO(self.signature)
         ctx = gpgme.Context()
