@@ -1,14 +1,19 @@
 import os
 import shutil
 import tempfile
-import gpgme
-import gpgme.editutil
+try:
+    import gpgme
+    import gpgme.editutil
+    SKIP_GPG_TESTS = None
+except ImportError, e:
+    SKIP_GPG_TESTS = "PyGPGME not available (%s)" % (str(e))
 
 from twisted.trial import unittest
 from comet.utility.xml import xml_document
 from comet.test.support import DUMMY_VOEVENT
 
 class GPGTestSupport(unittest.TestCase):
+    skip = SKIP_GPG_TESTS
     PASSPHRASE = "comet"
     KEY_ID = "71837D03"
 
