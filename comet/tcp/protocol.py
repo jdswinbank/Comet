@@ -206,13 +206,14 @@ class VOEventSubscriber(EventHandler, TimeoutMixin):
             )
         elif incoming.get('role') == "authenticate":
             log.debug("Authenticate received from %s" % str(self.transport.getPeer()))
-            self.send_xml(
-                authenticateresponse(
-                    self.factory.local_ivo,
-                    incoming.find('Origin').text,
-                    self.filters
-                )
+            response = authenticateresponse(
+                self.factory.local_ivo,
+                incoming.find('Origin').text,
+                self.filters
             )
+            if self.factory.key_id:
+                response.sign(self.factory.passphrase, self.factory.key_id)
+            self.send_xml(response)
         elif incoming.get('role') in VOEVENT_ROLES:
             log.msg(
                 "VOEvent %s received from %s" % (
@@ -234,11 +235,14 @@ class VOEventSubscriberFactory(ReconnectingClientFactory):
 
     def __init__(self,
         local_ivo, validators=None, handlers=None, filters=None,
+        key_id=None, passphrase=None
     ):
         self.local_ivo = local_ivo
         self.handlers = handlers or []
         self.validators = validators or []
         self.filters = filters or []
+        self.key_id = key_id
+        self.passphrase = passphrase
 
     def buildProtocol(self, addr):
         self.resetDelay()

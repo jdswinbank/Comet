@@ -49,7 +49,8 @@ class Options(BaseOptions):
         ["receive", "r", "Listen for TCP connections from authors."],
         ["broadcast", "b", "Re-broadcast VOEvents received."],
         ["verbose", "v", "Increase verbosity."],
-        ["quiet", "q", "Decrease verbosity."]
+        ["quiet", "q", "Decrease verbosity."],
+        ["subscriber-auth", None, "Require subscribers to authenticate."]
     ]
 
     optParameters = [
@@ -60,7 +61,9 @@ class Options(BaseOptions):
         ["whitelist", None, "0.0.0.0/0", "Network to be included in submission whitelist."],
         ["remote", None, None, "Remote broadcaster to subscribe to (host[:port])."],
         ["filter", None, None, "XPath filter applied to events broadcast by remote."],
-        ["cmd", None, None, "Spawn external command on event receipt."]
+        ["cmd", None, None, "Spawn external command on event receipt."],
+        ["key-id", None, None, "Subscriber OpenPGP key ID."],
+        ["passphrase", None, None, "Passphrase to unlock OpenPGP key."],
     ]
 
     def __init__(self):
@@ -144,7 +147,8 @@ def makeService(config):
     broker_service = MultiService()
     if config['broadcast']:
         broadcaster_factory = VOEventBroadcasterFactory(
-            config["local-ivo"], config['broadcast-test-interval']
+            config["local-ivo"], config['broadcast-test-interval'],
+            config["subscriber-auth"]
         )
         if log.LEVEL >= log.Levels.INFO: broadcaster_factory.noisy = False
         broadcaster_service = TCPServer(
@@ -188,7 +192,9 @@ def makeService(config):
             local_ivo=config["local-ivo"],
             validators=[CheckPreviouslySeen(event_db)],
             handlers=config['handlers'],
-            filters=config['filters']
+            filters=config['filters'],
+            key_id=config['key-id'],
+            passphrase=config['passphrase']
         )
         if log.LEVEL >= log.Levels.INFO: subscriber_factory.noisy = False
         remote_service = TCPClient(host, port, subscriber_factory)

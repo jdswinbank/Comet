@@ -41,6 +41,19 @@ class DefaultOptionsTestCase(unittest.TestCase):
         self.config.parseOptions(cmd_line)
         self.assertTrue(self.config['broadcast'])
 
+    def test_enable_subscriber_auth(self):
+        self.assertFalse(self.config['subscriber-auth'])
+        cmd_line = ["--subscriber-auth"]
+        self.config.parseOptions(cmd_line)
+        self.assertTrue(self.config['subscriber-auth'])
+
+    def test_key_id(self):
+        key_id, passphrase = "1234567890", "0987654321"
+        cmd_line = ["--key-id", key_id, "--passphrase", passphrase]
+        self.config.parseOptions(cmd_line)
+        self.assertEqual(self.config["key-id"], key_id)
+        self.assertEqual(self.config["passphrase"], passphrase)
+
     def test_remotes(self):
         HOST0, PORT = "dummy_0", 0
         HOST1 = "dummy_1"
