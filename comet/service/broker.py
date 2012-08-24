@@ -50,6 +50,7 @@ class Options(BaseOptions):
         ["broadcast", "b", "Re-broadcast VOEvents received."],
         ["verbose", "v", "Increase verbosity."],
         ["quiet", "q", "Decrease verbosity."],
+        ["sender-auth", None, "Only accept signed events from authors"],
         ["subscriber-auth", None, "Require subscribers to authenticate."]
     ]
 
@@ -169,15 +170,11 @@ def makeService(config):
                 os.path.join(comet.__path__[0], "schema/VOEvent-v2.0.xsd")
             )
         ]
+        if config['sender-auth']:
+            validators.append(CheckSignature())
         receiver_factory = VOEventReceiverFactory(
             local_ivo=config['local-ivo'],
-            validators=[
-                CheckPreviouslySeen(event_db),
-                CheckSchema(
-                    os.path.join(comet.__path__[0], "schema/VOEvent-v2.0.xsd")
-                ),
-                CheckSignature()
-            ],
+            validators=validators,
             handlers=config['handlers']
         )
         if log.LEVEL >= log.Levels.INFO: receiver_factory.noisy = False

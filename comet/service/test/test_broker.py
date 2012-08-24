@@ -47,6 +47,12 @@ class DefaultOptionsTestCase(unittest.TestCase):
         self.config.parseOptions(cmd_line)
         self.assertTrue(self.config['subscriber-auth'])
 
+    def test_enable_sender_auth(self):
+        self.assertFalse(self.config['sender-auth'])
+        cmd_line = ["--sender-auth"]
+        self.config.parseOptions(cmd_line)
+        self.assertTrue(self.config['sender-auth'])
+
     def test_key_id(self):
         key_id, passphrase = "1234567890", "0987654321"
         cmd_line = ["--key-id", key_id, "--passphrase", passphrase]
