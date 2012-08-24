@@ -1,13 +1,9 @@
-import os
-import tempfile
-import shutil
-import gpgme
-import gpgme.editutil
 import lxml.etree as ElementTree
 
 from twisted.trial import unittest
-from comet.utility.xml import xml_document
-from comet.test.support import DUMMY_VOEVENT
+from ..xml import xml_document
+from ...test.support import DUMMY_VOEVENT
+from ...test.gpg import GPGTestSupport
 
 EXAMPLE_XML = """<xml></xml>"""
 
@@ -44,21 +40,7 @@ class xml_document_from_element_TestCase(unittest.TestCase, xml_document_tests):
     def setUp(self):
         self.doc = xml_document(ElementTree.fromstring(EXAMPLE_XML))
 
-class test_voevent_signatures(unittest.TestCase):
-    PASSPHRASE = "comet"
-    KEY_ID = "71837D03"
-
-    def setUp(self):
-        self._gpghome = tempfile.mkdtemp(prefix="tmp.gpghome")
-        os.environ["GNUPGHOME"] = self._gpghome
-        ctx = gpgme.Context()
-        with open(os.path.join(os.path.dirname(__file__), "comet.secret.asc"), 'r') as k_fp:
-            ctx.import_(k_fp)
-
-    def tearDown(self):
-        del os.environ["GNUPGHOME"]
-        shutil.rmtree(self._gpghome, ignore_errors=True)
-
+class test_voevent_signatures(GPGTestSupport):
     def test_unsigned(self):
         doc = xml_document(DUMMY_VOEVENT)
         self.assertEqual(doc.signature, None)
@@ -67,16 +49,13 @@ class test_voevent_signatures(unittest.TestCase):
     def test_untrusted_signature(self):
         doc = xml_document(DUMMY_VOEVENT)
         self.assertEqual(doc.signature, None)
-        doc.sign(self.PASSPHRASE, self.KEY_ID)
+        doc = self._sign_untrusted(doc)
         self.assertNotEqual(doc.signature, None)
-        self.assertEqual(doc.valid_signature(), False)
+        self.assertFalse(doc.valid_signature())
 
     def test_trusted_signature(self):
         doc = xml_document(DUMMY_VOEVENT)
         self.assertEqual(doc.signature, None)
-        doc.sign(self.PASSPHRASE, self.KEY_ID)
+        doc = self._sign_trusted(doc)
         self.assertNotEqual(doc.signature, None)
-        self.assertEqual(doc.valid_signature(), False)
-        ctx = gpgme.Context()
-        gpgme.editutil.edit_trust(ctx, ctx.get_key(self.KEY_ID, True), gpgme.VALIDITY_ULTIMATE)
-        self.assertEqual(doc.valid_signature(), True)
+        self.assertTrue(doc.valid_signature())
