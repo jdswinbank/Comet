@@ -4,12 +4,11 @@ import io
 import sys
 import lxml.etree as ElementTree
 from functools import wraps
+from ..log import log
 try:
     import gpgme
 except ImportError, e:
     log.debug("GPG not available (%s)" % (str(e),))
-
-from ..log import log
 
 def require(modulename):
     """
@@ -75,7 +74,7 @@ class xml_document(object):
     def sign(self, passphrase, key_id=None):
         passphrase_cb = lambda uid_hint, passphrase_info, pre_was_bad, fd: os.write(fd, "%s\n" % passphrase)
 
-        input_stream = io.BytesIO(self.voevent_element_text)
+        input_stream = io.BytesIO(self.element_text)
         output_stream = io.BytesIO()
 
         ctx = gpgme.Context()
@@ -87,11 +86,11 @@ class xml_document(object):
         signature = ctx.sign(input_stream, output_stream, gpgme.SIG_MODE_DETACH)
 
         sig_text = dash_escape(output_stream.getvalue())
-        self.text = "%s<!--\n%s\n-->" % (self.voevent_element_text, sig_text)
+        self.text = "%s<!--\n%s\n-->" % (self.element_text, sig_text)
 
     @require("gpgme")
     def valid_signature(self):
-        plaintext = io.BytesIO(self.voevent_element_text)
+        plaintext = io.BytesIO(self.element_text)
         signature = io.BytesIO(self.signature)
         ctx = gpgme.Context()
         good_sig = False
@@ -105,14 +104,14 @@ class xml_document(object):
             return good_sig
 
     @property
-    def voevent_element_text(self):
+    def element_text(self):
         # We sign everything from the start of the XML declaration to the end
-        # of the VOEvent.
-        voe_match = re.search(r"(<\?xml.*</\S*VOEvent>)",
+        # of the element.
+        e_match = re.search(r"(<\?xml.*</\S*(VOEvent|Transport)>)",
             self.text, re.DOTALL | re.IGNORECASE | re.MULTILINE
         )
-        if voe_match:
-            return voe_match.groups()[0]
+        if e_match:
+            return e_match.groups()[0]
         else:
             return None
 
