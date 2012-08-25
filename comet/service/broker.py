@@ -24,7 +24,6 @@ from ..tcp.protocol import VOEventBroadcasterFactory
 from ..tcp.protocol import VOEventReceiverFactory
 from ..tcp.protocol import VOEventSubscriberFactory
 from ..utility.whitelist import WhitelistingFactory
-from ..utility.relay import EventRelay
 from ..utility.event_db import Event_DB
 from ..validator.schema import CheckSchema
 from ..validator.previously_seen import CheckPreviouslySeen
@@ -32,7 +31,8 @@ from ..validator.previously_seen import CheckPreviouslySeen
 # Handlers and plugins
 import comet.plugins
 from ..icomet import IHandler
-from ..utility.spawn import SpawnCommand
+from ..handler.spawn import SpawnCommand
+from ..handler.relay import EventRelay
 
 # Constants
 MAX_AGE = 30.0 * 24 * 60 * 60 # Forget events after 30 days
