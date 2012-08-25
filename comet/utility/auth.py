@@ -1,13 +1,41 @@
+# Comet VOEvent Broker.
+# Authentication routines.
+# John Swinbank, <swinbank@transientskp.org>, 2012.
+
 from functools import wraps
+from twisted.internet.threads import deferToThread
 
 from ..icomet import IAuthenticatable
 from ..log import log
-from signature import sigchecker
+
+def check_sig(packet):
+    """
+    Check the OpenPGP signature on packet.
+
+    Returns a Deferred that provides either a True (signature valid) or False
+    (invalid) when it fires.
+    """
+    def check_validity(is_valid):
+        if is_valid:
+            log.debug("Packet has good signature")
+            return True
+        else:
+            log.debug("Signature could not be verified")
+            return False
+
+    def signature_failure(failure):
+        log.warning("Unable to check signature")
+        log.err(failure)
+        return failure
+
+    return deferToThread(
+        packet.valid_signature
+    ).addCallbacks(check_validity, signature_failure)
 
 class CheckSignatureMixin(object):
     def authenticate(self, packet):
         def do_authenticate(is_valid):
-            # If the subscriber is not successfully authenticated, sigchecker
+            # If the subscriber is not successfully authenticated, check_sig
             # will errback and this code will never run. In other words, if we
             # get here, the subscriber is good.
             if is_valid:
@@ -17,7 +45,7 @@ class CheckSignatureMixin(object):
                 log.warn("Authentication failed for %s" % (self.transport.getPeer(),))
                 self.transport.loseConnection()
 
-        return sigchecker(packet).addCallback(do_authenticate)
+        return check_sig(packet).addCallback(do_authenticate)
 
 def check_auth(f):
     @wraps(f)

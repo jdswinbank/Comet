@@ -3,8 +3,8 @@ import os
 from twisted.trial import unittest
 
 from ...icomet import IValidator
+from ...utility.xml import xml_document
 from ..signature import CheckSignature
-from ..xml import xml_document
 
 from ...test.support import DUMMY_VOEVENT
 from ...test.gpg import GPGTestSupport

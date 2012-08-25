@@ -1,13 +1,14 @@
 from twisted.trial import unittest
 from zope.interface import implementer
 
-from ...log import log
 from ...icomet import IAuthenticatable
+from ...log import log
+from ...test.support import DUMMY_VOEVENT
+from ...test.gpg import GPGTestSupport
+
 from ..auth import CheckSignatureMixin
 from ..auth import check_auth
 from ..xml import xml_document
-from ...test.support import DUMMY_VOEVENT
-from ...test.gpg import GPGTestSupport
 
 class DummyTransport(object):
     def getPeer(self):

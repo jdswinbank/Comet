@@ -26,8 +26,8 @@ from ..tcp.protocol import VOEventSubscriberFactory
 from ..utility.whitelist import WhitelistingFactory
 from ..utility.event_db import Event_DB
 from ..validator.schema import CheckSchema
+from ..validator.signature import CheckSignature
 from ..validator.previously_seen import CheckPreviouslySeen
-from ..utility.signature import CheckSignature
 
 # Handlers and plugins
 import comet.plugins
