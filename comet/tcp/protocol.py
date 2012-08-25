@@ -229,11 +229,13 @@ class VOEventSubscriber(EventHandler, TimeoutMixin):
 class VOEventSubscriberFactory(ReconnectingClientFactory):
     protocol = VOEventSubscriber
 
-    def __init__(self, local_ivo, validators=[], handlers=[], filters=[]):
+    def __init__(self,
+        local_ivo, validators=None, handlers=None, filters=None,
+    ):
         self.local_ivo = local_ivo
-        self.handlers = handlers
-        self.validators = validators
-        self.filters = filters
+        self.handlers = handlers or []
+        self.validators = validators or []
+        self.filters = filters or []
 
     def buildProtocol(self, addr):
         self.resetDelay()
@@ -491,7 +493,7 @@ class VOEventReceiver(EventHandler, TimeoutMixin):
 
 class VOEventReceiverFactory(ServerFactory):
     protocol = VOEventReceiver
-    def __init__(self, local_ivo, validators=[], handlers=[]):
+    def __init__(self, local_ivo, validators=None, handlers=None):
         self.local_ivo = local_ivo
-        self.validators = validators
-        self.handlers = handlers
+        self.validators = validators or []
+        self.handlers = handlers or []
