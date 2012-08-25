@@ -22,7 +22,7 @@ class VOEventReceiverFactoryTestCase(unittest.TestCase):
         self.assertFalse(self.factory.validators) # Should be empty
         self.assertFalse(self.factory.handlers)   # Should be empty
 
-class VOEventReceiverTestCase(unittest.TestCase):
+class VOEventReceiverTestCaseBase(unittest.TestCase):
     def setUp(self):
         self.factory = VOEventReceiverFactory(DUMMY_SERVICE_IVORN)
         self.proto = self.factory.buildProtocol(('127.0.0.1', 0))
@@ -32,15 +32,38 @@ class VOEventReceiverTestCase(unittest.TestCase):
         self.proto.makeConnection(self.tr)
         self.tr.protocol = self.proto
 
+    def _transport_connected(self, *args, **kwargs):
+        self.assertTrue(self.tr.connected)
+
+    def _transport_disconnected(self, *args, **kwargs):
+        self.assertFalse(self.tr.connected)
+
+    def _sent_nothing(self, *args, **kwargs):
+        self.assertEqual(self.tr.value(), "")
+
+    def _sent_ack(self, *args, **kwargs):
+        self.assertEqual(
+            etree.fromstring(self.tr.value()[4:]).attrib['role'],
+            "ack"
+        )
+
+    def _sent_nak(self, *args, **kwargs):
+        self.assertEqual(
+            etree.fromstring(self.tr.value()[4:]).attrib['role'],
+            "nak"
+        )
+
+class VOEventReceiverTestCase(VOEventReceiverTestCaseBase):
     def test_receive_unparseable(self):
         # An unparseable message should generate no response, but the
         # transport should disconnect.
         self.tr.clear()
         unparseable = "This is not parseable"
         self.assertRaises(etree.ParseError, etree.fromstring, unparseable)
-        self.proto.stringReceived(unparseable)
-        self.assertEqual(self.tr.value(), "")
-        self.assertEqual(self.tr.connected, False)
+        d = self.proto.stringReceived(unparseable)
+        d.addCallback(self._sent_nothing)
+        d.addCallback(self._transport_disconnected)
+        return d
 
     def test_receive_incomprehensible(self):
         # An incomprehensible message should generate no response, but the
@@ -48,31 +71,28 @@ class VOEventReceiverTestCase(unittest.TestCase):
         self.tr.clear()
         incomprehensible = "<xml/>"
         etree.fromstring(incomprehensible) # Should not raise an error
-        self.proto.stringReceived(incomprehensible)
-        self.assertEqual(self.tr.value(), "")
-        self.assertEqual(self.tr.connected, False)
+        d = self.proto.stringReceived(incomprehensible)
+        d.addCallback(self._sent_nothing)
+        d.addCallback(self._transport_disconnected)
+        return d
 
     def test_receive_voevent(self):
         self.tr.clear()
-        self.proto.stringReceived(DUMMY_VOEVENT)
-        self.assertEqual(
-            etree.fromstring(self.tr.value()[4:]).attrib['role'],
-            "ack"
-        )
-        self.assertEqual(self.tr.connected, False)
+        d = self.proto.stringReceived(DUMMY_VOEVENT)
+        d.addCallback(self._sent_ack)
+        d.addCallback(self._transport_disconnected)
+        return d
 
     def test_receive_voevent_invalid(self):
         def fail(event):
             raise Exception("Invalid")
         self.factory.validators.append(fail)
         self.tr.clear()
-        self.proto.stringReceived(DUMMY_VOEVENT)
-        self.assertEqual(
-            etree.fromstring(self.tr.value()[4:]).attrib['role'],
-            "nak"
-        )
-        self.assertEqual(self.tr.connected, False)
+        d = self.proto.stringReceived(DUMMY_VOEVENT)
+        d.addCallback(self._sent_nak)
+        d.addCallback(self._transport_disconnected)
+        return d
 
     def test_timeout(self):
         self.clock.advance(self.proto.TIMEOUT)
-        self.assertEqual(self.tr.connected, False)
+        self._transport_disconnected()
