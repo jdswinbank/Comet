@@ -12,9 +12,6 @@ from collections import defaultdict
 from twisted.internet.threads import deferToThread
 from twisted.internet.defer import DeferredList
 
-from zope.interface import implementer
-from ..icomet import IValidator
-
 from ..log import log
 
 class Event_DB(object):
@@ -81,28 +78,3 @@ class Event_DB(object):
             ],
             consumeErrors=True
         )
-
-
-@implementer(IValidator)
-class CheckPreviouslySeen(object):
-    def __init__(self, event_db):
-        self.event_db = event_db
-
-    def __call__(self, event):
-        def check_validity(is_valid):
-            if is_valid:
-                log.debug("Event not previously seen")
-                return True
-            else:
-                log.debug("Event HAS been previously seen")
-                raise Exception("Previously seen by this broker")
-
-        def db_failure(failure):
-            log.warning("Event DB lookup failed!")
-            log.err(failure)
-            return failure
-
-        return deferToThread(
-            self.event_db.check_event,
-            event,
-        ).addCallbacks(check_validity, db_failure)

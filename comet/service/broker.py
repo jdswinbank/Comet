@@ -25,9 +25,9 @@ from ..tcp.protocol import VOEventReceiverFactory
 from ..tcp.protocol import VOEventSubscriberFactory
 from ..utility.whitelist import WhitelistingFactory
 from ..utility.relay import EventRelay
-from ..utility.schemavalidator import SchemaValidator
-from ..utility.event_db import CheckPreviouslySeen
 from ..utility.event_db import Event_DB
+from ..validator.schema import CheckSchema
+from ..validator.previously_seen import CheckPreviouslySeen
 
 # Handlers and plugins
 import comet.plugins
@@ -136,11 +136,17 @@ def makeService(config):
         config['handlers'].append(EventRelay(broadcaster_factory))
 
     if config['receive']:
+        validators = [
+            CheckPreviouslySeen(event_db),
+            CheckSchema(
+                os.path.join(comet.__path__[0], "schema/VOEvent-v2.0.xsd")
+            )
+        ]
         receiver_factory = VOEventReceiverFactory(
             local_ivo=config['local-ivo'],
             validators=[
                 CheckPreviouslySeen(event_db),
-                SchemaValidator(
+                CheckSchema(
                     os.path.join(comet.__path__[0], "schema/VOEvent-v2.0.xsd")
                 )
             ],

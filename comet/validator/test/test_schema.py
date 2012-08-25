@@ -4,8 +4,8 @@ from twisted.trial import unittest
 
 import comet
 from ...icomet import IValidator
-from ..schemavalidator import SchemaValidator
-from ..xml import xml_document
+from ...utility.xml import xml_document
+from ..schema import CheckSchema
 
 GOOD_EVENT_TEXT = """
 <voe:VOEvent xmlns:voe="http://www.ivoa.net/xml/VOEvent/v2.0"
@@ -21,9 +21,9 @@ GOOD_EVENT_TEXT = """
 
 BAD_EVENT_TEXT = """<xml></xml>"""
 
-class SchemaValidatorTestCase(unittest.TestCase):
+class CheckSchemaTestCase(unittest.TestCase):
     def setUp(self):
-        self.validator = SchemaValidator(
+        self.validator = CheckSchema(
             os.path.join(comet.__path__[0], "schema/VOEvent-v2.0.xsd")
         )
 
