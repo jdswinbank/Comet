@@ -22,4 +22,7 @@ class IValidator(Interface):
     def __call__(event):
         """
         Process the event.
+
+        If the event validates, we return normally. If the event is invalid,
+        raise an exception.
         """
