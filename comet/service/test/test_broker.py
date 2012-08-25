@@ -1,3 +1,4 @@
+import tempfile
 from ipaddr import IPNetwork
 
 from twisted.trial import unittest
@@ -54,10 +55,18 @@ class DefaultOptionsTestCase(unittest.TestCase):
         self.assertTrue(self.config['sender-auth'])
 
     def test_key_id(self):
-        key_id, passphrase = "1234567890", "0987654321"
-        cmd_line = ["--key-id", key_id, "--passphrase", passphrase]
+        key_id = "1234567890"
+        cmd_line = ["--key-id", key_id]
         self.config.parseOptions(cmd_line)
         self.assertEqual(self.config["key-id"], key_id)
+
+    def test_passphrase_file(self):
+        passphrase = "1234567890"
+        passphrase_file = tempfile.NamedTemporaryFile()
+        passphrase_file.write(passphrase)
+        passphrase_file.seek(0)
+        cmd_line = ["--passphrase-file", passphrase_file.name]
+        self.config.parseOptions(cmd_line)
         self.assertEqual(self.config["passphrase"], passphrase)
 
     def test_remotes(self):

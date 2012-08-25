@@ -3,6 +3,7 @@
 
 # Python standard library
 import os
+import sys
 
 # Used for building IP whitelist
 from ipaddr import IPNetwork
@@ -64,7 +65,7 @@ class Options(BaseOptions):
         ["filter", None, None, "XPath filter applied to events broadcast by remote."],
         ["cmd", None, None, "Spawn external command on event receipt."],
         ["key-id", None, None, "Subscriber OpenPGP key ID."],
-        ["passphrase", None, None, "Passphrase to unlock OpenPGP key."],
+        ["passphrase-file", None, None, "File containing passphrase to unlock OpenPGP key."],
     ]
 
     def __init__(self):
@@ -105,6 +106,16 @@ class Options(BaseOptions):
         self['running_whitelist'].append(IPNetwork(network))
 
     def postOptions(self):
+        if self['passphrase-file']:
+            try:
+                with open(self['passphrase-file'], 'r') as f:
+                    self['passphrase'] = f.read()
+            except IOError:
+                print "Couldn't read passphrase from %s; exiting." % self['passphrase-file']
+                sys.exit(1)
+        else:
+            self['passphrase'] = None
+
         if self['running_whitelist']:
             self['whitelist'] = self['running_whitelist']
         else:
