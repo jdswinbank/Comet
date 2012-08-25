@@ -4,7 +4,7 @@ import io
 import sys
 import lxml.etree as ElementTree
 from functools import wraps
-from ..log import log
+from ..utility import log
 try:
     import gpgme
 except ImportError, e:

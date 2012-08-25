@@ -2,7 +2,7 @@ from twisted.trial import unittest
 from zope.interface import implementer
 
 from ...icomet import IAuthenticatable
-from ...log import log
+from ...utility import log
 from ...test.support import DUMMY_VOEVENT
 from ...test.gpg import GPGTestSupport
 

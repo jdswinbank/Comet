@@ -6,7 +6,7 @@ from functools import wraps
 from twisted.internet.threads import deferToThread
 
 from ..icomet import IAuthenticatable
-from ..log import log
+from ..utility import log
 
 def check_sig(packet):
     """
