@@ -10,8 +10,7 @@ from twisted.internet.protocol import ProcessProtocol
 
 from zope.interface import implementer
 from ..icomet import IHandler
-
-from ..log import log
+from ..utility import log
 
 class SpawnCommandProtocol(ProcessProtocol):
     def __init__(self, deferred, text):

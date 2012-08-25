@@ -12,7 +12,7 @@ from collections import defaultdict
 from twisted.internet.threads import deferToThread
 from twisted.internet.defer import DeferredList
 
-from ..log import log
+from ..utility import log
 
 class Event_DB(object):
     def __init__(self, root):

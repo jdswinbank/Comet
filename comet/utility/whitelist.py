@@ -6,7 +6,7 @@ from ipaddr import IPAddress
 
 from twisted.protocols.policies import WrappingFactory
 
-from ..log import log
+from ..utility import log
 
 class WhitelistingFactory(WrappingFactory):
     def __init__(self, wrappedFactory, whitelist):

@@ -6,7 +6,7 @@ from twisted.internet.threads import deferToThread
 from zope.interface import implementer
 
 from ..icomet import IValidator
-from ..log import log
+from ..utility import log
 from ..utility.event_db import Event_DB
 
 @implementer(IValidator)

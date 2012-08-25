@@ -2,7 +2,7 @@ from twisted.trial import unittest
 from twisted.python import log as twisted_log
 from twisted.internet import defer
 
-import comet.log.log as log
+from ...utility import log
 
 DUMMY_MESSAGE = "Dummy message"
 

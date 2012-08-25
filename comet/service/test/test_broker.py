@@ -4,7 +4,7 @@ from twisted.trial import unittest
 from twisted.python import usage
 from twisted.internet import reactor
 
-from ...log import log
+from ...utility import log
 
 from ..broker import DEFAULT_REMOTE_PORT
 from ..broker import Options

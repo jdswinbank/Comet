@@ -1,6 +1,6 @@
-# Comet VOEvent Broker
-# Logging system
-# John Swinbank, <swinbank@transientskp.org>, 2012
+# Comet VOEvent Broker.
+# Logging system.
+# John Swinbank, <swinbank@transientskp.org>, 2012.
 
 # We define multiple log levels for use within Comet, and allow the user to
 # adjust the verbosity with command line options. We then gate messages

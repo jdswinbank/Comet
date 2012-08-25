@@ -23,7 +23,7 @@ from .messages import authenticate, authenticateresponse
 # Constructor for our perodic test events
 from ..utility.voevent import broker_test_message
 
-from ..log import log
+from ..utility import log
 from ..utility.xml import xml_document
 
 # Constants

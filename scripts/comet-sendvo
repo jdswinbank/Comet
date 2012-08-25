@@ -16,9 +16,10 @@ from twisted.internet.endpoints import clientFromString
 from comet.tcp.protocol import VOEventSenderFactory
 
 # Encapsulation of event
-from comet.log import log
 from comet.utility.xml import xml_document
 import lxml.etree as ElementTree
+
+from comet.utility import log
 
 class Options(usage.Options):
     optParameters = [
