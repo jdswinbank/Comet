@@ -3,10 +3,9 @@
 # John Swinbank, <swinbank@transientskp.org>, 2012.
 
 from twisted.internet.threads import deferToThread
-
 from zope.interface import implementer
-from ..icomet import IValidator
 
+from ..icomet import IValidator
 from ..log import log
 
 def sigchecker(packet):
@@ -16,7 +15,7 @@ def sigchecker(packet):
             return True
         else:
             log.debug("Signature could not be verified")
-            raise Exception("Packet signature invalid")
+            return False
 
     def signature_failure(failure):
         log.warning("Unable to check signature")
@@ -31,4 +30,7 @@ def sigchecker(packet):
 @implementer(IValidator)
 class CheckSignature(object):
     def __call__(self, event):
-        return sigchecker(event)
+        def raise_if_invalid(result):
+            if not result:
+                raise Exception("Signature validation failed")
+        return sigchecker(event).addCallback(raise_if_invalid)
