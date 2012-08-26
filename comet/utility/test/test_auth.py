@@ -8,6 +8,7 @@ from ...test.gpg import GPGTestSupport
 
 from ..auth import CheckSignatureMixin
 from ..auth import check_auth
+from ..auth import check_sig
 from ..xml import xml_document
 
 class DummyTransport(object):
@@ -43,6 +44,21 @@ class CheckSignatureTestCase(GPGTestSupport):
         doc.sign(self.PASSPHRASE, self.KEY_ID)
         d = self.authenticator.authenticate(doc)
         d.addCallback(lambda x: self.assertTrue(self.authenticator.authenticated))
+        return d
+
+class check_sigTestCase(GPGTestSupport):
+    def test_bad_sig(self):
+        doc = xml_document(DUMMY_VOEVENT)
+        doc = self._sign_untrusted(doc)
+        d = check_sig(doc)
+        d.addCallback(lambda x: self.assertFalse(x))
+        return d
+
+    def test_good_sig(self):
+        doc = xml_document(DUMMY_VOEVENT)
+        doc = self._sign_trusted(doc)
+        d = check_sig(doc)
+        d.addCallback(lambda x: self.assertTrue(x))
         return d
 
 class CheckAuthTestCase(unittest.TestCase):

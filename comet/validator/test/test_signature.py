@@ -64,3 +64,15 @@ class CheckSignatureValidatorTestCase(VOEventReceiverTestCaseBase, GPGTestSuppor
         d.addCallback(self._sent_ack)
         d.addCallback(self._transport_disconnected)
         return d
+
+    def test_receive_voevent_signed_invalid(self):
+        # Event with invalid sig should be rejected
+        self.factory.validators = [CheckSignature()]
+        doc = xml_document(DUMMY_VOEVENT)
+        doc = self._sign_trusted(doc)
+        d = self.proto.stringReceived(
+            doc.text.replace("1234567890", "0987654321")
+        ) # Change value of IVORN within signed text
+        d.addCallback(self._sent_nak)
+        d.addCallback(self._transport_disconnected)
+        return d
