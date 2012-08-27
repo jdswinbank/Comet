@@ -142,3 +142,23 @@ class test_voevent_signatures(GPGTestSupport):
         doc.text = doc.text.replace("a comment", "another comment")
         self.assertNotEqual(position, doc.text.rfind("a comment"))
         self.assertTrue(doc.valid_signature())
+
+    def test_multisig_mixed(self):
+        # If the event is signed twice, once with a trusted signature and once
+        # with a trusted signature, we regard it as valid.
+        doc = xml_document(DUMMY_VOEVENT)
+        self.assertEqual(doc.signature, None)
+        doc = self._sign_untrusted(doc)
+        doc = self._sign_trusted(doc)
+        self.assertNotEqual(doc.signature, None)
+        self.assertTrue(doc.valid_signature())
+
+    def test_multisig_bad(self):
+        # If the event is signed twice, both times with untrusted signatures,
+        # we regard it as invalid.
+        doc = xml_document(DUMMY_VOEVENT)
+        self.assertEqual(doc.signature, None)
+        doc = self._sign_untrusted(doc)
+        doc = self._sign_untrusted(doc)
+        self.assertNotEqual(doc.signature, None)
+        self.assertFalse(doc.valid_signature())

@@ -95,9 +95,11 @@ class xml_document(object):
         ctx = gpgme.Context()
         good_sig = False
         try:
-            [sig] = ctx.verify(signature, plaintext, None)
-            if sig.validity in (gpgme.VALIDITY_FULL, gpgme.VALIDITY_ULTIMATE):
-                good_sig = True
+            sigs = ctx.verify(signature, plaintext, None)
+            for sig in sigs:
+                if sig.validity in (gpgme.VALIDITY_FULL, gpgme.VALIDITY_ULTIMATE):
+                    good_sig = True
+                    break
         except gpgme.GpgmeError:
             pass
         except Exception, e:
