@@ -15,7 +15,7 @@ class DummyTransport(object):
     def getPeer(self):
         return "(Dummy Peer)"
 
-    def loseConnection():
+    def loseConnection(self):
         pass
 
 class DummyClass(CheckSignatureMixin):
