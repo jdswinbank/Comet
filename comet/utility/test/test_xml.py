@@ -129,3 +129,16 @@ class test_voevent_signatures(GPGTestSupport):
         doc = self._sign_trusted(doc)
         self.assertNotEqual(doc.signature, None)
         self.assertTrue(doc.valid_signature())
+
+    def test_no_clobber_comments(self):
+        # We should be able to add, remove and manipulate comments after the
+        # end of the VOEvent element without them either being changed by the
+        # VOEvent signature or affecting its validity.
+        doc = xml_document(DUMMY_VOEVENT + "<!-- a comment -->")
+        doc = self._sign_trusted(doc)
+        position = doc.text.rfind("a comment")
+        self.assertTrue(doc.valid_signature())
+        self.assertEqual(position, doc.text.rfind("a comment"))
+        doc.text = doc.text.replace("a comment", "another comment")
+        self.assertNotEqual(position, doc.text.rfind("a comment"))
+        self.assertTrue(doc.valid_signature())

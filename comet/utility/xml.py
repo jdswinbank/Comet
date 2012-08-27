@@ -74,7 +74,7 @@ class xml_document(object):
     def sign(self, passphrase, key_id=None):
         passphrase_cb = lambda uid_hint, passphrase_info, pre_was_bad, fd: os.write(fd, "%s\n" % passphrase)
 
-        input_stream = io.BytesIO(self.element_text)
+        input_stream = io.BytesIO(self.signable_text)
         output_stream = io.BytesIO()
 
         ctx = gpgme.Context()
@@ -86,11 +86,11 @@ class xml_document(object):
         signature = ctx.sign(input_stream, output_stream, gpgme.SIG_MODE_DETACH)
 
         sig_text = dash_escape(output_stream.getvalue())
-        self.text = "%s<!--\n%s\n-->" % (self.element_text, sig_text)
+        self.text = "%s<!--\n%s\n-->" % (self.text, sig_text)
 
     @require("gpgme")
     def valid_signature(self):
-        plaintext = io.BytesIO(self.element_text)
+        plaintext = io.BytesIO(self.signable_text)
         signature = io.BytesIO(self.signature)
         ctx = gpgme.Context()
         good_sig = False
@@ -100,11 +100,13 @@ class xml_document(object):
                 good_sig = True
         except gpgme.GpgmeError:
             pass
+        except Exception, e:
+            log.msg(e)
         finally:
             return good_sig
 
     @property
-    def element_text(self):
+    def signable_text(self):
         # We sign everything from the start of the XML declaration to the end
         # of the element.
         e_match = re.search(r"(<\?xml.*</\S*(VOEvent|Transport)>)",

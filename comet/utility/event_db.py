@@ -22,7 +22,7 @@ class Event_DB(object):
     @staticmethod
     def _get_event_details(event):
         db_path = event.attrib['ivorn'].split('//')[1].split('#')[0].replace(os.path.sep, "_")
-        key = sha1(event.element_text).hexdigest()
+        key = sha1(event.signable_text).hexdigest()
         return db_path, key
 
     def check_event(self, event):
