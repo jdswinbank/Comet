@@ -13,6 +13,7 @@ from twisted.internet import reactor
 from twisted.internet.endpoints import clientFromString
 
 # VOEvent transport protocol
+from comet.config.options import BaseOptions
 from comet.tcp.protocol import VOEventSenderFactory
 
 # Encapsulation of event
@@ -20,9 +21,7 @@ from comet.utility import log
 from comet.utility.xml import xml_document
 import lxml.etree as ElementTree
 
-from comet.utility import log
-
-class Options(usage.Options):
+class Options(BaseOptions):
     optFlags = [
         ["sign", "s", "Sign event with GnuPG."]
     ]
@@ -30,10 +29,11 @@ class Options(usage.Options):
     optParameters = [
         ["host", "h", "localhost", "Host to send to."],
         ["port", "p", 8098, "Port to send to.", int],
-        ["file", "f", "-", "Where to read XML text to send (- is stdin)."],
-        ["passphrase", None, None, "GnuPG passprhase"],
-        ["key", None, None, "GnuPG key id"]
+        ["file", "f", "-", "Where to read XML text (- is stdin)."],
+        ["passphrase-file", None, None, "File containing passphrase to unlock OpenPGP key."],
+        ["key", None, None, "GnuPG key id."]
     ]
+
 
 class OneShotSender(VOEventSenderFactory):
     """

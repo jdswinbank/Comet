@@ -56,6 +56,7 @@ class Options(BaseOptions):
     ]
 
     optParameters = [
+        ["local-ivo", None, "ivo://comet.broker/default_ivo"],
         ["eventdb", None, "/tmp", "Event database root."],
         ["receive-port", None, 8098, "TCP port for receiving events.", int],
         ["broadcast-port", None, DEFAULT_REMOTE_PORT, "TCP port for broadcasting events.", int],
@@ -106,15 +107,7 @@ class Options(BaseOptions):
         self['running_whitelist'].append(IPNetwork(network))
 
     def postOptions(self):
-        if self['passphrase-file']:
-            try:
-                with open(self['passphrase-file'], 'r') as f:
-                    self['passphrase'] = f.read()
-            except IOError:
-                print "Couldn't read passphrase from %s; exiting." % self['passphrase-file']
-                sys.exit(1)
-        else:
-            self['passphrase'] = None
+        BaseOptions.postOptions(self)
 
         if self['running_whitelist']:
             self['whitelist'] = self['running_whitelist']
