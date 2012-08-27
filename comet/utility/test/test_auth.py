@@ -41,7 +41,6 @@ class CheckSignatureTestCase(GPGTestSupport):
         self.assertFalse(self.authenticator.authenticated)
         doc = xml_document(DUMMY_VOEVENT)
         doc = self._sign_trusted(doc)
-        doc.sign(self.PASSPHRASE, self.KEY_ID)
         d = self.authenticator.authenticate(doc)
         d.addCallback(lambda x: self.assertTrue(self.authenticator.authenticated))
         return d
