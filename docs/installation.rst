@@ -15,6 +15,11 @@ If the optional support for :ref:`authentication <sec-authentication>` is to
 be enabled, `PyGPGME <https://launchpad.net/pygpgme>`_ (and all of its
 dependencies) is also required.
 
+How you make these dependencies available on your system is up to your (or,
+perhaps, to your system administrator). However, the author strongly suggests
+you might start by taking a look at `virtualenv
+<http://www.virtualenv.org/>`_.
+
 Downloading
 -----------
 
