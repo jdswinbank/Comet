@@ -1,22 +1,29 @@
-.. Comet documentation master file, created by
-   sphinx-quickstart on Tue Aug 28 16:29:06 2012.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+Comet
+=====
 
-Welcome to Comet's documentation!
-=================================
+Comet is a Python implementation of the `VOEvent Transport Protocol
+<http://www.ivoa.net/Documents/Notes/VOEventTransport/>`_ (VTP).
 
-Contents:
+The core of Comet is a multi-functional VOEvent broker. It is capable of
+receiving events either by subscribing to one or more remote brokers or by
+direct connection from authors, and can then both process those events locally
+and forward them to its own subscribers. In addition, Comet provides a tool
+for publishing VOEvents to a remote broker.
 
 .. toctree::
    :maxdepth: 2
 
+   installation
+   authentication
+   usage/index
+   appendix/index
 
 
-Indices and tables
-==================
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. Indices and tables
+   ==================
+
+..   * :ref:`genindex`
+     * :ref:`modindex`
+     * :ref:`search`
 

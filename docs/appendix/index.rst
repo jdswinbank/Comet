@@ -1,0 +1,5 @@
+Appendices
+==========
+
+.. toctree::
+   VOEvent-OpenPGP

@@ -1,9 +1,12 @@
 ======================================
 OpenPGP Signatures, Comet and VOEvents
 ======================================
---------------------------
-John Swinbank, August 2012
---------------------------
+
+This document, originally written in August 2012, provides some background on
+the implementation of event and signature authentication in Comet. It is
+provided here for historical purposes only: please refer to current
+documentation for up-to-date information on how to use authentication in
+Comet.
 
 Introduction
 ------------
