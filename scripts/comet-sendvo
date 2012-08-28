@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 # VOEvent sender.
 # John Swinbank, <swinbank@transientskp.org>, 2012.
