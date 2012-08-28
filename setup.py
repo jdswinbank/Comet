@@ -31,6 +31,7 @@ setup(
     scripts=['scripts/comet-sendvo'],
     package_data={
         'comet': ['schema/*.xsd'],
+        'comet.test': ['comet.secret.asc'],
         'comet.handler.test': ['test_spawn.sh'],
         'twisted': ['plugins/comet_plugin.py']
     },
