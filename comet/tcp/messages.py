@@ -58,7 +58,7 @@ def nak(local_ivo, remote_ivo, result=None):
     root_element.set("role", "nak")
     if result:
         meta = ElementTree.SubElement(root_element, "Meta")
-        result_element = ElementTree.SubElement(meta, "result")
+        result_element = ElementTree.SubElement(meta, "Result")
         result_element.text = result
     return xml_document(root_element)
 
