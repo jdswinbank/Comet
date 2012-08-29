@@ -1,15 +1,16 @@
 from distutils.core import setup
+import comet
 
 with open('requirements.txt') as f:
     required = f.read().splitlines()
 
 setup(
-    name="Comet",
-    description="VOEvent Broker",
-    author="John Swinbank",
-    author_email="swinbank@transientskp.org",
-    url="http://comet.transientskp.org/",
-    version="1.0.4",
+    name=comet.__name__,
+    description=comet.__description__,
+    author=comet.__author__,
+    author_email=comet.__contact__,
+    version=comet.__version__,
+    url=comet.__url__,
     packages=[
         'comet',
         'comet.test',
