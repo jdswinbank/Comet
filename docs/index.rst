@@ -20,7 +20,13 @@ for publishing VOEvents to a remote broker.
    authentication
    appendix/index
 
+Comet is developed by `John Swinbank <http://swinbank.org/>`_ as part of the
+`LOFAR Transients Key Project <http://www.transientskp.org/>`_. The latest
+version is always available from `the project website
+<http://comet.transientskp.org/>`_.
 
+Feedback is always welcome. For bug reports and feature requests, please use
+the `issue tracker <https://github.com/jdswinbank/Comet/issues>`_.
 
 .. Indices and tables
    ==================
