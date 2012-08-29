@@ -14,8 +14,10 @@ for publishing VOEvents to a remote broker.
    :maxdepth: 2
 
    installation
-   authentication
    usage/index
+   filtering
+   handlers
+   authentication
    appendix/index
 
 

@@ -1,5 +1,5 @@
-The Event Publisher
-===================
+Event Publisher
+===============
 
 After installation, it should be possible to execute ``comet-sendvo`` directly
 from the command line. Use the ``--help`` option to display a brief usage
