@@ -1,3 +1,4 @@
+import sys
 from twisted.python import usage
 
 class BaseOptions(usage.Options):
