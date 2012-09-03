@@ -111,11 +111,11 @@ class xml_document(object):
     def signable_text(self):
         # We sign everything from the start of the XML declaration to the end
         # of the element.
-        e_match = re.search(r"(<\?xml.*</\S*(VOEvent|Transport)>)",
+        e_match = re.search(r"(<\?xml.*?>\n).*(<(\S*)(VOEvent|Transport).*>.*</(\3)*(VOEvent|Transport)>)",
             self.text, re.DOTALL | re.IGNORECASE | re.MULTILINE
         )
         if e_match:
-            return e_match.groups()[0]
+            return e_match.groups()[0] + e_match.groups()[1]
         else:
             return None
 

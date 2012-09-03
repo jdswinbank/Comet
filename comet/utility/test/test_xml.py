@@ -130,7 +130,7 @@ class test_voevent_signatures(GPGTestSupport):
         self.assertNotEqual(doc.signature, None)
         self.assertTrue(doc.valid_signature())
 
-    def test_no_clobber_comments(self):
+    def test_no_clobber_comments_end(self):
         # We should be able to add, remove and manipulate comments after the
         # end of the VOEvent element without them either being changed by the
         # VOEvent signature or affecting its validity.
@@ -141,6 +141,25 @@ class test_voevent_signatures(GPGTestSupport):
         self.assertEqual(position, doc.text.rfind("a comment"))
         doc.text = doc.text.replace("a comment", "another comment")
         self.assertNotEqual(position, doc.text.rfind("a comment"))
+        self.assertTrue(doc.valid_signature())
+
+    def test_no_clobber_comments_start(self):
+        # We should be able to add, remove and manipulate comments between the
+        # XML declaration and the VOEvent element without them either being
+        # changed by the VOEvent signature or affecting its validity.
+        doc = xml_document(
+            DUMMY_VOEVENT.replace(
+                "<?xml version=\'1.0\' encoding=\'UTF-8\'?>",
+                "<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n<!-- a comment -->"
+            )
+        )
+        self.assertEqual(DUMMY_VOEVENT, doc.signable_text)
+        position = doc.text.find("a comment")
+        doc = self._sign_trusted(doc)
+        self.assertTrue(doc.valid_signature())
+        self.assertEqual(position, doc.text.find("a comment"))
+        doc.text = doc.text.replace("a comment", "another comment")
+        self.assertNotEqual(position, doc.text.find("a comment"))
         self.assertTrue(doc.valid_signature())
 
     def test_multisig_mixed(self):
