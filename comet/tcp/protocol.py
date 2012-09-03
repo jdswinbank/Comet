@@ -411,7 +411,7 @@ class VOEventSender(ElementSender):
                 log.warning("Nak received: %s refused to accept VOEvent (%s)" %
                     (
                         str(self.transport.getPeer()),
-                        incoming.findtext("Meta/result", default="no reason given")
+                        incoming.findtext("Meta/Result", default="no reason given")
                     )
                 )
             else:
