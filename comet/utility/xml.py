@@ -109,8 +109,11 @@ class xml_document(object):
 
     @property
     def signable_text(self):
-        # We sign everything from the start of the XML declaration to the end
-        # of the element.
+        # We sign:
+        #  - The XML declaration + trailing newline;
+        #  - The root element with no trailing newline.
+        # Any comments outside the root element are not signed; comments
+        # within are signed.
         e_match = re.search(r"(<\?xml.*?>\n).*(<(\S*)(VOEvent|Transport).*>.*</(\3)*(VOEvent|Transport)>)",
             self.text, re.DOTALL | re.IGNORECASE | re.MULTILINE
         )
