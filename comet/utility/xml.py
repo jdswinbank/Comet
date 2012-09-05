@@ -72,6 +72,9 @@ class xml_document(object):
 
     @require("gpgme")
     def sign(self, passphrase, key_id=None):
+        # We never want to fall back to a GPG agent; the user must provide
+        # their passphrase directly..
+        os.unsetenv("GPG_AGENT_INFO")
         passphrase_cb = lambda uid_hint, passphrase_info, pre_was_bad, fd: os.write(fd, "%s\n" % passphrase)
 
         input_stream = io.BytesIO(self.signable_text)
