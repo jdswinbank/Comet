@@ -8,8 +8,6 @@ from ..xml import dash_unescape
 from ...test.support import DUMMY_VOEVENT
 from ...test.gpg import GPGTestSupport
 
-EXAMPLE_XML = """<xml></xml>"""
-
 class mutable_element_tests(unittest.TestCase):
     def setUp(self):
         self.doc = xml_document("<foo>bar</foo>")
@@ -103,14 +101,18 @@ class xml_document_tests(object):
 class xml_document_from_string_TestCase(GPGTestSupport, xml_document_tests):
     def setUp(self):
         GPGTestSupport.setUp(self)
-        self.doc = xml_document(EXAMPLE_XML)
+        self.doc = xml_document(DUMMY_VOEVENT)
 
 class xml_document_from_element_TestCase(GPGTestSupport, xml_document_tests):
     def setUp(self):
         GPGTestSupport.setUp(self)
-        self.doc = xml_document(ElementTree.fromstring(EXAMPLE_XML))
+        self.doc = xml_document(ElementTree.fromstring(DUMMY_VOEVENT))
 
 class test_voevent_signatures(GPGTestSupport):
+    def test_signable_text(self):
+        doc = xml_document(DUMMY_VOEVENT)
+        self.assertEqual(doc.signable_text, DUMMY_VOEVENT.replace("\n", "", 1))
+
     def test_unsigned(self):
         doc = xml_document(DUMMY_VOEVENT)
         self.assertEqual(doc.signature, None)
@@ -153,7 +155,7 @@ class test_voevent_signatures(GPGTestSupport):
                 "<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n<!-- a comment -->"
             )
         )
-        self.assertEqual(DUMMY_VOEVENT, doc.signable_text)
+        self.assertEqual(DUMMY_VOEVENT.replace("\n", '', 1), doc.signable_text)
         position = doc.text.find("a comment")
         doc = self._sign_trusted(doc)
         self.assertTrue(doc.valid_signature())
