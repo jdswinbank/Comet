@@ -1,3 +1,4 @@
 *.cache
 *.pid
+*.pyc
 _trial_temp
