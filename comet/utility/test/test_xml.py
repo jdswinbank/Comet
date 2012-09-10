@@ -7,6 +7,11 @@ from ..xml import dash_escape
 from ..xml import dash_unescape
 from ...test.support import DUMMY_VOEVENT
 from ...test.gpg import GPGTestSupport
+from ...test.gpg import GPGTestSupportPublicOnlyKey
+from ...test.gpg import GPGTestSupportIndirectKey
+from ...test.gpg import GPGTestSupportNonExtantKey
+from ...utility import log
+from ...utility.exceptions import CometGPGSigFailedException
 
 class mutable_element_tests(unittest.TestCase):
     def setUp(self):
@@ -183,3 +188,26 @@ class test_voevent_signatures(GPGTestSupport):
         doc = self._sign_untrusted(doc)
         self.assertNotEqual(doc.signature, None)
         self.assertFalse(doc.valid_signature())
+
+class NonExistentKey(GPGTestSupportNonExtantKey):
+    def test_make_sig_fails(self):
+        doc = xml_document(DUMMY_VOEVENT)
+        self.assertRaises(CometGPGSigFailedException, self._sign_untrusted, doc)
+
+class PublicOnlyKey(GPGTestSupportPublicOnlyKey):
+    def test_make_sig_fails(self):
+        doc = xml_document(DUMMY_VOEVENT)
+        self.assertRaises(CometGPGSigFailedException, self._sign_untrusted, doc)
+
+class IndirectKey(GPGTestSupportIndirectKey):
+    def test_countersignature_trust(self):
+        # Even if the signing key is trusted, we reject the signature from a
+        # key with a bad user ID unless it is countersigned by a key with a
+        # good user ID.
+        doc = xml_document(DUMMY_VOEVENT)
+        self.assertEqual(doc.signature, None)
+        doc = self._sign_trusted(doc)
+        self.assertNotEqual(doc.signature, None)
+        self.assertFalse(doc.valid_signature())
+        self._sign_indirect_key()
+        self.assertTrue(doc.valid_signature())

@@ -5,6 +5,7 @@ import sys
 import lxml.etree as ElementTree
 from functools import wraps
 from ..utility import log
+from ..utility.exceptions import CometGPGSigFailedException
 try:
     import gpgme
 except ImportError, e:
@@ -71,7 +72,7 @@ class xml_document(object):
     element = property(get_element, set_element)
 
     @require("gpgme")
-    def sign(self, passphrase, key_id=None):
+    def sign(self, passphrase, key_id):
         # We never want to fall back to a GPG agent; the user must provide
         # their passphrase directly..
         os.unsetenv("GPG_AGENT_INFO")
@@ -83,12 +84,22 @@ class xml_document(object):
         ctx = gpgme.Context()
         ctx.armor = True
         ctx.passphrase_cb = passphrase_cb
-        if key_id:
-            ctx.signers = [ctx.get_key(key_id)]
+        try:
+            ctx.signers = [ctx.get_key(key_id, True)]
+        except gpgme.GpgmeError:
+            raise CometGPGSigFailedException("Cannot load key %s" % (key_id,))
+
+        if not ctx.signers[0].can_sign:
+            raise CometGPGSigFailedException("Key %s cannot make signatures" % (key_id,))
+
+        if not ctx.signers[0].secret:
+            raise CometGPGSigFailedException("Key %s is not secret" % (key_id,))
 
         signature = ctx.sign(input_stream, output_stream, gpgme.SIG_MODE_DETACH)
 
         sig_text = dash_escape(output_stream.getvalue())
+        if not sig_text:
+            raise CometGPGSigFailedException("Signature text is empty")
         self.text = "%s<!--\n%s\n-->" % (self.text, sig_text)
 
     @require("gpgme")
