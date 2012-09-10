@@ -6,6 +6,7 @@ from ..xml import xml_document
 from ..xml import dash_escape
 from ..xml import dash_unescape
 from ...test.support import DUMMY_VOEVENT
+from ...test.support import DUMMY_SERVICE_IVORN
 from ...test.gpg import GPGTestSupport
 from ...test.gpg import GPGTestSupportPublicOnlyKey
 from ...test.gpg import GPGTestSupportIndirectKey
@@ -200,7 +201,16 @@ class PublicOnlyKey(GPGTestSupportPublicOnlyKey):
         self.assertRaises(CometGPGSigFailedException, self._sign_untrusted, doc)
 
 class IndirectKey(GPGTestSupportIndirectKey):
-    def test_countersignature_trust(self):
+    def test_signature_trust(self):
+        # In this instance, we don't care about the author's identity, so long
+        # as their key is trusted.
+        doc = xml_document(DUMMY_VOEVENT)
+        self.assertEqual(doc.signature, None)
+        doc = self._sign_trusted(doc)
+        self.assertNotEqual(doc.signature, None)
+        self.assertTrue(doc.valid_signature())
+
+    def test_countersignature_trust_require_ivorn(self):
         # Even if the signing key is trusted, we reject the signature from a
         # key with a bad user ID unless it is countersigned by a key with a
         # good user ID.
@@ -208,6 +218,6 @@ class IndirectKey(GPGTestSupportIndirectKey):
         self.assertEqual(doc.signature, None)
         doc = self._sign_trusted(doc)
         self.assertNotEqual(doc.signature, None)
-        self.assertFalse(doc.valid_signature())
+        self.assertFalse(doc.valid_signature(required_identity=DUMMY_SERVICE_IVORN))
         self._sign_indirect_key()
-        self.assertTrue(doc.valid_signature())
+        self.assertTrue(doc.valid_signature(required_identity=DUMMY_SERVICE_IVORN))

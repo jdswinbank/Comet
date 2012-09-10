@@ -65,12 +65,13 @@ class GPGTestSupportIndirectKey(GPGTestSupport):
         """
         Signs our key, E0EEF740, with 7C4CA1BD, and marks 7C4CA1BD as trusted.
         """
-        signing_key = "7C4CA1BD"
         ctx = gpgme.Context()
-        ctx.signers = [ctx.get_key(signing_key)]
+        ctx.passphrase_cb = lambda uid_hint, passphrase_info, pre_was_bad, fd: os.write(fd, "%s\n" % self.PASSPHRASE)
+        signing_key = ctx.get_key("7C4CA1BD", True)
+        gpgme.editutil.edit_trust(ctx, signing_key, gpgme.VALIDITY_ULTIMATE)
+        ctx.signers = [signing_key]
         key = ctx.get_key(self.KEY_ID)
         gpgme.editutil.edit_sign(ctx, key, check=0)
-        gpgme.editutil.edit_trust(ctx, ctx.get_key(signing_key, True), gpgme.VALIDITY_ULTIMATE)
 
 class GPGTestSupportNonExtantKey(GPGTestSupport):
     """

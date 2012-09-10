@@ -103,17 +103,27 @@ class xml_document(object):
         self.text = "%s<!--\n%s\n-->" % (self.text, sig_text)
 
     @require("gpgme")
-    def valid_signature(self):
+    def valid_signature(self, required_identity=None):
         plaintext = io.BytesIO(self.signable_text)
         signature = io.BytesIO(self.signature)
         ctx = gpgme.Context()
+        ctx.keylist_mode = gpgme.KEYLIST_MODE_SIGS
         good_sig = False
         try:
             sigs = ctx.verify(signature, plaintext, None)
             for sig in sigs:
-                if sig.validity in (gpgme.VALIDITY_FULL, gpgme.VALIDITY_ULTIMATE):
-                    good_sig = True
-                    break
+                log.msg("Checking sig... %s" % (str(sig)))
+                if sig.status:
+                    # Status is only set if the signature had an error;
+                    # We skip to the next signature
+                    continue
+                base_uid = ctx.get_key(sig.fpr).uids[0]
+                for sig in base_uid.signatures:
+                    uid = ctx.get_key(sig.keyid).uids[0]
+                    if uid.validity in (gpgme.VALIDITY_FULL, gpgme.VALIDITY_ULTIMATE):
+                        if not required_identity or uid.name == required_identity:
+                            good_sig = True
+                            break
         except gpgme.GpgmeError:
             pass
         except Exception, e:
