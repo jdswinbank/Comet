@@ -20,8 +20,14 @@ class CheckPreviouslySeenTestCase(unittest.TestCase):
         d.addCallback(self.assertTrue)
         return d
 
-    def test_seen(self):
+    def test_previously_checked(self):
         self.checker.event_db.check_event(self.event)
+        d = self.checker(self.event)
+        d.addCallback(self.assertTrue)
+        return d
+
+    def test_previously_recorded(self):
+        self.checker.event_db.record_event(self.event)
         return self.assertFailure(self.checker(self.event), Exception)
 
     def test_interface(self):

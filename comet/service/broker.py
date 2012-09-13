@@ -33,6 +33,7 @@ import comet.plugins
 from ..icomet import IHandler
 from ..handler.spawn import SpawnCommand
 from ..handler.relay import EventRelay
+from ..handler.record import EventRecorder
 
 # Constants
 MAX_AGE = 30.0 * 24 * 60 * 60 # Forget events after 30 days
@@ -118,6 +119,7 @@ class Options(BaseOptions):
 
 def makeService(config):
     event_db = Event_DB(config['eventdb'])
+    config['handlers'].append(EventRecorder(event_db))
     LoopingCall(event_db.prune, MAX_AGE).start(PRUNE_INTERVAL)
 
     broker_service = MultiService()

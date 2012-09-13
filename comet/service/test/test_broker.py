@@ -96,6 +96,7 @@ class DefaultOptionsTestCase(unittest.TestCase):
         self.config.parseOptions(cmd_line)
         self.assertEqual(log.LEVEL, log.DEFAULT_LEVEL)
 
+
 class ServiceTestCase(unittest.TestCase):
     def setUp(self):
         config = Options()

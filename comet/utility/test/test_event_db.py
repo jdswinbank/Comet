@@ -13,11 +13,12 @@ class Event_DB_TestCase(unittest.TestCase):
         self.event = DummyEvent()
 
     def test_unseen(self):
-        # First time through, we've not seen this event so this should be True.
+        # Unseen event -> return True
         self.assertTrue(self.event_db.check_event(self.event))
 
     def test_seen(self):
-        # Second time through, we have seen the event, so it should be False.
+        # Seen event -> return False
+        self.event_db.record_event(self.event)
         self.event_db.check_event(self.event)
         self.assertFalse(self.event_db.check_event(self.event))
 

@@ -19,13 +19,18 @@ class Event_DB(object):
         self.root = root
         self.databases = defaultdict(Lock)
 
+    @staticmethod
+    def _get_event_details(event):
+        db_path = event.attrib['ivorn'].split('//')[1].split('#')[0].replace(os.path.sep, "_")
+        key = sha1(event.text).hexdigest()
+        return db_path, key
+
     def check_event(self, event):
         """
         Returns True if event is unseen (and hence good to forward), False
         otherwise.
         """
-        db_path = event.attrib['ivorn'].split('//')[1].split('#')[0].replace(os.path.sep, "_")
-        key = sha1(event.text).hexdigest()
+        db_path, key = self._get_event_details(event)
         try:
             self.databases[db_path].acquire()
             db = anydbm.open(os.path.join(self.root, db_path), 'c')
@@ -33,11 +38,23 @@ class Event_DB(object):
                 if db.has_key(key):
                     return False # Should not forward
                 else:
-                    db[key] = str(time.time())
                     return True # Ok to forward
             finally:
                 db.close()
         finally:
+            self.databases[db_path].release()
+
+    def record_event(self, event):
+        """
+        Record an event as having been seen in the database.
+        """
+        db_path, key = self._get_event_details(event)
+        try:
+            self.databases[db_path].acquire()
+            db = anydbm.open(os.path.join(self.root, db_path), 'c')
+            db[key] = str(time.time())
+        finally:
+            db.close()
             self.databases[db_path].release()
 
     def prune(self, expiry_time):
