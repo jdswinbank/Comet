@@ -19,8 +19,7 @@ class Event_DB(object):
         self.root = root
         self.databases = defaultdict(Lock)
 
-    @staticmethod
-    def _get_event_details(event):
+    def _get_event_details(self, event):
         db_path = event.attrib['ivorn'].split('//')[1].split('#')[0].replace(os.path.sep, "_")
         key = sha1(event.signable_text).hexdigest()
         return db_path, key
