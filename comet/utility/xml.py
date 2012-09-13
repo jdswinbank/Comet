@@ -43,6 +43,20 @@ def dash_unescape(text):
         text, count = re.subn(r"(^|[^\\])\^", r"\1-", text)
     return text.replace("\^", "^")
 
+def check_for_bad_key(key):
+    if key.expired:
+        return "Expired"
+    elif key.disabled:
+        return "Disabled"
+    elif key.invalid:
+        return "Invalid"
+    elif key.revoked:
+        return "Revoked"
+    elif not key.can_sign:
+        return "Not capable of signing"
+    else:
+        return False
+
 class xml_document(object):
     __slots__ = ["_element", "_text"]
 
@@ -85,17 +99,18 @@ class xml_document(object):
         ctx.armor = True
         ctx.passphrase_cb = passphrase_cb
         try:
-            ctx.signers = [ctx.get_key(key_id, True)]
+            ctx.signers = [ctx.get_key(key_id, False)]
         except gpgme.GpgmeError:
             raise CometGPGSigFailedException("Cannot load key %s" % (key_id,))
 
-        if not ctx.signers[0].can_sign:
-            raise CometGPGSigFailedException("Key %s cannot make signatures" % (key_id,))
+        bad_key = check_for_bad_key(ctx.signers[0])
+        if bad_key:
+            raise CometGPGSigFailedException("Key %s is unusable: %s" % (key_id, bad_key))
 
-        if not ctx.signers[0].secret:
-            raise CometGPGSigFailedException("Key %s is not secret" % (key_id,))
-
-        signature = ctx.sign(input_stream, output_stream, gpgme.SIG_MODE_DETACH)
+        try:
+            signature = ctx.sign(input_stream, output_stream, gpgme.SIG_MODE_DETACH)
+        except gpgme.GpgmeError, e:
+            raise CometGPGSigFailedException("gpgme failed: %s" % (str(e),))
 
         sig_text = dash_escape(output_stream.getvalue())
         if not sig_text:
