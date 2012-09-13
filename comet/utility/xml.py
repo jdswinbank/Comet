@@ -112,7 +112,7 @@ class xml_document(object):
         try:
             sigs = ctx.verify(signature, plaintext, None)
             for sig in sigs:
-                log.msg("Checking sig... %s" % (str(sig)))
+                log.debug("Checking sig... %s" % (str(sig)))
                 if sig.status:
                     # Status is only set if the signature had an error;
                     # We skip to the next signature
