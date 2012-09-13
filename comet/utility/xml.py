@@ -6,6 +6,7 @@ import lxml.etree as ElementTree
 from functools import wraps
 from ..utility import log
 from ..utility.exceptions import CometGPGSigFailedException
+from ..utility.auth import check_for_bad_key
 try:
     import gpgme
 except ImportError, e:
@@ -42,20 +43,6 @@ def dash_unescape(text):
     while count:
         text, count = re.subn(r"(^|[^\\])\^", r"\1-", text)
     return text.replace("\^", "^")
-
-def check_for_bad_key(key):
-    if key.expired:
-        return "Expired"
-    elif key.disabled:
-        return "Disabled"
-    elif key.invalid:
-        return "Invalid"
-    elif key.revoked:
-        return "Revoked"
-    elif not key.can_sign:
-        return "Not capable of signing"
-    else:
-        return False
 
 class xml_document(object):
     __slots__ = ["_element", "_text"]

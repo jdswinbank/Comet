@@ -28,23 +28,26 @@ class GPGTestSupport(unittest.TestCase):
     def setUp(self):
         self._gpghome = tempfile.mkdtemp(prefix="tmp.gpghome")
         os.environ["GNUPGHOME"] = self._gpghome
-        ctx = gpgme.Context()
+        self.ctx = gpgme.Context()
         with open(os.path.join(os.path.dirname(__file__), "comet.secret.asc"), 'r') as k_fp:
-            ctx.import_(k_fp)
+            self.ctx.import_(k_fp)
         with open(os.path.join(os.path.dirname(__file__), "comet.public.asc"), 'r') as k_fp:
-            ctx.import_(k_fp)
+            self.ctx.import_(k_fp)
 
     def tearDown(self):
         del os.environ["GNUPGHOME"]
         shutil.rmtree(self._gpghome, ignore_errors=True)
+
+    def _revoke_key(self):
+        with open(os.path.join(os.path.dirname(__file__), "comet.revoke.asc"), 'r') as k_fp:
+            self.ctx.import_(k_fp)
 
     def _sign_untrusted(self, doc):
         doc.sign(self.PASSPHRASE, self.KEY_ID)
         return doc
 
     def _sign_trusted(self, doc):
-        ctx = gpgme.Context()
-        gpgme.editutil.edit_trust(ctx, ctx.get_key(self.KEY_ID, True), gpgme.VALIDITY_ULTIMATE)
+        gpgme.editutil.edit_trust(self.ctx, self.ctx.get_key(self.KEY_ID, True), gpgme.VALIDITY_ULTIMATE)
         return self._sign_untrusted(doc)
 
 class GPGTestSupportPublicOnlyKey(GPGTestSupport):
@@ -65,13 +68,12 @@ class GPGTestSupportIndirectKey(GPGTestSupport):
         """
         Signs our key, E0EEF740, with 7C4CA1BD, and marks 7C4CA1BD as trusted.
         """
-        ctx = gpgme.Context()
-        ctx.passphrase_cb = lambda uid_hint, passphrase_info, pre_was_bad, fd: os.write(fd, "%s\n" % self.PASSPHRASE)
-        signing_key = ctx.get_key("7C4CA1BD", True)
-        gpgme.editutil.edit_trust(ctx, signing_key, gpgme.VALIDITY_ULTIMATE)
-        ctx.signers = [signing_key]
-        key = ctx.get_key(self.KEY_ID)
-        gpgme.editutil.edit_sign(ctx, key, check=0)
+        self.ctx.passphrase_cb = lambda uid_hint, passphrase_info, pre_was_bad, fd: os.write(fd, "%s\n" % self.PASSPHRASE)
+        signing_key = self.ctx.get_key("7C4CA1BD", True)
+        gpgme.editutil.edit_trust(self.ctx, signing_key, gpgme.VALIDITY_ULTIMATE)
+        self.ctx.signers = [signing_key]
+        key = self.ctx.get_key(self.KEY_ID)
+        gpgme.editutil.edit_sign(self.ctx, key, check=0)
 
 class GPGTestSupportNonExtantKey(GPGTestSupport):
     """

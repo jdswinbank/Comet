@@ -5,7 +5,9 @@ from ...icomet import IAuthenticatable
 from ...utility import log
 from ...test.support import DUMMY_VOEVENT
 from ...test.gpg import GPGTestSupport
+from ...test.gpg import GPGTestSupportPublicOnlyKey
 
+from ..auth import check_for_bad_key
 from ..auth import CheckSignatureMixin
 from ..auth import check_auth
 from ..auth import check_sig
@@ -82,3 +84,12 @@ class CheckAuthTestCase(unittest.TestCase):
     def test_auth_invalid(self):
         dummy = AuthenticatableDummyClass(True, False)
         self.assertEqual(dummy.test_function(), None)
+
+class GoodKeyTestCase(GPGTestSupport):
+    def test_key(self):
+        self.assertFalse(check_for_bad_key(self.ctx.get_key(self.KEY_ID)))
+
+class RevokedKeyTestCase(GPGTestSupport):
+    def test_key(self):
+        self._revoke_key()
+        self.assertTrue(check_for_bad_key(self.ctx.get_key(self.KEY_ID)))

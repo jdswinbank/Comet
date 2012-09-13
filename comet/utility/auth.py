@@ -8,6 +8,24 @@ from twisted.internet.threads import deferToThread
 from ..icomet import IAuthenticatable
 from ..utility import log
 
+def check_for_bad_key(key):
+    """
+    Returns False if key is suitable for use in signing. Otherwise, returns
+    the reason why it isn't.
+    """
+    if key.expired:
+        return "Expired"
+    elif key.disabled:
+        return "Disabled"
+    elif key.invalid:
+        return "Invalid"
+    elif key.revoked:
+        return "Revoked"
+    elif not key.can_sign:
+        return "Not capable of signing"
+    else:
+        return False
+
 def check_sig(packet):
     """
     Check the OpenPGP signature on packet.
