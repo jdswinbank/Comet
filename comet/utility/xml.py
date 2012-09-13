@@ -127,14 +127,22 @@ class xml_document(object):
         try:
             sigs = ctx.verify(signature, plaintext, None)
             for sig in sigs:
-                log.debug("Checking sig... %s" % (str(sig)))
+                log.debug("Checking sig... %s" % (str(sig),))
                 if sig.status:
                     # Status is only set if the signature had an error;
                     # We skip to the next signature
+                    log.debug("Sig %s is bad" % (str(sig),))
                     continue
                 base_uid = ctx.get_key(sig.fpr).uids[0]
-                for sig in base_uid.signatures:
-                    uid = ctx.get_key(sig.keyid).uids[0]
+                for key_sig in base_uid.signatures:
+                    if key_sig.revoked or key_sig.expired or key_sig.invalid:
+                        log.debug("Key sig %s is bad" % (str(key_sig),))
+                        continue
+                    # Is fetching the key just by ID secure? Could be an ID
+                    # collision, as they aren't guaranteed unique. However,
+                    # there doesn't seem to be any way to get the fingerprint
+                    # of the key which made the signature.
+                    uid = ctx.get_key(key_sig.keyid).uids[0]
                     if uid.validity in (gpgme.VALIDITY_FULL, gpgme.VALIDITY_ULTIMATE):
                         if not required_identity or uid.name == required_identity:
                             good_sig = True
