@@ -126,9 +126,7 @@ class EventHandler(ElementSender):
         the broker removing the subscriber from its distribution list.
         """
         def handle_valid(status):
-            # TODO: Check what happens if event handler fails. Can we call
-            # another errback?
-            log.debug("Sending ACK to %s" % (self.transport.getPeer()))
+            log.debug("Event accepted; sending ACK to %s" % (self.transport.getPeer()))
             self.send_xml(
                 ack(self.factory.local_ivo, event.attrib['ivorn'])
             )
