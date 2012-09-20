@@ -22,17 +22,15 @@ from comet.utility.xml import xml_document
 import lxml.etree as ElementTree
 
 class Options(BaseOptions):
-    optFlags = [
-        ["sign", "s", "Sign event with GnuPG."]
-    ]
-
     optParameters = [
         ["host", "h", "localhost", "Host to send to."],
         ["port", "p", 8098, "Port to send to.", int],
         ["file", "f", "-", "Where to read XML text (- is stdin)."],
-        ["passphrase-file", None, None, "File containing passphrase to unlock OpenPGP key."],
-        ["key", None, None, "GnuPG key id."]
+        ["sign", "s", None, "Sign event. Requires argument <key_id>:<passphrase_file>."]
     ]
+
+    def opt_sign(self, argument):
+        self["key"], self["passphrase-file"] = argument.split(":")
 
 
 class OneShotSender(VOEventSenderFactory):
@@ -49,10 +47,10 @@ class OneShotSender(VOEventSenderFactory):
         reactor.stop()
 
 if __name__ == "__main__":
+    startLogging(sys.stdout)
     config = Options()
     config.parseOptions()
 
-    startLogging(sys.stdout)
 
     if config["file"] == "-":
         f = sys.stdin
@@ -60,7 +58,7 @@ if __name__ == "__main__":
         f = open(config["file"])
 
     voevent = xml_document(f.read())
-    if config["sign"]:
+    if "key" in config and "passphrase" in config:
         voevent.sign(config["passphrase"], config["key"])
 
     try:
