@@ -1,6 +1,9 @@
 Obtaining and Installing Comet
 ==============================
 
+Comet is intended to easy to install, but does have a few dependencies. Your
+feedback as to how this process could be streamlined is welcome.
+
 Requirements
 ------------
 

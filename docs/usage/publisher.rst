@@ -1,6 +1,9 @@
 Event Publisher
 ===============
 
+``comet-sendvo`` is a simple event publisher: it forwards messages from an
+author to a broker.
+
 After installation, it should be possible to execute ``comet-sendvo`` directly
 from the command line. Use the ``--help`` option to display a brief usage
 message::

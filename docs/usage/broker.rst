@@ -1,6 +1,10 @@
 Broker
 ======
 
+The Broker is the part of Comet which receives messages from authors and
+distributes them to subscribers. It can also subscribe to other brokers and
+act upon events received.
+
 Twisted Applications
 --------------------
 
