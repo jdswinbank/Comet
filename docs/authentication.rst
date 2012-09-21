@@ -44,7 +44,7 @@ Comet's Interaction with ``gpg``
 --------------------------------
 
 Comet provides no tools for managing the configuration of ``gpg``. In
-particular, the user is responsibly for generating their own key, collecting
+particular, the user is responsible for generating their own key, collecting
 keys from others, and managing their trust database using the standard ``gpg``
 tools: refer to its documentation for details. Comet will use the ``gpg``
 configuration and key database as configured in the user's environment when it
