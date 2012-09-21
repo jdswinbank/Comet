@@ -54,6 +54,12 @@ class DefaultOptionsTestCase(unittest.TestCase):
         self.config.parseOptions(cmd_line)
         self.assertTrue(self.config['sender-auth'])
 
+    def test_enable_event_auth(self):
+        self.assertFalse(self.config['event-auth'])
+        cmd_line = ["--event-auth"]
+        self.config.parseOptions(cmd_line)
+        self.assertTrue(self.config['event-auth'])
+
     def test_enable_subscriber_signature(self):
         key_id = "1234567890"
         passphrase = "0987654321"

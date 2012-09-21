@@ -52,7 +52,8 @@ class Options(BaseOptions):
         ["verbose", "v", "Increase verbosity."],
         ["quiet", "q", "Decrease verbosity."],
         ["sender-auth", None, "Only accept signed events from authors"],
-        ["subscriber-auth", None, "Require subscribers to authenticate."]
+        ["subscriber-auth", None, "Require subscribers to authenticate."],
+        ["event-auth", None, "Only act upon signed events from remote brokers."]
     ]
 
     optParameters = [
@@ -191,9 +192,12 @@ def makeService(config):
         receiver_service.setServiceParent(broker_service)
 
     for host, port in config["remotes"]:
+        validators = [CheckPreviouslySeen(event_db)]
+        if config['event-auth']:
+            validators.append(CheckSignature())
         subscriber_factory = VOEventSubscriberFactory(
             local_ivo=config["local-ivo"],
-            validators=[CheckPreviouslySeen(event_db)],
+            validators=validators,
             handlers=config['handlers'],
             filters=config['filters'],
             key_id=config['key'] if "key" in config else None,
