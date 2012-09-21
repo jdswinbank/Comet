@@ -13,7 +13,7 @@ from twisted.internet import reactor
 from twisted.internet.endpoints import clientFromString
 
 # VOEvent transport protocol
-from comet.config.options import BaseOptions
+from comet.utility.options import BaseOptions
 from comet.tcp.protocol import VOEventSenderFactory
 
 # Encapsulation of event
