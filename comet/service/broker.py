@@ -19,7 +19,7 @@ from twisted.application.internet import TCPServer
 # Comet broker routines
 import comet
 from ..utility import log
-from ..config.options import BaseOptions
+from ..utility.options import BaseOptions
 from ..tcp.protocol import VOEventBroadcasterFactory
 from ..tcp.protocol import VOEventReceiverFactory
 from ..tcp.protocol import VOEventSubscriberFactory
