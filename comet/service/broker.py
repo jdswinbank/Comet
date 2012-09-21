@@ -65,8 +65,7 @@ class Options(BaseOptions):
         ["remote", None, None, "Remote broadcaster to subscribe to (host[:port])."],
         ["filter", None, None, "XPath filter applied to events broadcast by remote."],
         ["cmd", None, None, "Spawn external command on event receipt."],
-        ["key-id", None, None, "Subscriber OpenPGP key ID."],
-        ["passphrase-file", None, None, "File containing passphrase to unlock OpenPGP key."],
+        ["sign", None, None, "Sign subscription requests. Requires argument <key_id>:<passphrase_file>."]
     ]
 
     def __init__(self):
@@ -84,6 +83,9 @@ class Options(BaseOptions):
     def opt_verbose(self):
         self['verbosity'] += 1
     opt_v = opt_verbose
+
+    def opt_sign(self, argument):
+        self["key"], self["passphrase-file"] = argument.split(":")
 
     def opt_cmd(self, cmd):
         self["handlers"].append(SpawnCommand(cmd))
@@ -194,8 +196,8 @@ def makeService(config):
             validators=[CheckPreviouslySeen(event_db)],
             handlers=config['handlers'],
             filters=config['filters'],
-            key_id=config['key-id'],
-            passphrase=config['passphrase']
+            key_id=config['key'] if "key" in config else None,
+            passphrase=config['passphrase'] if "passphrase" in config else None
         )
         if log.LEVEL >= log.Levels.INFO: subscriber_factory.noisy = False
         remote_service = TCPClient(host, port, subscriber_factory)

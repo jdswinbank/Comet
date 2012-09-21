@@ -54,19 +54,15 @@ class DefaultOptionsTestCase(unittest.TestCase):
         self.config.parseOptions(cmd_line)
         self.assertTrue(self.config['sender-auth'])
 
-    def test_key_id(self):
+    def test_enable_subscriber_signature(self):
         key_id = "1234567890"
-        cmd_line = ["--key-id", key_id]
-        self.config.parseOptions(cmd_line)
-        self.assertEqual(self.config["key-id"], key_id)
-
-    def test_passphrase_file(self):
-        passphrase = "1234567890"
+        passphrase = "0987654321"
         passphrase_file = tempfile.NamedTemporaryFile()
         passphrase_file.write(passphrase)
         passphrase_file.seek(0)
-        cmd_line = ["--passphrase-file", passphrase_file.name]
+        cmd_line = ["--sign", "%s:%s" % (key_id, passphrase_file.name)]
         self.config.parseOptions(cmd_line)
+        self.assertEqual(self.config["key"], key_id)
         self.assertEqual(self.config["passphrase"], passphrase)
 
     def test_remotes(self):

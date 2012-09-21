@@ -57,6 +57,8 @@ provide a brief usage message::
         --filter=                   XPath filter applied to events broadcast by
                                     remote.
         --cmd=                      Spawn external command on event receipt.
+        --sign=                     Sign subscription requests. Requires argument
+                                    <key_id>:<passphrase_file>.
         --save-event-directory=     Target directory [default:
                                     /Users/jds/Projects/tdig/comet]
         --help                      Display this help and exit.
