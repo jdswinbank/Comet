@@ -148,7 +148,10 @@ are specified with ``--filter``, in the form of `XPath 1.0
 <http://www.w3.org/TR/xpath/>`_ expressions. The broker will evaluate the
 expression against each event it processes, and only forward the event to the
 subscriber if it produces a non-empty result. For more details see the section
-on :ref:`filtering <sec-filtering>`.
+on :ref:`filtering <sec-filtering>`. By supplying the ``--event-auth`` option,
+Comet can be configured to only process events which have been
+cryptographically signed: see the section on :ref:`authentication
+<sec-authentication>` for details.
 
 Common Options
 ++++++++++++++
