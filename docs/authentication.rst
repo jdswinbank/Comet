@@ -91,6 +91,13 @@ Comet's :ref:`broker <sec-broker>` when running in ``--receive`` mode and if
 invoked with the ``--sender-auth`` flag will only accept events which are
 signed by a trusted key which meets the user ID requirements specified above.
 
+When running the broker as a *subscriber* (that is, with the ``--remote``
+option), the ``--event-auth`` option can be used to specify that received
+events should only be acted upon (forwarded to other subscribers, passed to
+:ref:`local handlers <sec-handlers>`, or sent to external commands) if they
+are properly signed (including the requirements on the ``AuthorIVORN`` outline
+above).
+
 Subscriber Authentication
 -------------------------
 
@@ -110,12 +117,6 @@ containing the passphrase are supplied as an argument, separated by a colon
 (``--sign 12345678:passphrase_file``). Note that only one key and passphrase
 can be specified, regardless of how many remote brokers are being connected
 to: the same key will be used for all of them.
-
-Also when invoking comet as a *subscriber*, the ``--event-auth`` option can be
-used to specify that received events should only be acted upon (forwarded to
-other subscribers, passed to :ref:`local handlers <sec-handlers>`, or sent to
-external commands) if they are properly signed (including the requirements on
-the ``AuthorIVORN`` outline above).
 
 When invoking Comet as a *broadcaster* (that is, with the ``--broadcast``
 option), the ``--subscriber-auth`` option enables authentication of

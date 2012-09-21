@@ -37,12 +37,15 @@ provide a brief usage message::
   $ twistd comet --help
   Usage: twistd [options] comet [options]
   Options:
+<<<<<<< HEAD
     -r, --receive                   Listen for TCP connections from authors.
     -b, --broadcast                 Re-broadcast VOEvents received.
     -v, --verbose                   Increase verbosity.
     -q, --quiet                     Decrease verbosity.
         --print-event               Enable the print-event plugin
         --save-event                Enable the save-event plugin
+        --subscriber-auth           Require subscribers to authenticate.
+        --event-auth                Only act upon signed events from remote brokers.
         --local-ivo=                [default: ivo://comet.broker/default_ivo]
         --eventdb=                  Event database root. [default: /tmp]
         --receive-port=             TCP port for receiving events. [default: 8098]
