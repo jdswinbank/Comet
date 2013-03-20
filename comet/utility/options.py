@@ -8,7 +8,7 @@ class BaseOptions(usage.Options):
                 with open(self['passphrase-file'], 'r') as f:
                     self['passphrase'] = f.read()
             except IOError:
-                print "Couldn't read passphrase from %s; exiting." % self['passphrase-file']
+                print("Couldn't read passphrase from %s; exiting." % self['passphrase-file'])
                 sys.exit(1)
         else:
             self['passphrase'] = None
