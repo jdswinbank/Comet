@@ -1,5 +1,9 @@
 from distutils.core import setup
 
+
+with open('requirements.txt') as f:
+    required = f.read().splitlines()
+
 setup(
     name="Comet",
     description="VOEvent Broker",
@@ -26,5 +30,6 @@ setup(
         'comet': ['schema/*.xsd'],
         'comet.utility.test': ['test_spawn.sh'],
         'twisted': ['plugins/comet_plugin.py']
-    }
+    },
+    install_requires=required
 )
