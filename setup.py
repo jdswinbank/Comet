@@ -9,6 +9,7 @@ setup(
     description="VOEvent Broker",
     author="John Swinbank",
     author_email="swinbank@transientskp.org",
+    version="1.0.1",
     packages=[
         'comet',
         'comet.test',
