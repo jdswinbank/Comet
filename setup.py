@@ -9,7 +9,7 @@ setup(
     author="John Swinbank",
     author_email="swinbank@transientskp.org",
     url="http://comet.transientskp.org/",
-    version="1.0.1",
+    version="1.0.3",
     packages=[
         'comet',
         'comet.test',
