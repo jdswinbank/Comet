@@ -1,0 +1,4 @@
+twisted>=11.1.0
+lxml>=2.3
+zope.interface>=3.6
+ipaddr
