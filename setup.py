@@ -14,7 +14,6 @@ setup(
     packages=[
         'comet',
         'comet.test',
-        'comet.config',
         'comet.plugins',
         'comet.plugins.test',
         'comet.service',
