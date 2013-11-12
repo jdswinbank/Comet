@@ -1,10 +1,15 @@
 from distutils.core import setup
 
+with open('requirements.txt') as f:
+    required = f.read().splitlines()
+
 setup(
     name="Comet",
     description="VOEvent Broker",
     author="John Swinbank",
     author_email="swinbank@transientskp.org",
+    url="http://comet.transientskp.org/",
+    version="1.0.1",
     packages=[
         'comet',
         'comet.test',
@@ -26,5 +31,6 @@ setup(
         'comet': ['schema/*.xsd'],
         'comet.utility.test': ['test_spawn.sh'],
         'twisted': ['plugins/comet_plugin.py']
-    }
+    },
+    install_requires=required
 )
