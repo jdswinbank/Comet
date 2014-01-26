@@ -16,7 +16,7 @@ from ...test.support import DummyEvent
 
 from ..protocol import VOEventBroadcaster
 from ..protocol import VOEventBroadcasterFactory
-from ..protocol import BCAST_TEST_INTERVAL
+from ...service.broker import BCAST_TEST_INTERVAL
 
 class DummyBroadcaster(object):
     def __init__(self):
@@ -33,8 +33,7 @@ class DummyBroadcaster(object):
 class VOEventBroadcasterFactoryTestCaseBase(unittest.TestCase):
     def setUp(self, test_interval=BCAST_TEST_INTERVAL):
         self.factory = VOEventBroadcasterFactory(
-            DUMMY_SERVICE_IVORN,
-            test_interval=test_interval
+            DUMMY_SERVICE_IVORN, test_interval
         )
         self.factory.alive_loop.clock = task.Clock()
         self.factory.test_loop.clock = task.Clock()
@@ -77,7 +76,9 @@ class VOEventBroadcasterFactoryNoTestEventsTestCase(VOEventBroadcasterFactoryTes
 
 class VOEventBroadcasterTestCase(unittest.TestCase):
     def setUp(self):
-        self.factory = VOEventBroadcasterFactory(DUMMY_SERVICE_IVORN)
+        self.factory = VOEventBroadcasterFactory(
+            DUMMY_SERVICE_IVORN, BCAST_TEST_INTERVAL
+        )
         self.factory.alive_loop.clock = task.Clock()
         self.factory.test_loop.clock = task.Clock()
         self.connector = reactor.listenTCP(0, self.factory)

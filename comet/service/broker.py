@@ -40,6 +40,9 @@ MAX_AGE = 30.0 * 24 * 60 * 60 # Forget events after 30 days
 PRUNE_INTERVAL = 6 * 60 * 60  # Prune the event db every 6 hours
 DEFAULT_REMOTE_PORT = 8099    # If the user doesn't specify
 
+# By default, we brodcast a test event every BCAST_TEST_INTERVAL seconds.
+BCAST_TEST_INTERVAL = 3600
+
 class Options(BaseOptions):
     optFlags = [
         ["receive", "r", "Listen for TCP connections from authors."],
@@ -51,7 +54,8 @@ class Options(BaseOptions):
     optParameters = [
         ["eventdb", None, "/tmp", "Event database root."],
         ["receive-port", None, 8098, "TCP port for receiving events.", int],
-        ["broadcast-port", None, 8099, "TCP port for broadcasting events.", int],
+        ["broadcast-port", None, DEFAULT_REMOTE_PORT, "TCP port for broadcasting events.", int],
+        ["broadcast-test-interval", None, BCAST_TEST_INTERVAL, "Interval between test event brodcasts (in seconds; 0 to disable).", int],
         ["whitelist", None, "0.0.0.0/0", "Network to be included in submission whitelist."],
         ["remote", None, None, "Remote broadcaster to subscribe to (host[:port])."],
         ["filter", None, None, "XPath filter applied to events broadcast by remote."],
@@ -124,7 +128,9 @@ def makeService(config):
 
     broker_service = MultiService()
     if config['broadcast']:
-        broadcaster_factory = VOEventBroadcasterFactory(config["local-ivo"])
+        broadcaster_factory = VOEventBroadcasterFactory(
+            config["local-ivo"], config['broadcast-test-interval']
+        )
         if log.LEVEL >= log.Levels.INFO: broadcaster_factory.noisy = False
         broadcaster_service = TCPServer(
             config['broadcast-port'],

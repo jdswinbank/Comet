@@ -30,3 +30,6 @@ Version 1.1.x
     Cryptographic authentication of VOEvent messages and subscribers.
 
     Improved documentation.
+
+    Interval between broadcast test events is user configurable, and they may
+    be disabled. See the ``--broadcast-test-interval`` option.

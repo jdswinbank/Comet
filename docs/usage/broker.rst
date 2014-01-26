@@ -45,6 +45,8 @@ provide a brief usage message::
         --eventdb=          Event database root. [default: /tmp]
         --receive-port=     TCP port for receiving events. [default: 8098]
         --broadcast-port=   TCP port for broadcasting events. [default: 8099]
+        --broadcast-test-interval=  Interval between test event brodcasts (in
+                                    seconds; 0 to disable). [default: 3600]
         --whitelist=        Network to be included in submission whitelist.
                             [default: 0.0.0.0/0]
         --remote=           Remote broadcaster to subscribe to (host[:port]).
@@ -127,6 +129,12 @@ implementation and implications of this, see the section on
 
 Broadcaster Options
 +++++++++++++++++++
+
+By default, Comet will broadcast a content-free test event to all subscribers
+every hour. The aim is to help with network debugging. The interval between
+test events may be configured using the ``--broadcast-test-interval`` option,
+which accepts a value in seconds.  Set it to ``0`` to disable the test
+broadcast completely.
 
 When Comet is configured to rebroadcast events to subscribers (with
 ``--broadcast``), it can optionally require those subscribers to

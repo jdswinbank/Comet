@@ -28,8 +28,6 @@ from ..utility.xml import xml_document
 
 # Constants
 VOEVENT_ROLES = ('observation', 'prediction', 'utility', 'test')
-# By default, we brodcast a test event every BCAST_TEST_INTERVAL seconds.
-BCAST_TEST_INTERVAL = 3600
 
 """
 Implements the VOEvent Transport Protocol; see
@@ -349,7 +347,9 @@ class VOEventBroadcasterFactory(ServerFactory):
     IAMALIVE_INTERVAL = 60 # Sent iamalive every IAMALIVE_INTERVAL seconds
     protocol = VOEventBroadcaster
 
-    def __init__(self, local_ivo, test_interval=BCAST_TEST_INTERVAL):
+    def __init__(self, local_ivo, test_interval):
+        # test_interval is the time in seconds between sending test events to
+        # the network. 0 to disable.
         self.local_ivo = local_ivo
         self.test_interval = test_interval
         self.broadcasters = []

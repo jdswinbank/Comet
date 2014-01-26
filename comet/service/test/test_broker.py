@@ -6,6 +6,7 @@ from twisted.internet import reactor
 
 from ...utility import log
 
+from ..broker import BCAST_TEST_INTERVAL
 from ..broker import DEFAULT_REMOTE_PORT
 from ..broker import Options
 from ..broker import makeService
@@ -21,6 +22,12 @@ class DefaultOptionsTestCase(unittest.TestCase):
             self.config.parseOptions,
             cmd_line
         )
+
+    def test_test_event_loop(self):
+        self.assertEqual(self.config['broadcast-test-interval'], BCAST_TEST_INTERVAL)
+        cmd_line = ["--broadcast-test-interval", "0"]
+        self.config.parseOptions(cmd_line)
+        self.assertEqual(self.config['broadcast-test-interval'], 0)
 
     def test_enable_receive(self):
         self.assertFalse(self.config['receive'])
