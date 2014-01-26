@@ -16,6 +16,7 @@ from ...test.support import DummyEvent
 
 from ..protocol import VOEventBroadcaster
 from ..protocol import VOEventBroadcasterFactory
+from ..protocol import BCAST_TEST_INTERVAL
 
 class DummyBroadcaster(object):
     def __init__(self):
@@ -28,9 +29,13 @@ class DummyBroadcaster(object):
     def send_event(self, event):
         self.received_event = True
 
-class VOEventBroadcasterFactoryTestCase(unittest.TestCase):
-    def setUp(self):
-        self.factory = VOEventBroadcasterFactory(DUMMY_SERVICE_IVORN)
+
+class VOEventBroadcasterFactoryTestCaseBase(unittest.TestCase):
+    def setUp(self, test_interval=BCAST_TEST_INTERVAL):
+        self.factory = VOEventBroadcasterFactory(
+            DUMMY_SERVICE_IVORN,
+            test_interval=test_interval
+        )
         self.factory.alive_loop.clock = task.Clock()
         self.factory.test_loop.clock = task.Clock()
         self.factory.broadcasters.append(DummyBroadcaster())
@@ -39,6 +44,8 @@ class VOEventBroadcasterFactoryTestCase(unittest.TestCase):
     def tearDown(self):
         self.connector.stopListening()
 
+
+class VOEventBroadcasterFactoryTestCase(VOEventBroadcasterFactoryTestCaseBase):
     def test_protocol(self):
         self.assertEqual(self.factory.protocol, VOEventBroadcaster)
 
@@ -50,9 +57,23 @@ class VOEventBroadcasterFactoryTestCase(unittest.TestCase):
 
     def test_sendTestEvent(self):
         self.assertEqual(self.factory.test_loop.running, True)
-        self.factory.test_loop.clock.advance(self.factory.TEST_INTERVAL)
+        self.factory.test_loop.clock.advance(BCAST_TEST_INTERVAL)
         for broadcaster in self.factory.broadcasters:
             self.assertEqual(broadcaster.received_event, True)
+
+
+class VOEventBroadcasterFactoryNoTestEventsTestCase(VOEventBroadcasterFactoryTestCaseBase):
+    # In this special case, we cause the factory not to broadcast test events
+    # to the network.
+    def setUp(self):
+        VOEventBroadcasterFactoryTestCaseBase.setUp(self, 0)
+
+    def test_DoNotSendTestEvent(self):
+        self.assertEqual(self.factory.test_loop.running, False)
+        self.factory.test_loop.clock.advance(BCAST_TEST_INTERVAL)
+        for broadcaster in self.factory.broadcasters:
+            self.assertEqual(broadcaster.received_event, False)
+
 
 class VOEventBroadcasterTestCase(unittest.TestCase):
     def setUp(self):

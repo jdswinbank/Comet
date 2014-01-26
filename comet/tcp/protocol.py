@@ -28,6 +28,8 @@ from ..utility.xml import xml_document
 
 # Constants
 VOEVENT_ROLES = ('observation', 'prediction', 'utility', 'test')
+# By default, we brodcast a test event every BCAST_TEST_INTERVAL seconds.
+BCAST_TEST_INTERVAL = 3600
 
 """
 Implements the VOEvent Transport Protocol; see
@@ -345,23 +347,25 @@ class VOEventBroadcaster(ElementSender):
 
 class VOEventBroadcasterFactory(ServerFactory):
     IAMALIVE_INTERVAL = 60 # Sent iamalive every IAMALIVE_INTERVAL seconds
-    TEST_INTERVAL = 3600   # Sent test event every TEST_INTERVAL seconds
     protocol = VOEventBroadcaster
 
-    def __init__(self, local_ivo):
+    def __init__(self, local_ivo, test_interval=BCAST_TEST_INTERVAL):
         self.local_ivo = local_ivo
+        self.test_interval = test_interval
         self.broadcasters = []
         self.alive_loop = LoopingCall(self.sendIAmAlive)
         self.test_loop = LoopingCall(self.sendTestEvent)
 
     def startFactory(self):
         self.alive_loop.start(self.IAMALIVE_INTERVAL)
-        self.test_loop.start(self.TEST_INTERVAL)
+        if self.test_interval:
+            self.test_loop.start(self.test_interval)
         return ServerFactory.startFactory(self)
 
     def stopFactory(self):
         self.alive_loop.stop()
-        self.test_loop.stop()
+        if self.test_loop.running:
+            self.test_loop.stop()
         return ServerFactory.stopFactory(self)
 
     def sendIAmAlive(self):
