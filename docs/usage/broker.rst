@@ -37,15 +37,16 @@ provide a brief usage message::
   $ twistd comet --help
   Usage: twistd [options] comet [options]
   Options:
-<<<<<<< HEAD
     -r, --receive                   Listen for TCP connections from authors.
     -b, --broadcast                 Re-broadcast VOEvents received.
     -v, --verbose                   Increase verbosity.
     -q, --quiet                     Decrease verbosity.
         --print-event               Enable the print-event plugin
         --save-event                Enable the save-event plugin
+        --sender-auth               Only accept signed events from authors
         --subscriber-auth           Require subscribers to authenticate.
-        --event-auth                Only act upon signed events from remote brokers.
+        --event-auth                Only act upon signed events from remote
+                                    brokers.
         --local-ivo=                [default: ivo://comet.broker/default_ivo]
         --eventdb=                  Event database root. [default: /tmp]
         --receive-port=             TCP port for receiving events. [default: 8098]
@@ -138,6 +139,13 @@ every hour. The aim is to help with network debugging. The interval between
 test events may be configured using the ``--broadcast-test-interval`` option,
 which accepts a value in seconds.  Set it to ``0`` to disable the test
 broadcast completely.
+
+When Comet is configured to rebroadcast events to subscribers (with
+``--broadcast``), it can optionally require those subscribers to
+cryptographically identify themselves before they are eligible to receive
+events. This is enabled with the ``--subscriber-auth`` option.  For a details
+of the implementation and implications of this option, see the section on
+:ref:`authentication <sec-authentication>`.
 
 Subscriber Options
 ++++++++++++++++++

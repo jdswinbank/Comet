@@ -81,7 +81,9 @@ class VOEventBroadcasterFactoryNoTestEventsTestCase(VOEventBroadcasterFactoryTes
 
 class AuthenticatingVOEventBroadcasterFactoryTestCase(unittest.TestCase):
     def setUp(self):
-        self.factory = VOEventBroadcasterFactory(DUMMY_SERVICE_IVORN, True)
+        self.factory = VOEventBroadcasterFactory(
+            DUMMY_SERVICE_IVORN, BCAST_TEST_INTERVAL, True
+        )
 
     def test_must_auth(self):
         self.assertEqual(self.factory.authenticating, True)
@@ -241,7 +243,9 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
 
 class AuthenticatingVOEventBroadcasterTestCase(unittest.TestCase):
     def setUp(self):
-        self.factory = VOEventBroadcasterFactory(DUMMY_SERVICE_IVORN, True)
+        self.factory = VOEventBroadcasterFactory(
+            DUMMY_SERVICE_IVORN, BCAST_TEST_INTERVAL, True
+        )
         self.factory.alive_loop.clock = task.Clock()
         self.factory.test_loop.clock = task.Clock()
         self.connector = reactor.listenTCP(0, self.factory)

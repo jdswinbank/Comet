@@ -155,8 +155,7 @@ def makeService(config):
     broker_service = MultiService()
     if config['broadcast']:
         broadcaster_factory = VOEventBroadcasterFactory(
-            config["local-ivo"], config['broadcast-test-interval'],
-            config["subscriber-auth"]
+            config["local-ivo"], config['broadcast-test-interval'], config["subscriber-auth"]
         )
         if log.LEVEL >= log.Levels.INFO: broadcaster_factory.noisy = False
         broadcaster_service = TCPServer(

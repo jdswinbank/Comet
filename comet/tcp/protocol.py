@@ -33,8 +33,6 @@ from ..utility.auth import check_auth, CheckSignatureMixin
 
 # Constants
 VOEVENT_ROLES = ('observation', 'prediction', 'utility', 'test')
-# By default, we brodcast a test event every BCAST_TEST_INTERVAL seconds.
-BCAST_TEST_INTERVAL = 3600
 
 """
 Implements the VOEvent Transport Protocol; see
