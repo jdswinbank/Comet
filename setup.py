@@ -14,8 +14,6 @@ setup(
         'comet',
         'comet.test',
         'comet.config',
-        'comet.log',
-        'comet.log.test',
         'comet.plugins',
         'comet.plugins.test',
         'comet.service',
@@ -24,12 +22,16 @@ setup(
         'comet.tcp.test',
         'comet.utility',
         'comet.utility.test',
+        'comet.validator',
+        'comet.validator.test',
+        'comet.handler',
+        'comet.handler.test',
         'twisted'
     ],
     scripts=['scripts/comet-sendvo'],
     package_data={
         'comet': ['schema/*.xsd'],
-        'comet.utility.test': ['test_spawn.sh'],
+        'comet.handler.test': ['test_spawn.sh'],
         'twisted': ['plugins/comet_plugin.py']
     },
     install_requires=required
