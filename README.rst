@@ -15,7 +15,7 @@ and forward them to its own subscribers. In addition, Comet provides a tool
 for publishing VOEvents to a remote broker.
 
 Comet is developed targeting Python 2.6 and 2.7. It depends upon `Twisted
-<http://twistedmatrix.com/>`_ `lxml <http://lxml.de/>`_ and `ipaddr-py
+<http://twistedmatrix.com/>`_, `lxml <http://lxml.de/>`_ and `ipaddr-py
 <https://code.google.com/p/ipaddr-py/>`_.
 
 See the `Comet website
