@@ -17,7 +17,6 @@ for publishing VOEvents to a remote broker.
    usage/index
    filtering
    handlers
-   authentication
    appendix/index
 
 Comet is developed by `John Swinbank <http://swinbank.org/>`_ as part of the

@@ -35,28 +35,27 @@ provide a brief usage message::
   $ twistd comet --help
   Usage: twistd [options] comet [options]
   Options:
-    -r, --receive           Listen for TCP connections from authors.
-    -b, --broadcast         Re-broadcast VOEvents received.
-    -v, --verbose           Increase verbosity.
-    -q, --quiet             Decrease verbosity.
-        --sender-auth       Only accept signed events from authors
-        --subscriber-auth   Require subscribers to authenticate.
-        --local-ivo=        [default: ivo://comet.broker/default_ivo]
-        --eventdb=          Event database root. [default: /tmp]
-        --receive-port=     TCP port for receiving events. [default: 8098]
-        --broadcast-port=   TCP port for broadcasting events. [default: 8099]
+    -r, --receive                   Listen for TCP connections from authors.
+    -b, --broadcast                 Re-broadcast VOEvents received.
+    -v, --verbose                   Increase verbosity.
+    -q, --quiet                     Decrease verbosity.
+        --local-ivo=                [default: ivo://comet.broker/default_ivo]
+        --eventdb=                  Event database root. [default: /tmp]
+        --receive-port=             TCP port for receiving events. [default: 8098]
+        --broadcast-port=           TCP port for broadcasting events. [default:
+                                    8099]
         --broadcast-test-interval=  Interval between test event brodcasts (in
                                     seconds; 0 to disable). [default: 3600]
-        --whitelist=        Network to be included in submission whitelist.
-                            [default: 0.0.0.0/0]
-        --remote=           Remote broadcaster to subscribe to (host[:port]).
-        --filter=           XPath filter applied to events broadcast by remote.
-        --action=           Add an event handler.
-        --cmd=              Spawn external command on event receipt.
-        --key-id=           Subscriber OpenPGP key ID.
-        --passphrase-file=  File containing passphrase to unlock OpenPGP key.
-        --help              Display this help and exit.
-        --version           Display Twisted version and exit.
+        --whitelist=                Network to be included in submission
+                                    whitelist. [default: 0.0.0.0/0]
+        --remote=                   Remote broadcaster to subscribe to
+                                    (host[:port]).
+        --filter=                   XPath filter applied to events broadcast by
+                                    remote.
+        --action=                   Add an event handler.
+        --cmd=                      Spawn external command on event receipt.
+        --help                      Display this help and exit.
+        --version                   Display Twisted version and exit.
 
 Basic Modes of Operation
 ++++++++++++++++++++++++
@@ -121,12 +120,6 @@ results are cumulative. To accept submissions from any host, specify
 ``--whitelist 0.0.0.0/0``; this is the default if no ``--whitelist`` option is
 supplied.
 
-It is also possible to configure Comet to only accept cryptographically signed
-event submissions from authors. This functionality is enabled by invoking
-Comet with the ``--sender-auth`` option. For a discussion of the
-implementation and implications of this, see the section on
-:ref:`authentication <sec-authentication>`.
-
 Broadcaster Options
 +++++++++++++++++++
 
@@ -135,13 +128,6 @@ every hour. The aim is to help with network debugging. The interval between
 test events may be configured using the ``--broadcast-test-interval`` option,
 which accepts a value in seconds.  Set it to ``0`` to disable the test
 broadcast completely.
-
-When Comet is configured to rebroadcast events to subscribers (with
-``--broadcast``), it can optionally require those subscribers to
-cryptographically identify themselves before they are eligible to receive
-events. This is enabled with the ``--subscriber-auth`` option.  For a details
-of the implementation and implications of this option, see the section on
-:ref:`authentication <sec-authentication>`.
 
 Subscriber Options
 ++++++++++++++++++
