@@ -27,9 +27,13 @@ Version 1.1.x
 -------------
 
 1.1 (not yet available)
-    Cryptographic authentication of VOEvent messages and subscribers.
-
     Improved documentation.
 
     Interval between broadcast test events is user configurable, and they may
     be disabled. See the ``--broadcast-test-interval`` option.
+
+Version 2.0.x
+-------------
+
+2.0 (not yet available)
+    Cryptographic authentication of VOEvent messages and subscribers.
