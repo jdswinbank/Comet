@@ -30,7 +30,7 @@ from ..validator.previously_seen import CheckPreviouslySeen
 
 # Handlers and plugins
 import comet.plugins
-from ..icomet import IHandler
+from ..icomet import IHandler, IHasOptions
 from ..handler.spawn import SpawnCommand
 from ..handler.relay import EventRelay
 from ..handler.record import EventRecorder
@@ -59,7 +59,6 @@ class Options(BaseOptions):
         ["whitelist", None, "0.0.0.0/0", "Network to be included in submission whitelist."],
         ["remote", None, None, "Remote broadcaster to subscribe to (host[:port])."],
         ["filter", None, None, "XPath filter applied to events broadcast by remote."],
-        ["action", None, None, "Add an event handler."],
         ["cmd", None, None, "Spawn external command on event receipt."]
     ]
 
@@ -78,13 +77,6 @@ class Options(BaseOptions):
     def opt_verbose(self):
         self['verbosity'] += 1
     opt_v = opt_verbose
-
-    def opt_action(self, action):
-        plugin = [plugin for plugin in getPlugins(IHandler, comet.plugins) if plugin.name == action]
-        if not plugin:
-            reactor.callWhenRunning(log.warning, "Action %s not available" % (action))
-        else:
-            self['handlers'].extend(plugin)
 
     def opt_cmd(self, cmd):
         self["handlers"].append(SpawnCommand(cmd))
@@ -120,6 +112,26 @@ class Options(BaseOptions):
         else:
             log.LEVEL = log.Levels.WARNING
 
+        # Now enable plugins if requested.
+        # We loop over all plugins, checking if the user supplied their name
+        # on the command line and adding them to our list of handlers if so.
+        for plugin in getPlugins(IHandler, comet.plugins):
+            if self[plugin.name]:
+                for name, _, _ in plugin.get_options():
+                    plugin.set_option(name, self["%s-%s" % (plugin.name, name)])
+                self['handlers'].append(plugin)
+
+
+# Stub the options for all our plugins into the option handler
+for plugin in getPlugins(IHandler, comet.plugins):
+    Options.optFlags.append(
+        [plugin.name, None, "Enable the %s plugin" % (plugin.name,)]
+    )
+    if IHasOptions.providedBy(plugin):
+        for name, default, description in plugin.get_options():
+            Options.optParameters.append(
+                ["%s-%s" % (plugin.name, name), None, default, description]
+            )
 
 def makeService(config):
     event_db = Event_DB(config['eventdb'])

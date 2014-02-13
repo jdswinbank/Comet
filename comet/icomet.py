@@ -15,6 +15,19 @@ class IHandler(Interface):
 
     name = Attribute("Name of this handler.")
 
+
+class IHasOptions(Interface):
+    def get_options():
+        """
+        Return an iterable of (name, default, description) iterators which may
+        be used as command line options.
+        """
+
+    def set_option(name, value):
+        """
+        Set the option named name to the value value.
+        """
+
 class IValidator(Interface):
     """
     Called to validate VOEvents before handling.
