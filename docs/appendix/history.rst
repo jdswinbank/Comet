@@ -32,8 +32,11 @@ Version 1.1.x
     Interval between broadcast test events is user configurable, and they may
     be disabled. See the ``--broadcast-test-interval`` option.
 
-Version 2.0.x
--------------
+    Per-plugin command line options.
 
-2.0 (not yet available)
-    Cryptographic authentication of VOEvent messages and subscribers.
+    Plugin which writes events received to file.
+
+Future Plans
+------------
+
+Cryptographic authentication of VOEvent messages and subscribers.
