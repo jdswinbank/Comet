@@ -39,6 +39,8 @@ provide a brief usage message::
     -b, --broadcast                 Re-broadcast VOEvents received.
     -v, --verbose                   Increase verbosity.
     -q, --quiet                     Decrease verbosity.
+        --print-event               Enable the print-event plugin
+        --save-event                Enable the save-event plugin
         --local-ivo=                [default: ivo://comet.broker/default_ivo]
         --eventdb=                  Event database root. [default: /tmp]
         --receive-port=             TCP port for receiving events. [default: 8098]
@@ -52,8 +54,9 @@ provide a brief usage message::
                                     (host[:port]).
         --filter=                   XPath filter applied to events broadcast by
                                     remote.
-        --action=                   Add an event handler.
         --cmd=                      Spawn external command on event receipt.
+        --save-event-directory=     Target directory [default:
+                                    /Users/jds/Projects/tdig/comet]
         --help                      Display this help and exit.
         --version                   Display Twisted version and exit.
 
@@ -143,11 +146,32 @@ on :ref:`filtering <sec-filtering>`.
 Common Options
 ++++++++++++++
 
-Custom code may be run to perform local processing on an event when it is
-received. This is specifed by the ``--action`` option. For more details, see
-the section on :ref:`event handlers <sec-handlers>`. These actions will be
-taken whether Comet receives an event from an author (``--receive``) or an
-upstream broker (``--remote``).
+Plugins
+^^^^^^^
+
+Custom code may be run to perform arbitrary local processing on an event when
+it is received. For more details, see the section on :ref:`event handlers
+<sec-handlers>`. Plugin actions will be taken whether Comet receives an event
+from an author (``--receive``) or an upstream broker (``--remote``). A plugin
+is enabled by giving its name as a command line option (``--plugin-name``).
+Plugins may also take arguments from the command line. These are given in the
+form ``--plugin-name-argument=value``.
+
+Comet ships with two plugins which both serve as examples of how to write
+event handlers and which may be useful in their own right. The first simply
+writes events to Comet's log as they are received. This is the ``print-event``
+plugin: enable it by invoking Comet with the ``--print-event`` option.
+
+The second plugin shipped with Comet is ``save-event``, which writes events to
+file. It is enabled with the ``--save-event`` option. By default, events are
+written to the default working directory (normally the directory in which you
+invoked Comet): this may be customized using the ``--save-event-directory=``
+option. The filename under which an event is saved is based on its IVORN, but
+modified to avoid characters which are awkard to work with on standard
+filesystems.
+
+Spawning External Commands
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Similarly, received events may be sent to one or more external commands
 for processing. These are specified using the ``--cmd`` option. They should
@@ -157,6 +181,9 @@ ignored.  If it returns a value other than 0, it will be logged as a failure.
 Note that external commands are run in a separate thread, so will not block
 the subscriber from processing new events; however, the user is nevertheless
 responsible for ensuring that they terminate in a timely fashion.
+
+Logging
+^^^^^^^
 
 The amount of information Comet writes to its log may be adjusted using the
 ``--verbose`` and ``--quiet`` options.

@@ -126,13 +126,14 @@ class Options(BaseOptions):
 # Stub the options for all our plugins into the option handler
 for plugin in getPlugins(IHandler, comet.plugins):
     Options.optFlags.append(
-        [plugin.name, None, "Enable the %s plugin" % (plugin.name,)]
+        [plugin.name, None, "Enable the %s plugin." % (plugin.name,)]
     )
     if IHasOptions.providedBy(plugin):
         for name, default, description in plugin.get_options():
             Options.optParameters.append(
                 ["%s-%s" % (plugin.name, name), None, default, description]
             )
+
 
 def makeService(config):
     event_db = Event_DB(config['eventdb'])
