@@ -47,6 +47,8 @@ provide a brief usage message::
         --subscriber-auth           Require subscribers to authenticate.
         --event-auth                Only act upon signed events from remote
                                     brokers.
+        --print-event               Enable the print-event plugin
+        --save-event                Enable the save-event plugin
         --local-ivo=                [default: ivo://comet.broker/default_ivo]
         --eventdb=                  Event database root. [default: /tmp]
         --receive-port=             TCP port for receiving events. [default: 8098]
