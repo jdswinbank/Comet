@@ -62,17 +62,34 @@ class DefaultOptionsTestCase(unittest.TestCase):
         for net in [net1, net2]:
             self.assertTrue(IPNetwork(net) in self.config['whitelist'])
 
-    def test_action_extant(self):
-        action = "print-event"
-        cmd_line = ["--action", action]
+    def test_has_print_event_plugin(self):
+        cmd_line = ["--print-event"]
         self.config.parseOptions(cmd_line)
         self.assertEqual(len(self.config['handlers']), 1)
+        self.assertEqual(self.config['handlers'][0].name, "print-event")
+
+    def test_has_save_event_plugin(self):
+        cmd_line = ["--save-event"]
+        self.config.parseOptions(cmd_line)
+        self.assertEqual(len(self.config['handlers']), 1)
+        self.assertEqual(self.config['handlers'][0].name, "save-event")
+
+    def test_save_event_plugin_takes_args(self):
+        cmd_line = ["--save-event", "--save-event-directory=/tmp"]
+        self.config.parseOptions(cmd_line)
+        self.assertEqual(self.config['handlers'][0].name, "save-event")
+        self.assertEqual(self.config['handlers'][0].directory, "/tmp")
+
+    def test_args_for_disabled_plugin(self):
+        # Should not enable the plugin
+        cmd_line = ["--save-event-directory=/tmp"]
+        self.config.parseOptions(cmd_line)
+        self.assertEqual(len(self.config['handlers']), 0)
 
     def test_action_non_extant(self):
         action = "does-not-exist"
         cmd_line = ["--action", action]
-        self.config.parseOptions(cmd_line)
-        self.assertEqual(len(self.config['handlers']), 0)
+        self.assertRaises(usage.UsageError, self.config.parseOptions, cmd_line)
 
     def test_filters(self):
         cmd_line = ["--filter", "foo", "--filter", "bar"]

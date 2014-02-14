@@ -117,8 +117,9 @@ class Options(BaseOptions):
         # on the command line and adding them to our list of handlers if so.
         for plugin in getPlugins(IHandler, comet.plugins):
             if self[plugin.name]:
-                for name, _, _ in plugin.get_options():
-                    plugin.set_option(name, self["%s-%s" % (plugin.name, name)])
+                if IHasOptions.providedBy(plugin):
+                    for name, _, _ in plugin.get_options():
+                        plugin.set_option(name, self["%s-%s" % (plugin.name, name)])
                 self['handlers'].append(plugin)
 
 
