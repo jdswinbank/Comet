@@ -65,7 +65,7 @@ class EventWriter(object):
             os.makedirs(self.directory)
         with event_file(event.attrib['ivorn'], self.directory) as f:
             log.debug("Writing to %s" % (f.name,))
-            f.write(ElementTree.tostring(event.element))
+            f.write(event.text)
 
     def get_options(self):
         return [('directory', self.directory, 'Target directory')]

@@ -2,15 +2,14 @@ import os
 import sys
 import shutil
 import tempfile
-#from cStringIO import StringIO
-
-#import lxml.etree as etree
 
 from twisted.trial import unittest
-#from twisted.plugin import IPlugin
+from twisted.plugin import IPlugin
 
-#from ...icomet import IHandler
-#from ..eventwriter import EventWriter
+from ...utility.xml import xml_document
+from ...icomet import IHandler, IHasOptions
+from ...test.support import DUMMY_VOEVENT
+from ..eventwriter import EventWriter
 from ..eventwriter import string_to_filename
 from ..eventwriter import event_file
 
@@ -58,3 +57,19 @@ class EventFileTestCase(unittest.TestCase):
         with event_file(self.ivorn, dirname=tmpdir) as f:
             self.assertEqual(os.path.dirname(f.name), tmpdir)
         shutil.rmtree(tmpdir)
+
+class EventWriterTestCase(unittest.TestCase):
+    def test_interface(self):
+        self.assertTrue(IHandler.implementedBy(EventWriter))
+        self.assertTrue(IPlugin.implementedBy(EventWriter))
+        self.assertTrue(IHasOptions.implementedBy(EventWriter))
+
+    def test_name(self):
+        self.assertEqual(EventWriter.name, "save-event")
+
+    def test_save_event(self):
+        event = xml_document(DUMMY_VOEVENT)
+        event_writer = EventWriter()
+        event_writer(event)
+        with open(string_to_filename(event.attrib['ivorn']), 'r') as f:
+            self.assertEqual(f.read(), DUMMY_VOEVENT)
