@@ -16,8 +16,23 @@ Twisted's `component architecture
 <http://twistedmatrix.com/documents/current/core/howto/components.html>`_.
 Handlers may then be written to follow Comet's :class:`comet.icomet.IHandler`
 interface, and then installed into the ``comet/plugins directory``. A simple
-example is provided in :class:`comet.plugins.eventprinter`.
+example is provided in :class:`comet.plugins.eventprinter`. Note that the
+plugin class defines a ``__call__()`` method which is invoked with the event
+being received as its argument. To be more specific, ``__call__()`` is handed
+an instance of :class:`comet.utility.xml.xml_document`.
 
-Each handler must provide a name attribute. The user may specify the names of
-one or more handlers to use on the command line (the ``--action`` command line
-argument).
+Each handler must provide a name attribute (e.g. ``print-event``). The user
+may specify that a particular plugin be loaded by specifying its name as a
+command line argument when invoking comet (``--print-event``).
+
+In some cases, a plugin requires additional configuration. This can be
+provided through the use of command line arguments. In this case, the plugin
+must also implement the :class:`comet.icomet.IHasOptions` interface. This
+involves two further methods: ``get_options()``, which returns a list of
+options which are accepted, and ``set_option()``, which provides a means
+for setting those options. Options declared in plugins will automatically be
+added to the command line options of the `Comet broker <sec-broker>`.
+
+Again, an example of how such a plugin with options may be implemented is
+likely the best documentation: fortunately, one is available in the form of
+:class:`comet.plugins.eventwriter`.
