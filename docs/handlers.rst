@@ -31,7 +31,7 @@ must also implement the :class:`comet.icomet.IHasOptions` interface. This
 involves two further methods: ``get_options()``, which returns a list of
 options which are accepted, and ``set_option()``, which provides a means
 for setting those options. Options declared in plugins will automatically be
-added to the command line options of the `Comet broker <sec-broker>`.
+added to the command line options of the :ref:`Comet broker <sec-broker>`.
 
 Again, an example of how such a plugin with options may be implemented is
 likely the best documentation: fortunately, one is available in the form of
