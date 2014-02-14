@@ -1,6 +1,6 @@
 # Comet VOEvent Broker.
 # Event relaying tools.
-# John Swinbank, <swinbank@transientskp.org>, 2012.
+# John Swinbank, <swinbank@transientskp.org>.
 
 from zope.interface import implementer
 from ..icomet import IHandler

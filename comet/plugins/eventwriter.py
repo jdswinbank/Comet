@@ -1,6 +1,6 @@
 # Comet VOEvent Broker.
-# Example event handler: print an event.
-# John Swinbank, <swinbank@trtransientskp.org>, 2012.
+# Example event handler: write an event to file.
+# John Swinbank, <swinbank@trtransientskp.org>.
 
 import os
 import string

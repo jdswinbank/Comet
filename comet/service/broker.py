@@ -1,5 +1,5 @@
 # Comet VOEvent Broker.
-# John Swinbank, <swinbank@transientskp.org>, 2012.
+# John Swinbank, <swinbank@transientskp.org>.
 
 # Python standard library
 import os

@@ -1,6 +1,6 @@
 # Comet VOEvent Broker.
 # Event database.
-# John Swinbank, <swinbank@transientskp.org>, 2012.
+# John Swinbank, <swinbank@transientskp.org>.
 
 import os
 import anydbm

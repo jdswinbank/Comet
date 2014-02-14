@@ -1,6 +1,6 @@
 # Comet VOEvent Broker.
 # Schema validator.
-# John Swinbank, <swinbank@transientskp.org>, 2012.
+# John Swinbank, <swinbank@transientskp.org>.
 
 from twisted.internet.threads import deferToThread
 import lxml.etree as etree

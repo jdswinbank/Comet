@@ -1,6 +1,6 @@
 # Comet VOEvent Broker.
 # Check for previously seen events.
-# John Swinbank, <swinbank@transientskp.org>, 2012.
+# John Swinbank, <swinbank@transientskp.org>.
 
 from twisted.internet.threads import deferToThread
 from zope.interface import implementer

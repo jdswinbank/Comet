@@ -1,6 +1,6 @@
 # Comet VOEvent Broker.
 # IP whitelisting factory.
-# John Swinbank, <swinbank@transientskp.org>, 2012.
+# John Swinbank, <swinbank@transientskp.org>.
 
 from ipaddr import IPAddress
 

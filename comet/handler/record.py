@@ -1,6 +1,6 @@
 # Comet VOEvent Broker.
 # Record a seen event in the eventdb
-# John Swinbank, <swinbank@transientskp.org>, 2012.
+# John Swinbank, <swinbank@transientskp.org>.
 
 from zope.interface import implementer
 from ..icomet import IHandler
