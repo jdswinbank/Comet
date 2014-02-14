@@ -1,6 +1,6 @@
 # Comet VOEvent Broker.
 # Check OpenPGP signatures.
-# John Swinbank, <swinbank@transientskp.org>, 2012.
+# John Swinbank, <swinbank@transientskp.org>.
 
 from zope.interface import implementer
 

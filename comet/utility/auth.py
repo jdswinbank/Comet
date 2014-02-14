@@ -1,6 +1,6 @@
 # Comet VOEvent Broker.
 # Authentication routines.
-# John Swinbank, <swinbank@transientskp.org>, 2012.
+# John Swinbank, <swinbank@transientskp.org>.
 
 from functools import wraps
 from twisted.internet.threads import deferToThread
