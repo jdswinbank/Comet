@@ -26,15 +26,21 @@ Version 1.0.x
 Version 1.1.x
 -------------
 
-1.1 (not yet available)
+1.1 (not yet released)
     Improved documentation.
 
     Interval between broadcast test events is user configurable, and they may
     be disabled. See the ``--broadcast-test-interval`` option.
 
-    Per-plugin command line options.
+    Test events now include details of the version of Comet used to generate
+    them.
 
-    Plugin which writes events received to file.
+    Event handler plugin system reworked. Plugins may now take command line
+    options. See the :ref:`event handler documentation <sec-handlers>` for
+    details. Note that the syntax for invoking the ``print-event`` handler has
+    changed (now ``--print-event`` rather than ``--action=print-event``).
+
+    Plugin which writes events received to file (``--save-event``).
 
 Future Plans
 ------------
