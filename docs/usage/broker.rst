@@ -41,8 +41,6 @@ provide a brief usage message::
     -b, --broadcast                 Re-broadcast VOEvents received.
     -v, --verbose                   Increase verbosity.
     -q, --quiet                     Decrease verbosity.
-        --print-event               Enable the print-event plugin
-        --save-event                Enable the save-event plugin
         --sender-auth               Only accept signed events from authors
         --subscriber-auth           Require subscribers to authenticate.
         --event-auth                Only act upon signed events from remote
@@ -132,6 +130,12 @@ events to the broker. This option may be specified multiple times and the
 results are cumulative. To accept submissions from any host, specify
 ``--whitelist 0.0.0.0/0``; this is the default if no ``--whitelist`` option is
 supplied.
+
+It is also possible to configure Comet to only accept cryptographically signed
+event submissions from authors. This functionality is enabled by invoking
+Comet with the ``--sender-auth`` option. For a discussion of the
+implementation and implications of this, see the section on
+:ref:`authentication <sec-authentication>`.
 
 Broadcaster Options
 +++++++++++++++++++

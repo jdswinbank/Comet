@@ -14,6 +14,10 @@ Comet is developed targeting Python 2.6 and 2.7. It depends upon:
 * `zope.interface <http://docs.zope.org/zope.interface/>`_ (versions 3.6.0 or later)
 * `ipaddr-py <https://code.google.com/p/ipaddr-py/>`_.
 
+If the optional support for :ref:`authentication <sec-authentication>` is to
+be enabled, `PyGPGME <https://launchpad.net/pygpgme>`_ (and all of its
+dependencies) is also required.
+
 How you make these dependencies available on your system is up to your (or,
 perhaps, to your system administrator). However, the author strongly suggests
 you might start by taking a look at `virtualenv
@@ -54,4 +58,5 @@ Simply run::
   $ trial comet
 
 No failures or errors are expected in the test suite. If you see a problem,
-please contact the author for help.
+please contact the author for help. Note that some tests may be skipped if you
+chose not to install PyGPGME.

@@ -46,6 +46,7 @@ class VOEventBroadcasterFactoryTestCaseBase(unittest.TestCase):
     def tearDown(self):
         self.connector.stopListening()
 
+
 class VOEventBroadcasterFactoryTestCase(VOEventBroadcasterFactoryTestCaseBase):
     def test_must_auth(self):
         self.assertEqual(self.factory.authenticating, False)
@@ -240,6 +241,7 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
         self.assertEqual(self.tr.value(), "")
         self.assertEqual(self.tr.connected, True)
         self.assertEqual(len(self.proto.filters), 0)
+
 
 class AuthenticatingVOEventBroadcasterTestCase(unittest.TestCase):
     def setUp(self):
