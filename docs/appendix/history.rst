@@ -1,6 +1,9 @@
 Release History
 ===============
 
+See the :ref:`release procedure <sec-release>` section for more details on
+version numbering and how releases are made.
+
 Version 1.0.x
 -------------
 
