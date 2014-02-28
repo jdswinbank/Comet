@@ -5,7 +5,7 @@ with open('requirements.txt') as f:
     required = f.read().splitlines()
 
 setup(
-    name=comet.__name__,
+    name="Comet",
     description=comet.__description__,
     author=comet.__author__,
     author_email=comet.__contact__,
