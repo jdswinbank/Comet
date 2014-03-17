@@ -1,0 +1,163 @@
+\documentclass[5p,authoryear]{elsarticle}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{url}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{color}
+
+\journal{Astronomy and Computing}
+
+\begin{document}
+
+% Standardised display of inline code snippets.
+\newcommand{\code}[1]{\texttt{#1}}
+
+\begin{frontmatter}
+
+\title{Comet: A VOEvent Broker}
+
+% Trying to list here all the people who have directly contributed code or
+% testing to TraP development and/or are expected to write text for this
+% paper. Then the rest of the TKP in alphabetical order.
+\author{John Swinbank}
+\ead{j.swinbank@uva.nl}
+
+\address{Astronomical Institute ``Anton Pannekoek'', University of Amsterdam, Postbus 94249, 1090 GE Amsterdam, The Netherlands}
+
+\begin{abstract}
+
+Enemy ships detected in sector 47!
+
+\end{abstract}
+
+\begin{keyword}
+%% keywords here, in the form: keyword \sep keyword
+
+%% MSC codes here, in the form: \MSC code \sep code
+%% or \MSC[2008] code \sep code (2000 is the default)
+
+\end{keyword}
+
+\end{frontmatter}
+
+\section{Introduction}
+\label{sec:intro}
+
+The exploration of the astrophysical time domain through timely follow-up
+observations of transients offers the potential of many and varied potential
+scientific results. However, to achieve these results it is necessary to
+overcome a range of technical challenges in terms of identifying and
+classifying transients, disseminating notifications of them to the community,
+and coordinating follow-up efforts.
+
+Mechanisms for distributing news of transient events already exist: both the
+NASA Gamma-ray Coordinates Network\footnote{\url{http://gcn.gsfc.nasa.gov/}}
+and The Astronomer's
+Telegram\footnote{\url{http://www.astronomerstelegram.org/}} have long and
+distinguished track records of enabling transient astronomy. However, the next
+generation of large-scale survey telescopes such as Gaia, SKA and LSST promise
+hundreds, thousands or even millions of transient detections every day. The
+sheer volume of events presents a massive scalability challenge: it is no
+longer practical for even large teams of astronomers to consider manually
+reading, understanding and responding to these notifcations. Instead,
+automation is essential. Furthermore, the diverse nature of these transient
+hunting facilities---covering not only electromagnetic gamut from
+low-frequency radio to space based X- and $\gamma$-ray monitors, but also
+potentially including other types of signal such as gravitational
+waves---means that a flexible and adaptable machine-readable mechanism must be
+adopted for describing transients.
+
+In an effort to address these challenges, the IVOA has introduced the
+`VOEvent'\footnote{\url{http://www.voevent.org/}} \citep{Seaman:2011}
+standard. VOEvent provides a standardized, machine- and human-readable way of
+describing a wide range of transient astronomical phenomena. An individual
+VOEvent describes a particular transient event, providing not only information
+about what has been observed and how the observations were made, but also
+making it possible for the author to include a scientific motivation for why
+this particular event is interesting. Furthermore, a VOEvent may cite other
+VOEvents, providing more information about a given transient or, if necessary,
+superseding or retracting an earlier message.
+
+VOEvents are published as XML \citep{Bray:2008} XML documents which should be
+in compliance with schema \citep{Gau:2012, Peterson:2012} produced by the
+IVOA. Working in XML enables VOEvent to make extensive use of other relevant
+IVOA standards (?? cite STC, ucd, etc?) and enables convenient processing with
+a wide range of standard commercial and open-source tools.
+
+The VOEvent standard defines the structure and content of a VOEvent document,
+but it does not describe a mechanism by which the author of a VOEvent may
+distribute it to potentially interested recipients. This transport-agnosticism
+is intentional: it is intended to provide the maximum possible flexibility, as
+individual projects may disseminate events by whatever means best meets their
+science goals. However, it is widely recognized that a baseline specification
+for a simple transport protocol is of value in terms of providing a common
+starting point for building international VOEvent distribution networks
+\citep{Williams:2012}. The VOEvent Transport Protocol
+\citep[VTP;][]{Allan:2009} is now seeing widespread adoption as such a
+baseline.
+
+This manuscript describes Comet, an implementation of all the components
+necessary for interacting with the VOEvent Transport Protocol while acting as
+a testbed for production-level VTP deployments and for new technologies and
+``value-added'' services to assist in addressing the event deluge.  In
+\S\ref{sec:vtp} a description of the protocol is provided to set the tool in
+context. \S\ref{sec:design} describes how Comet has been designed and built to
+meet the protocol specifications. \S\ref{sec:addedvalue} describes how Comet
+builds upon VTP to help address future challenges in VOEvent filtering and
+selection. \S\ref{sec:perf} considers the performance implications of
+deploying VTP in support of next-generation astronomical infrastructure,
+considering both the scalability of the protocol to large numbers of events
+and to high latency connections. In \S\ref{sec:security} we consider the
+security implications of VOEvents, how they can be mitigated at the transport
+level, and describe a system being prototyped in Comet.  \S\ref{sec:avail}
+describes the terms under which Comet is available and how to download,
+install and use it. The results are summarized and conclusions drawn for
+future of VOEvent transportation systems in \S\ref{sec:conclusions}.
+
+\section{VOEvent Transport Protocol}
+\label{sec:vtp}
+
+\section{The Design and Implementation of Comet}
+\label{sec:design}
+
+\section{Added Value Services}
+\label{sec:addedvalue}
+
+\subsection{XPath-Based Filtering}
+\label{sec:addedvalue:xpath}
+
+\section{Performance}
+\label{sec:perf}
+
+\subsection{Total Throughput}
+\label{sec:perf:total}
+
+\subsection{High-Latency Connections}
+\label{sec:perf:latency}
+
+\section{Security}
+\label{sec:security}
+
+\section{Availability}
+\label{sec:avail}
+
+\section{Conclusions}
+\label{sec:conclusions}
+
+\section{Acknowledgements}
+\label{sec:ack}
+
+The author is grateful to Bob Denny and Alasdair Allan for many useful
+discussions on the design and implementation of the VOEvent Transport
+Protocol. I also thank Roy Williams and Tim Staley for their feedback on the
+design and capabilities of Comet. This project was funded by European Research
+Council Advanced Grant XXXXXX `AARTFAAC'.
+
+\section*{References}
+
+\bibliographystyle{elsarticle-harv}
+\bibliography{comet}
+
+\end{document}
