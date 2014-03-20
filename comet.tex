@@ -6,14 +6,11 @@
 \usepackage{subcaption}
 \usepackage{graphicx}
 \usepackage{color}
-\usepackage{listings}
+\usepackage{minted}
 
 \journal{Astronomy and Computing}
 
 \begin{document}
-
-% Standardised display of inline code snippets.
-\lstset{language=Python,basicstyle=\small,columns=fullflexible,frame=trBL,showstringspaces=false}
 
 \begin{frontmatter}
 
@@ -55,7 +52,7 @@ and coordinating follow-up efforts.
 
 Mechanisms for distributing news of transient events already exist: both the
 NASA Gamma-ray Coordinates Network\footnote{\url{http://gcn.gsfc.nasa.gov/}}
-and The Astronomer's
+(GCN) and The Astronomer's
 Telegram\footnote{\url{http://www.astronomerstelegram.org/}} have long and
 distinguished track records of enabling transient astronomy. However, the next
 generation of large-scale survey telescopes such as Gaia, SKA and LSST promise
@@ -195,12 +192,6 @@ failure of any given entity can only cause local disruption to the
 distribution network. The topology of such a network, and the path a VOEvent
 packet might take across it, is shown in Fig. \ref{fig:vtp}.
 
-Building a mesh of interconnected brokers in this fashion has significant
-advantages, but it also introduces complexity. Specifically, brokers must
-guard against events ``looping'' on the network, as two or more brokers
-repeatedly exchange the same event. Brokers are therefore required not to
-process a given event more than once, however many times it is received.
-
 In addition to passing VOEvent XML documents, VTP defines a ``Transport''
 document type. Transport documents are used for the heartbeat messages between
 brokers and subscribers and for sending acknowledgement of event receipt. The
@@ -243,7 +234,8 @@ are described in the subsequeny sections of this manuscript.
 \subsection{Twisted Python and event-driven programming}
 \label{sec:design:twisted}
 
-\begin{lstlisting}[float,caption={An example of an event-driven Twisted protocol, based on Comet's VOEventReceiver.},label=lst:event,mathescape]
+\begin{listing}
+\begin{minted}[frame=lines]{python}
 class VOEventReceiver(Protocol):
   TIMEOUT = 20
 
@@ -255,19 +247,23 @@ class VOEventReceiver(Protocol):
     close_connection()
 
   def timeoutConnection(self):
-    log.msg($\texttt{"}$Connection timed out$\texttt{"}$)
+    log.msg("Connection timed out")
 
   def stringReceived(self, data):
-    incoming_message = parse(data)
+    message = parse(data)
     if is_valid(incoming_message) and \
-       incoming_message.get($\texttt{"}$role$\texttt{"}$) in VOEVENT_ROLES:
-        log.info($\texttt{"}$Good message received$\texttt{"}$)
-        return_acknowledgement(incoming_message)
-        process_event(incoming_message)
+       message.get("role") in VOEVENT_ROLES:
+        log.info("Good message received")
+        return_acknowledgement(message)
+        process_event(message)
     else:
-        log.warning($\texttt{"}$Bad message received$\texttt{"}$)
+        log.warning("Bad message received")
     close_connection()
-\end{lstlisting}
+\end{minted}
+\caption{An example of an event-driven Twisted protocol, based on Comet's
+\texttt{VOEventReceiver}.}
+\label{lst:event}
+\end{listing}
 
 Comet is implemented in Python, and is built atop the Twisted networking
 engine\footnote{\url{https://twistedmatrix.com/}}. Twisted enables an
@@ -296,10 +292,10 @@ events and calls the appropriate actions when they occur.
 
 When talking to the network, Twisted provides the \textit{Protocol} as an
 abstraction for managing events. A protocol defines the interaction that a
-particular component of the system has with the network. For example,
-Listing \ref{lst:event} shows a simplified version of the protocol for Comet's
-VOEventReceiver. This is the part of the broker which listens to the network
-for submissions from authors. Four separate events are handled by this
+particular component of the system has with the network. For example, Listing
+\ref{lst:event} shows a simplified version of the protocol for Comet's
+\texttt{VOEventReceiver}. This is the part of the broker which listens to the
+network for submissions from authors. Four separate events are handled by this
 protocol:
 
 \begin{itemize}
@@ -322,36 +318,44 @@ connection.}
 
 Similar, although often more complex, protocols are defined for all of the
 other roles in the system: an author connecting to a broker
-(``VOEventSender''), a broker to a subscriber (``VOEventBroadcaster''), and an
-subscriber to a broker (``VOEventSubscriber'').
+(\texttt{VOEventSender}), a broker to a subscriber
+(\texttt{VOEventBroadcaster}), and an subscriber to a broker
+(\texttt{VOEventSubscriber}).
 
 Event-driven programming provides a convenient abstraction for responding to
 network events as described. However, it does not address issues regarding
-concurrency. As described in \S\ref{sec:vtp}, VTP requires that, even
-immediately after receiving an event, subscribers must be ready to accept
-another event: there can be no delay while the event is ingested. Contrast
-this with the model described above and outlined in Listing \ref{lst:event}:
-here, when an event is received, we call \lstinline$parse()$,
-\lstinline$is_valid()$, \lstinline$return_acknowledgement()$ and
-\lstinline$process_event()$ in turn. None of these operations are
-instantaneous: while they are ongoing, our event loop is blocked, and new
-events cannot be received. We are thus in violation of the VTP standard.
+concurrency. As described in \S\ref{sec:vtp}, VTP requires that even
+immediately after receiving an event subscribers must be ready to accept
+another: there can be no delay while the event is ingested. Contrast this with
+the model described above and outlined in Listing \ref{lst:event}: here, when
+an event is received, each of \texttt{parse()}, \texttt{is\_valid()},
+\texttt{return\_acknowledgement()}, \texttt{process\_event()} and
+\texttt{close\_connection()} is called in turn. If these operations are not
+assumed to be instantaneous, we must wait for them to complete before
+proceeding. While waiting, new events cannot be received.  We are thus in
+violation of the VTP standard\footnote{In practice, the implementation of some
+of these operations used in the Comet codebase can be assumed to be
+effectively instantaneous.  This is safe so long as the time taken to parse is
+sufficiently short that no backlog of events waiting to be processed  builds
+up and no network timeouts occur.}.
 
 Twisted addresses this problem through the use of \textit{Deferred}s. A
 deferred is effectively a promise that processing is underway and that results
 will be available in future. We can then queue up other processing tasks (or
 ``callbacks'') that will be executed when the result of the deferred is
 available. For example, we could define a version of
-\lstinline$parse()$---call it \lstinline$deferred_parse()$---that, rather than
-returning an object representing a parsed version of the VOEvent document,
-returns a promise to eventually parse the documument in the future and then
-make it available for further processing. We can then queue up our other
-functions to run only when parsing is complete. For example, see Listing
-\ref{lst:deferred}, in which we queue up a number of callbacks to be run when
-parsing is complete and also add an ``errback'' which handles logging a
-message if any of the callbacks fail to run successfully.
+\texttt{parse()}---call it
+\texttt{deferred\_parse()}---that, rather than returning an object
+representing a parsed version of the VOEvent document, returns a promise to
+eventually parse the documument in the future and then make it available for
+further processing. We can then queue up our other functions to run only when
+parsing is complete. For example, see Listing \ref{lst:deferred}, in which we
+queue up a number of callbacks to be run when parsing is complete and also add
+an ``errback'' which handles logging a message if any of the callbacks fail to
+run successfully.
 
-\begin{lstlisting}[float,caption={A version of \lstinline$VOEventReceiver.stringReceived()$ based on deferred processing.},label=lst:deferred,mathescape]
+\begin{listing}
+\begin{minted}[frame=lines]{python}
 def stringReceived(self, data):
   d = deferred_parse(data)
   d.addCallback(is_valid)
@@ -360,22 +364,32 @@ def stringReceived(self, data):
   d.addCallback(process_event)
   d.addErrback(log_failure)
   d.addCallback(close_connection)
-\end{lstlisting}
+\end{minted}
+\caption{A version of \texttt{VOEventReceiver.stringReceived()} (shown in
+Listing \ref{lst:event}) based on deferred processing.}
+\label{lst:deferred}
+\end{listing}
 
-Finally, we must consider the implementation of \lstinline$deferred_parse()$.
-Simply returning a deferred from a function does not prevent it from blocking.
-Instead, we create a dedicated thread which is devoted to parsing the data,
-and have it run concurrently with the rest of the application. When that
-thread completes, the deferred fires with its result. Conveniently, Twisted
-makes it easy to apply this pattern to a blocking function such as our
-\lstinline$parse()$: see Listing \ref{lst:deferToThread}.
+Finally, we must implement \texttt{deferred\_parse()}.  Simply returning a
+deferred from a function does not prevent it from blocking.  Instead, we
+create a dedicated thread which is devoted to parsing the data, and have it
+run concurrently with the rest of the application. When that thread completes,
+the deferred fires with its result. Conveniently, Twisted makes it easy to
+apply this pattern to a blocking function such as our \texttt{parse()}: see
+Listing \ref{lst:deferToThread}.
 
-\begin{lstlisting}[float,caption={The implementation of the non-blocking \lstinline$deferred_parse()$ function.},label=lst:deferToThread,mathescape]
-from twisted.internet.threads import deferToThread
+\begin{listing}
+\begin{minted}[frame=lines]{python}
+from twisted.internet.threads import \
+     deferToThread
 
 def deferred_parse(data):
     return deferToThread(parse, data)
-\end{lstlisting}
+\end{minted}
+\caption{The implementation of the non-blocking \texttt{deferred\_parse()} function.}
+\label{lst:deferToThread}
+\end{listing}
+
 
 Although the examples presented in this section are only intended to be
 illustrative, they demonstrate the concepts of asynchronous, event-driven
@@ -383,16 +397,143 @@ programming upon which Comet is built and are fundamental to understanding its
 operation.
 
 \subsection{Comet architecture}
+\label{sec:design:architecture}
 
-Protocols and brokers and comet-sendvo.
+Comet is built around the four protocols discussed in
+\S\ref{sec:design:twisted}. These enable it to take the part of either side in
+each of the three connection types discussion in \S\ref{sec:vtp}. For the
+convenience of end users, these are made accessible udner two distinct front
+ends. In this section, we first introduce those components and describe the
+relationship between them, and then discuss how Comet implements some specific
+requirements of VTP.
 
+\subsubsection{The components of Comet}
+\label{sec:design:components}
 
+The first is \textit{comet-sendvo}. This is a command-line tool which enables
+the user to submit a VOEvent to a remote broker. The user is expected to
+supply the VOEvent either on standard input or via a reference to the
+filesystem; \textit{comet-sendvo} transmits it to the specified destination
+using the \texttt{VOEventSender} protocol and shuts down.
 
-\subsection{Security and whitelisting}
+Processing a single event and then exiting is an appropriate model for an
+author, but is not the behaviour required of a broker or subscriber. Rather,
+these tools must remain active, continuing to receive and process VOEvents
+until the user shuts them down. To support this mode of operation, Comet can
+run as a ``daemon'', or background process. The Comet daemon can:
+
+\begin{enumerate}
+
+  \item{Accept submissions from authors (including, of course, \textit{comet-sendvo});}
+
+  \item{Subscribe to event streams from one or more remote brokers;}
+
+  \item{Distribute events received (whether by direct author submission or by subscription) to its own subscribers;}
+
+  \item{Perform arbitrary actions upon the events received.}
+
+\end{enumerate}
+
+A single Comet daemon is capable of performing any or all of these actions, as
+configured: it is not necessary to start separate ``broker'' and
+``subscriber'' daemons, for example.
+
+Both \textit{comet-sendvo} and the Comet daemon make extensive use of the
+facilities provided by Twisted for event-driven and asynchronous programming,
+as well as its support for logging and daemonization. They are exclusively
+command-line driven, and do not rely on configuration files, making them
+appropriate for use in scripts.
+
+\subsubsection{Event de-duplication}
+
+As described in \S\ref{sec:vtp} it is possible to build a mutually
+interconnected ``mesh'' of brokers to efficiently and reliably distribute
+events to a large number of subscribers. However, this runs the risk that
+events could continue ``looping'' on the network indefinitely, as two or more
+brokers which subscribe to each other's feeds repeatedly exchange the same
+event. To avoid this problem, Comet refuses to process any given event more
+than once: if a newly received event is the same as one which has been
+previously seen, it is simply dropped without being further distributed.
+
+In order for this approch to be effective, it is necessary to define what it
+means for an event to be ``the same''. In particular, due to the nature of
+XML, it is possible for exactly the same information about an event (the
+``infoset'') to be encoded in multiple different, but all equally valid, XML
+documents. At the simplest level, this is because XML is (for the most part)
+white space agnostic---new lines or spaces can be inserted without changing
+the meaning of the document. The question becomes more complex, though, when
+we consider the various versions of the VOEvent standard. Version 2.0
+\citep{Seaman:2011} is current, but the previous version
+\citep[1.1;]{Seaman:2006} is still in use by some systems. If the same
+information about the same astronomical event is encoded in a VOEvent 2.0
+document and a VOEvent 1.11 document, are these ``the same''?
+
+This question is particularly pertinent because this situation is exactly that
+which exists in practice: since
+2012\footnote{\url{http://gcn.gsfc.nasa.gov/admin/voevent_version20_available.txt}},
+NASA GCN has issued both version 1.1 and version 2.0 VOEvents containing the
+same information.
+
+\citet{Seaman:2011} requires that each VOEvent carry an
+IVORN\footnote{International Virtual Observatory Resource Name} which ``will
+stand in for a particular packet''. It is this IVORN that is used to identify
+events in the context of references and citations, for example. There has been
+some
+debate\footnote{\url{http://www.ivoa.net/pipermail/voevent/2012-March/002836.html}}
+as to whether IVORNs uniquely identify a particular infoset or a particular
+representation thereof: this is not currently well defined by the relevant
+documentation. In the case of the events issued by GCN, a single IVORN is used
+to describe both the version 1.1 and the version 2.0 VOEvent packets: this
+provide a \textit{de facto} standard that the IVORN identifies the infoset.
+
+VTP makes no distinction between the versions of VOEvents which it transmits:
+the same protocol may be used for version 1.1, or 2.0, or putative future
+versions. However, the consumer of a particular VOEvent may well have a
+toolchain that is tuned to work with one particular standard. In other words,
+authors may wish to use a VOEvent network to distribute multiple different
+versions of the same event, while subscribers may depend on receiving a
+specific representation of that event. In short, if an author submits version
+1.1 and version 2.0 representations of an event, it would not be appropriate
+for a broker to regard them as duplicates and discard one of them. The only
+possible conclusion is that the IVORN is not a suitable means of identifying
+unique events for the purposes of de-duplication.
+
+Comet therefore regards events as duplicates only if they are bit-for-bit
+identical with an event which has been seen before. This is determined by
+calculating the SHA-1 \citep{Eastlake:2001} cryptographic hash of every event
+which is seen by a Comet daemon and storing it, together with the time and
+date at which the event was seen, in a DBM-style persistent
+database\footnote{``DBM-style'' databases provide mappings between ``keys''
+and ``values'' in the manner of an associative array. Various libraries
+implementing this style of database exist exist; Comet uses Python's
+\texttt{anydbm} interface, which automatically chooses a particular
+implementation based upon the platform on which it is running.}. When an event
+is received, its SHA-1 hash is calculated and compared against the contents of
+the database to establish if it has been seen before.
+
+Each individual SHA-1 hash is stored as 40 bytes, plus a further 13 bytes are
+used to records the timestamp. The total storage requirement is therefore very
+modest. However, on a busy broker processing many events, the database could
+grow to a significant size, wasting resources and slowing down access.
+Therefore, Comet periodically removes all events older than 30 days from its
+database. Duplicates issued more than 30 days after the original event will
+therefore not be detected; however, an event loop with a period of 30 days or
+longer poses no threat to the integrity of the network.
+
+It should be noted that this de-duplication scheme requires that all other
+entities on the network forward events unchanged: even an apparently
+inconsequential change to an event packet which results in a valid event
+encoding the same infoset as before would result in a different SHA-1 hash for
+the event. The current VTP standard implies but does not absolutely require
+this behaviour: see \S\ref{sec:futurevtp} for further discussion.
+
+\subsubsection{Security and whitelisting}
 \label{sec:design:security}
 
-\subsection{Plugins: acting on events received}
+
+\subsubsection{Acting on events received}
 \label{sec:design:plugin}
+
 
 
 
@@ -416,6 +557,13 @@ Protocols and brokers and comet-sendvo.
 
 \section{Availability}
 \label{sec:avail}
+
+\section{Future VTP revision}
+\label{sec:futurevtp}
+
+* De-duplication.
+
+* Events must be unchanged.
 
 \section{Conclusions}
 \label{sec:conclusions}
