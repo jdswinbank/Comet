@@ -532,6 +532,20 @@ see \S\ref{sec:futurevtp} for further discussion.
 \subsubsection{Security and whitelisting}
 \label{sec:design:security}
 
+At time of writing, the released version of Comet\footnote{Version 1.1.0;
+\url{https://github.com/jdswinbank/Comet/tree/1.1.0}} does not implement an
+authentication scheme based on cryptographc signatures as described in
+\S\ref{sec:vtp}. Work is ongoing on prototyping such a scheme using Comet as a
+testbed: this is described in \S\ref{sec:security}.
+
+When acting as a broker, Comet includes the ability to check authors
+submitting events against a whitelist of IP addresses. Multiple disjoint
+ranges of addresses to whitelist may be specificed using CIDR notation
+\citep{Fuller:1993}, making the system very flexible.
+
+Comet does not currently provide built-in whitelisting support for
+subscribers. However, equivalent functionality is available though the use of
+an operating system level packet filter.
 
 \subsubsection{Acting on events received}
 \label{sec:design:plugin}
