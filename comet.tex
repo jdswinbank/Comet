@@ -100,7 +100,7 @@ This manuscript describes Comet, an implementation of all the components
 necessary for interacting with the VOEvent Transport Protocol while acting as
 a testbed for production-level VTP deployments and for new technologies and
 ``value-added'' services to assist in addressing the event deluge.  In
-\S\ref{sec:vtp} a description of the protocol is provided to set the tool in
+\S\ref{sec:vtp}, a description of the protocol is provided to set the tool in
 context. \S\ref{sec:design} describes how Comet has been designed and built to
 meet the protocol specifications. \S\ref{sec:addedvalue} describes how Comet
 builds upon VTP to help address future challenges in VOEvent filtering and
@@ -109,10 +109,12 @@ deploying VTP in support of next-generation astronomical infrastructure,
 considering both the scalability of the protocol to large numbers of events
 and to high latency connections. In \S\ref{sec:security} we consider the
 security implications of VOEvents, how they can be mitigated at the transport
-level, and describe a system being prototyped in Comet.  \S\ref{sec:avail}
+level, and describe a system being prototyped in Comet. \S\ref{sec:avail}
 describes the terms under which Comet is available and how to download,
-install and use it. The results are summarized and conclusions drawn for
-future of VOEvent transportation systems in \S\ref{sec:conclusions}.
+install and use it. Implications for future revisions of the VTP standard are
+summarized in \S\ref{sec:futurevtp}, while a summary of the results are
+presented and some more general conclusions drawn for future of VOEvent
+transportation systems in \S\ref{sec:conclusions}.
 
 \section{VOEvent Transport Protocol}
 \label{sec:vtp}
@@ -234,7 +236,32 @@ are described in the subsequeny sections of this manuscript.
 \subsection{Twisted Python and event-driven programming}
 \label{sec:design:twisted}
 
-\begin{listing}
+Comet is implemented in Python, and is built atop the Twisted networking
+engine\footnote{\url{https://twistedmatrix.com/}}. Twisted enables an
+\textit{event-driven} and \textit{asynchronous} style of development which is
+extensively used throughout Comet and is fundamental to understanding its
+implementation.
+
+Conventionally, we thing of programs as being executed in order: the system
+executes the instructions described by the first statement, followed by the
+second statement, and so on until the process is complete. Of course,
+spreading a process across multiple threads of execution makes the precise
+ordering of statements nondeterministic \citep[and, indeed, introduces a whole
+new level of complexity in the process;][]{Lee:2006}, but the fundamental
+point remains: the aim is to execute the program as rapidly and efficiently as
+possible and then exit.
+
+It is obvious that this model does not map well to network based applications.
+Consider the ``subscriber'' role in a VOEvent network: it is not rushing to
+finish some particular task and then terminate, but rather to continue
+listening to the network indefinitely for the arrival of VOEvents, and to
+take appropriate action when an event is received. Event-driven programming is
+the generalization of this concept: rather than a list of instructions to be
+executed sequentially, we define the actions that should be taken in response
+to possible events. Twisted then provides an ``event loop'' which waits for
+events and calls the appropriate actions when they occur.
+
+\begin{listing}[H]
 \begin{minted}[frame=lines]{python}
 class VOEventReceiver(Protocol):
   TIMEOUT = 20
@@ -265,30 +292,6 @@ class VOEventReceiver(Protocol):
 \label{lst:event}
 \end{listing}
 
-Comet is implemented in Python, and is built atop the Twisted networking
-engine\footnote{\url{https://twistedmatrix.com/}}. Twisted enables an
-\textit{event-driven} and \textit{asynchronous} style of development which is
-extensively used throughout Comet and is fundamental to understanding its
-implementation.
-
-Conventionally, we thing of programs as being executed in order: the system
-executes the instructions described by the first statement, followed by the
-second statement, and so on until the process is complete. Of course,
-spreading a process across multiple threads of execution makes the precise
-ordering of statements nondeterministic \citep[and, indeed, introduces a whole
-new level of complexity in the process;][]{Lee:2006}, but the fundamental
-point remains: the aim is to execute the program as rapidly and efficiently as
-possible and then exit.
-
-It is obvious that this model does not map well to network based applications.
-Consider the ``subscriber'' role in a VOEvent network: it is not rushing to
-finish some particular task and then terminate, but rather to continue
-listening to the network indefinitely for the arrival of VOEvents, and to
-take appropriate action when an event is received. Event-driven programming is
-the generalization of this concept: rather than a list of instructions to be
-executed sequentially, we define the actions that should be taken in response
-to possible events. Twisted then provides an ``event loop'' which waits for
-events and calls the appropriate actions when they occur.
 
 When talking to the network, Twisted provides the \textit{Protocol} as an
 abstraction for managing events. A protocol defines the interaction that a
@@ -323,14 +326,14 @@ other roles in the system: an author connecting to a broker
 (\texttt{VOEventSubscriber}).
 
 Event-driven programming provides a convenient abstraction for responding to
-network events as described. However, it does not address issues regarding
-concurrency. As described in \S\ref{sec:vtp}, VTP requires that even
-immediately after receiving an event subscribers must be ready to accept
-another: there can be no delay while the event is ingested. Contrast this with
-the model described above and outlined in Listing \ref{lst:event}: here, when
-an event is received, each of \texttt{parse()}, \texttt{is\_valid()},
+network events. However, it does not address issues regarding concurrency. As
+described in \S\ref{sec:vtp}, VTP requires that even immediately after
+receiving an event subscribers must be ready to accept another: there can be
+no delay while the event is ingested. Contrast this with the model described
+above and outlined in Listing \ref{lst:event}: here, when an event is
+received, each of the functions \texttt{parse()}, \texttt{is\_valid()},
 \texttt{return\_acknowledgement()}, \texttt{process\_event()} and
-\texttt{close\_connection()} is called in turn. If these operations are not
+\texttt{close\_connection()} is called in turn.  If these operations are not
 assumed to be instantaneous, we must wait for them to complete before
 proceeding. While waiting, new events cannot be received.  We are thus in
 violation of the VTP standard\footnote{In practice, the implementation of some
@@ -354,7 +357,7 @@ queue up a number of callbacks to be run when parsing is complete and also add
 an ``errback'' which handles logging a message if any of the callbacks fail to
 run successfully.
 
-\begin{listing}
+\begin{listing}[H]
 \begin{minted}[frame=lines]{python}
 def stringReceived(self, data):
   d = deferred_parse(data)
@@ -378,7 +381,7 @@ the deferred fires with its result. Conveniently, Twisted makes it easy to
 apply this pattern to a blocking function such as our \texttt{parse()}: see
 Listing \ref{lst:deferToThread}.
 
-\begin{listing}
+\begin{listing}[H]
 \begin{minted}[frame=lines]{python}
 from twisted.internet.threads import \
      deferToThread
@@ -434,15 +437,14 @@ run as a ``daemon'', or background process. The Comet daemon can:
 
 \end{enumerate}
 
-A single Comet daemon is capable of performing any or all of these actions, as
-configured: it is not necessary to start separate ``broker'' and
-``subscriber'' daemons, for example.
+A single Comet daemon is capable of performing any or all of these actions,
+depding upon configuration: it is not necessary to start separate ``broker''
+and ``subscriber'' daemons, for example.
 
 Both \textit{comet-sendvo} and the Comet daemon make extensive use of the
 facilities provided by Twisted for event-driven and asynchronous programming,
 as well as its support for logging and daemonization. They are exclusively
-command-line driven, and do not rely on configuration files, making them
-appropriate for use in scripts.
+command-line driven, and do not rely on configuration files.
 
 \subsubsection{Event de-duplication}
 
@@ -520,12 +522,12 @@ database. Duplicates issued more than 30 days after the original event will
 therefore not be detected; however, an event loop with a period of 30 days or
 longer poses no threat to the integrity of the network.
 
-It should be noted that this de-duplication scheme requires that all other
-entities on the network forward events unchanged: even an apparently
-inconsequential change to an event packet which results in a valid event
-encoding the same infoset as before would result in a different SHA-1 hash for
-the event. The current VTP standard implies but does not absolutely require
-this behaviour: see \S\ref{sec:futurevtp} for further discussion.
+It should be noted that this de-duplication scheme requires that all entities
+on the network forward events unchanged: even an apparently inconsequential
+change to an event packet which results in a valid event encoding the same
+infoset as before would result in a different SHA-1 hash for the event. The
+current VTP standard implies but does not absolutely require this behaviour:
+see \S\ref{sec:futurevtp} for further discussion.
 
 \subsubsection{Security and whitelisting}
 \label{sec:design:security}
