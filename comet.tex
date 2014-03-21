@@ -102,7 +102,7 @@ a testbed for production-level VTP deployments and for new technologies and
 ``value-added'' services to assist in addressing the event deluge.  In
 \S\ref{sec:vtp}, a description of the protocol is provided to set the tool in
 context. \S\ref{sec:design} describes how Comet has been designed and built to
-meet the protocol specifications. \S\ref{sec:addedvalue} describes how Comet
+meet the protocol specifications. \S\ref{sec:filter} describes how Comet
 builds upon VTP to help address future challenges in VOEvent filtering and
 selection. \S\ref{sec:perf} considers the performance implications of
 deploying VTP in support of next-generation astronomical infrastructure,
@@ -609,11 +609,87 @@ when the daemon is started. If required, plugins may also define
 user-configurable options by implementing the \texttt{IHasOptions} interface;
 these are also exposed on the command line.
 
-\section{Added Value Services}
-\label{sec:addedvalue}
+\section{Filtering events}
+\label{sec:filter}
 
-\subsection{XPath-Based Filtering}
-\label{sec:addedvalue:xpath}
+Next generation telescopes such as LSST promise to detect and announce
+transients using VOEvent at a rate of millions of events per night
+\citep{Kantor:2014}. It is unlikely that most individual subscribers will have
+a use for all of these events. Winnowing that event stream down so that each
+subscriber receives only those events which are of direct relevance to them is
+both efficient in terms of resource usage, as fewer events need to be
+transported to and processed by the subscriber, but also enables subscribers
+to focus simple, well-targeted systems that address their science goals,
+rather than attempting to devise efficient ways to process millions of VOEvent
+packets.
+
+Efforts to develop intelligent systems for alerting users only of those events
+which are of relevance to them are ongoing, and will continue into the future
+\citep{Williams:2009, Matheson:2014}. Comet contributes to this effort by
+introducing a powerful XPath \citep{Clark:1999} based filtering system.
+
+\subsection{XPath queries}
+
+XPath is a language for selecting parts of and computing values over an XML
+document. XPath expressions may return one of four different result types:
+
+\begin{itemize}
+  \item{A Boolean value;}
+  \item{A floating point number;}
+  \item{A textual string;}
+  \item{A set of XML ``nodes'', representing parts of the document.}
+\end{itemize}
+
+XPath expressions enable users to specify complex queries, including testing
+the values of arbitrary elements or attributes specifed in the document and
+combining those tests with Boolean logic. A complete reference is outside the
+scope of this manuscript, but some examples may serve to illustate the
+possibilities.
+
+Starting with string matching, \mint{xml}|//Who/Author[shortName="VO-GCN"]|
+returns a set of all nodes in the document which list the author's ``short
+name'' as \texttt{VO-GCN}. More complex matches can use functions, such as
+\mint{xml}|//How[contains(Description, "Swift")]| which returns the set of all
+nodes which mention ``Swift'' in the context of a describing how the data was
+obtained. Numerical comparisons are also possible:
+\mint{xml}|//Param[@name="Sun_Distance" and @value>40]| provides the set of
+all paramters called \texttt{Sun\_Distance} with a numerical value greater
+than 40.
+
+These expression can be combined, so that for example
+\begin{minted}{xml}
+//How[contains(Description, "Swift")] or
+  ( //Param[@name="Sun_Distance" and @value>40]
+    and //Who/Author[shortName="VO-GCN"]) )
+\end{minted}
+returns a Boolean value which is true if the event either mentions ``Swift''
+or both has a \texttt{Sun\_Distance} paramter greater than 40 and originates
+from GCN, and false otherwise.
+
+\subsection{Integration with Comet}
+
+Comet makes it possible for a subscriber to supply one or more XPath
+expressions to a broker. When the broker receives an event, it evaluates each
+expression over the event, and only forward it to the subscriber if at least
+one of the expressions evaluates produces a positive result.
+
+Comet takes the result returned by XPath and applies Python's \texttt{bool()}
+built-in function to determine if the result is ``positive''. For example, the
+values \texttt{True}, \texttt{1} and \texttt{"string"} (the Boolean true
+value, a non-zero number and a non-empty string) as well as a non-empty node
+set are all positive, while \texttt{False}, \texttt{0} and \texttt{""}
+(Boolean false, the number 0 and an empty string) and the empty node set are
+``negative'' results.
+
+VTP provides no standardized method for a subscriber to communicate their
+filter preferences to the broker. Comet works around this by overloading the
+Transport message system provided by VTP and described in \S\ref{sec:vtp}.
+According to the VTP specification, it is legal for a subscriber to send a
+Transport message of class \texttt{authenticationresponse} and with arbitrary
+metadata embedded at any time during a VTP session. Comet looks for XPath
+expressions encoded in this metadata and installs them as filters for the
+subscriber; other brokers which comply with the protocol but do not support
+this form of filtering should simply ignore the message.
 
 \section{Performance}
 \label{sec:perf}
@@ -637,6 +713,8 @@ these are also exposed on the command line.
 
 * Events must be unchanged.
 
+* Official support for specifying filters or other metadata.
+
 \section{Conclusions}
 \label{sec:conclusions}
 
@@ -644,10 +722,23 @@ these are also exposed on the command line.
 \label{sec:ack}
 
 The author is grateful to Bob Denny and Alasdair Allan for many useful
-discussions on the design and implementation of the VOEvent Transport
-Protocol. I also thank Roy Williams and Tim Staley for their feedback on the
-design and capabilities of Comet. This project was funded by European Research
-Council Advanced Grant XXXXXX `AARTFAAC'.
+discussions on the design and implementation of the VOEvent Transport Protocol
+and to Tim Staley and Roy Williams for their feedback on the design and
+capabilities of Comet.
+
+Comet relies on some excellent open-source software.
+Python\footnote{\url{https://www.python.org/}} provides both a convenient
+development platform and a rich variety of libraries upon which to build; it
+is these, notably Twisted\footnote{\url{http://www.twistedmatrix.com/}},
+lxml\footnote{\url{http://lxml.de/}},
+zope.interface\footnote{\url{http://docs.zope.org/zope.interface/}} and
+ipaddr-py\footnote{\url{https://code.google.com/p/ipaddr-py/}} which have made
+the development of Comet possible. Additionally, the support for event
+authentication described \S\ref{sec:security} makes use of
+PyGMGME\footnote{\url{https://launchpad.net/pygpgme}}.
+
+This project was funded by European Research Council Advanced Grant XXXXXX
+`AARTFAAC'.
 
 \section*{References}
 
