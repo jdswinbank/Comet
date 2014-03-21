@@ -8,7 +8,7 @@ from ..icomet import IHandler
 @implementer(IHandler)
 class EventRecorder(object):
     """
-    Forward an event to all subscribers.
+    Record the SHA1 & timestamp of an event in the event database.
     """
     name = "event-recorder"
 
