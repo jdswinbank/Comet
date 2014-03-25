@@ -5,7 +5,7 @@ from matplotlib import pyplot
 
 overall = {}
 
-for n_subscribers in [2, 4, 8, 16, 32, 64, 256]:
+for n_subscribers in [1, 2, 4, 8, 16, 32, 64, 128, 256]:
     directory = "%d_subscribers" % (n_subscribers)
     data = []
     for filename in glob.glob(os.path.join(directory, "*log")):
