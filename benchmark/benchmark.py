@@ -29,16 +29,26 @@ from comet.utility import log
 from comet.utility.voevent import broker_test_message
 from comet.utility.xml import xml_document
 
+class LatencyOptions(usage.Options):
+    optParameters = [
+        ["interval", None, 0.3, "Interval between events.", float]
+    ]
+
+class ThroughputOptions(usage.Options):
+    optParameters = [
+        ["num-events", None, 10000,"Number of events to send.", int]
+    ]
+
 class Options(usage.Options):
     optParameters = [
         ["host", "h", "localhost", "Host to send to."],
         ["port", "p", 8098, "Port to send to.", int],
-#        ["interval", None, 1, "Interval between events.", float],
-        ["file", None, None, "Template event file."],
         ["ivorn", None, "ivo://comet.broker/test", "IVORN."],
         ["connections", None, 1, "Max no. simultaneous connections.", int]
     ]
 
+    subCommands = [['latency', None, LatencyOptions, "Measure latency"],
+                   ['throughput', None, ThroughputOptions, "Measure throughput"]]
 
 class PooledVOEventSenderFactory(VOEventSenderFactory):
     def __init__(self, event, pool):
@@ -60,7 +70,7 @@ class PooledVOEventSenderFactory(VOEventSenderFactory):
 
 
 class ConnectionPool(object):
-    def __init__(self, host, port, max_connections=1):
+    def __init__(self, host, port, max_connections=1, stop_when_done=False):
         self.lock = threading.Lock()
         self.max_connections = max_connections
         self.connections = 0
@@ -69,6 +79,7 @@ class ConnectionPool(object):
         self.queue = []
         self.host = host
         self.port = port
+        self.stop_when_done=stop_when_done
 
     def enqueue(self, message):
         with self.lock:
@@ -83,9 +94,10 @@ class ConnectionPool(object):
                 reactor.connectTCP(self.host, self.port, factory)
                 self.connections += 1
             elif not self.queue and self.connections == 0:
-                print "All done!"
+                print "Nothing to do."
                 self.print_status()
-#                reactor.stop()
+                if self.stop_when_done:
+                    reactor.stop()
 
     def failed(self):
         with self.lock:
@@ -105,8 +117,6 @@ class ConnectionPool(object):
     def print_status(self):
         log.info("%d open connections; %d/%d/%d messages queued/sent/failed" % (self.connections, len(self.queue), self._sent, self._failed))
 
-def schedule_message(pool, ivorn):
-    pool.enqueue(broker_test_message(ivorn))
 
 if __name__ == "__main__":
     config = Options()
@@ -115,28 +125,25 @@ if __name__ == "__main__":
     startLogging(sys.stdout)
     log.LEVEL = log.Levels.DEBUG
 
-    pool = ConnectionPool(config['host'], config['port'], config['connections'])
 
-#    loop = LoopingCall(schedule_message, pool, config["ivorn"])
-#    loop.start(config["interval"])
+    if config.subCommand == "latency":
+        pool = ConnectionPool(config['host'], config['port'], config['connections'], False)
+        loop = LoopingCall(
+            lambda pool, ivorn: pool.enqueue(broker_test_message(ivorn)),
+            pool, config['ivorn']
+        )
+        loop.start(config.subOptions['interval'])
 
-#    for i in xrange(1000):
-#        print i
-#        pool.enqueue(broker_test_message(config['ivorn']))
+    elif config.subCommand == "throughput":
+        pool = ConnectionPool(config['host'], config['port'], config['connections'], True)
+        for i in xrange(config.subOptions['num-events']):
+            pool.enqueue(broker_test_message(config['ivorn']))
 
-#        with open(config['file'], 'r') as f:
-#            template_event = xml_document(f.read())
-#        element = template_event.get_element()
-#        element.set("ivorn", config['ivorn'] + str(datetime.datetime.now()) + str(random.random()))
-#        template_event.set_element(element)
-#        pool.enqueue(template_event)
-
-#    import time
-#    time.sleep(10)
-
-    loop = LoopingCall(schedule_message, pool, config['ivorn'])
-    loop.start(0.3)
+    # Print the status of the pool every 5 seconds.
     ploop = LoopingCall(pool.print_status)
     ploop.start(5)
 
+    start_time = datetime.datetime.now()
     reactor.run()
+    stop_time = datetime.datetime.now()
+    print "Total reactor running time: %fs" % ((stop_time - start_time).total_seconds(),)
