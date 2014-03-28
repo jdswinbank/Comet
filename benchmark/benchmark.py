@@ -40,6 +40,11 @@ class ThroughputOptions(usage.Options):
     ]
 
 class Options(usage.Options):
+    optFlags = [
+      ["verbose", "v", "Increase verbosity."],
+      ["quiet", "q", "Decrease verbosity."]
+    ]
+
     optParameters = [
         ["host", "h", "localhost", "Host to send to."],
         ["port", "p", 8098, "Port to send to.", int],
@@ -50,15 +55,33 @@ class Options(usage.Options):
     subCommands = [['latency', None, LatencyOptions, "Measure latency"],
                    ['throughput', None, ThroughputOptions, "Measure throughput"]]
 
+    def __init__(self):
+        usage.Options.__init__(self)
+        self['verbosity'] = 1
+
+    def opt_verbose(self):
+        self['verbosity'] += 1
+
+    def opt_quiet(self):
+        self['verbosity'] -= 1
+
+    def postOptions(self):
+        if self['verbosity'] >= 2:
+            log.LEVEL = log.Levels.DEBUG
+        elif self['verbosity'] >= 1:
+            log.LEVEL = log.Levels.INFO
+        else:
+            log.LEVEL = log.Levels.WARNING
+
 class PooledVOEventSenderFactory(VOEventSenderFactory):
     def __init__(self, event, pool):
         VOEventSenderFactory.__init__(self, event)
         self.pool = pool
 
     def clientConnectionLost(self, connector, reason):
-        log.info(reason)
         if not self.ack:
             log.info("Sending failed")
+            log.debug(reason)
             self.pool.failed()
         else:
             self.pool.sent()
@@ -94,7 +117,7 @@ class ConnectionPool(object):
                 reactor.connectTCP(self.host, self.port, factory)
                 self.connections += 1
             elif not self.queue and self.connections == 0:
-                print "Nothing to do."
+                log.debug("Nothing to do.")
                 self.print_status()
                 if self.stop_when_done:
                     reactor.stop()
@@ -115,7 +138,7 @@ class ConnectionPool(object):
         self._create_connection()
 
     def print_status(self):
-        log.info("%d open connections; %d/%d/%d messages queued/sent/failed" % (self.connections, len(self.queue), self._sent, self._failed))
+        log.debug("%d open connections; %d/%d/%d messages queued/sent/failed" % (self.connections, len(self.queue), self._sent, self._failed))
 
 
 if __name__ == "__main__":
@@ -123,8 +146,6 @@ if __name__ == "__main__":
     config.parseOptions()
 
     startLogging(sys.stdout)
-    log.LEVEL = log.Levels.DEBUG
-
 
     if config.subCommand == "latency":
         pool = ConnectionPool(config['host'], config['port'], config['connections'], False)
@@ -139,7 +160,6 @@ if __name__ == "__main__":
         for i in xrange(config.subOptions['num-events']):
             pool.enqueue(broker_test_message(config['ivorn']))
 
-    # Print the status of the pool every 5 seconds.
     ploop = LoopingCall(pool.print_status)
     ploop.start(5)
 
@@ -147,3 +167,4 @@ if __name__ == "__main__":
     reactor.run()
     stop_time = datetime.datetime.now()
     print "Total reactor running time: %fs" % ((stop_time - start_time).total_seconds(),)
+    print "%d/%d/%d messages queued/sent/failed" % (len(pool.queue), pool._sent, pool._failed)
