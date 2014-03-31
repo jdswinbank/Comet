@@ -6,24 +6,16 @@
 # Python standard library
 import sys
 import threading
-import random
 import datetime
 
 # Twisted
 from twisted.python.log import startLogging
 from twisted.python import usage
 from twisted.internet import reactor
-from twisted.internet.endpoints import clientFromString
-from twisted.internet.defer import DeferredSemaphore
-from twisted.internet.defer import DeferredLock
 from twisted.internet.task import LoopingCall
 
 # VOEvent transport protocol
 from comet.tcp.protocol import VOEventSenderFactory
-
-# Encapsulation of event
-#from comet.utility.xml import xml_document
-#import lxml.etree as ElementTree
 
 from comet.utility import log
 from comet.utility.voevent import broker_test_message
@@ -159,6 +151,10 @@ if __name__ == "__main__":
         pool = ConnectionPool(config['host'], config['port'], config['connections'], True)
         for i in xrange(config.subOptions['num-events']):
             pool.enqueue(broker_test_message(config['ivorn']))
+
+    else:
+        print "Nothing to do; exiting."
+        sys.exit()
 
     ploop = LoopingCall(pool.print_status)
     ploop.start(5)
