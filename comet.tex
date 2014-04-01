@@ -447,6 +447,7 @@ as well as its support for logging and daemonization. They are exclusively
 command-line driven, and do not rely on configuration files.
 
 \subsubsection{Event de-duplication}
+\label{sec:design:dedup}
 
 As described in \S\ref{sec:vtp} it is possible to build a mutually
 interconnected ``mesh'' of brokers to efficiently and reliably distribute
@@ -798,6 +799,53 @@ Comet repository (\S\ref{sec:avail}).
   \label{fig:latency}
 \end{figure}
 
+The distribution of latencies among the received events when this test was run
+in the default configuration is shown in the top panel of Fig.
+\ref{fig:latency}. The mean latency was 0.022\,s with a standard deviation of
+0.011\,s; the longest recorded latency for any event was 0.171\,s.
+
+As described in \S\ref{sec:design:twisted}, Twisted provides an event-driven
+framework. The core of this framework is the ``reactor'', which provides a
+uniform interface to event handling across the platforms upon which Twisted
+can run. The internal implementation of the reactor itself can vary from
+platform to platform to most efficiently take advantage of the facilities
+available to it.
+
+The default reactor implementation used by Twisted on the system used for
+testing is based on the \texttt{poll()} system call \citep{Posix1:2013}.
+However, modern Linux systems provide the alternative \texttt{epoll()} call
+\citep{Kerrisk:2014} which provides a more efficient alternative. Twisted
+provdes a reactor which is based upon \texttt{epoll()}. In the middle panel of
+Fig. \ref{fig:latency} the same experiment was repeated, but with both broker
+and subscriber based on this alternative reactor. This provided a somewhat
+improved mean latency of 0.019\,s with a standard deviation of 0.011\,s, and a
+reduced maximum latency of 0.130\,s.
+
+As described in \S\ref{sec:design:dedup}, Comet stores a database of the
+arrival times and SHA-1 hashes of each event it processes, both at the broker
+and at the subscriber. This data is regularly written the filesystem as Comet
+is running, and must be searched for duplicates every time a new event is
+received. Accessing disk storage involves a significant overhead, so a new
+memory-based filesystem was created based on \texttt{tmpfs}
+\citep{Kerrisk:2014} and both broker and subscriber were configured to store
+their event databases here. This storage is entirely RAM-based, so avoids the
+extra delays in writing to disk. Of course, the RAM technologies typically
+used in modern systems are inherently volatile, and the event database would
+not survive if the system were powered down and rebooted: whether this risk is
+appropriate in a production deployment would be a matter of judgement.
+
+The results based on the \texttt{tmpfs} filesystem are shown in the bottom
+panel of Fig. \ref{fig:latency}. Clearly, these latencies are both lower (mean
+0.0063\,s, maximum 0.013\,s) and more consistent (standard deviation
+0.00033\,s) than the previous tests.
+
+An overhead of no more than around one-hundredth of a second is unlikely to be
+of significance in most astronomical applications, and would certainly dwarfed
+by latencies introduced by transmitting data over a network.  For the rest of
+the tests presented in this manuscript, we continue to adopt the
+\texttt{epoll()} and \texttt{tmpfs} configuration described here.
+
+\subsection{Number of subscribers}
 
 
 
