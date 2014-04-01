@@ -1,3 +1,4 @@
+import sys
 import numpy
 from matplotlib import pyplot
 
@@ -73,4 +74,4 @@ pyplot.text(0.95, 0.85, 'EPoll reactor \& tmpfs', transform=ax2.transAxes, horiz
 
 pyplot.xlabel("Total latency (s)")
 
-pyplot.savefig('../../figures/latency.pdf')
+pyplot.savefig(sys.argv[1])
