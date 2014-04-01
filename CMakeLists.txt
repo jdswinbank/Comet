@@ -39,12 +39,20 @@ add_custom_command (
 )
 
 add_custom_command (
+    OUTPUT ${FIGURE_DIRECTORY}/subscribers.pdf
+    COMMAND ${PYTHON_EXECUTABLE}
+    ARGS ${PROJECT_SOURCE_DIR}/benchmark/multi_client/read_times.py ${FIGURE_DIRECTORY}/subscribers.pdf
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/benchmark/multi_client
+)
+
+add_custom_command (
     OUTPUT ${PROJECT_BINARY_DIR}/comet.pdf
     COMMAND ${LATEXMK_EXECUTABLE}
     ARGS -pdf -pdflatex=\"pdflatex --shell-escape %O %S\" ${PROJECT_BINARY_DIR}/comet.tex
     DEPENDS
         ${FIGURE_DIRECTORY}/vtp.pdf
         ${FIGURE_DIRECTORY}/latency.pdf
+        ${FIGURE_DIRECTORY}/subscribers.pdf
         ${PROJECT_BINARY_DIR}/comet.tex
 )
 
