@@ -16,7 +16,9 @@ params = {'backend': 'pdf',
           'text.usetex': True,
           'figure.figsize': fig_size,
           'figure.subplot.bottom': 0.15,
-          'figure.subplot.left': 0.15}
+          'figure.subplot.left': 0.15,
+          'figure.subplot.top': 0.95,
+          'figure.subplot.right': 0.97}
 pyplot.rcParams.update(params)
 pyplot.rc("font", size=8, family="sans", serif="Computer Sans")
 

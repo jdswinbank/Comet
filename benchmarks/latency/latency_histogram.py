@@ -36,7 +36,9 @@ fig_height = fig_width
 fig_size =  [fig_width,fig_height]
 params = {'backend': 'pdf',
           'text.usetex': True,
-          'figure.figsize': fig_size}
+          'figure.figsize': fig_size,
+          'figure.subplot.top': 0.97,
+          'figure.subplot.right': 0.95}
 pyplot.rcParams.update(params)
 pyplot.rc("font", size=8, family="sans", serif="Computer Sans")
 

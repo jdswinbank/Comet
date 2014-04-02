@@ -27,6 +27,12 @@ configure_file (
     COPYONLY
 )
 
+configure_file (
+    ${PROJECT_SOURCE_DIR}/manuscript/tcp.pdf
+    ${FIGURE_OUTPUT_DIR}/tcp.pdf
+    COPYONLY
+)
+
 add_custom_command (
     OUTPUT ${FIGURE_OUTPUT_DIR}/latency.pdf
     COMMAND ${PYTHON_EXECUTABLE}
@@ -46,13 +52,23 @@ add_custom_command (
 )
 
 add_custom_command (
+    OUTPUT ${FIGURE_OUTPUT_DIR}/throughput.pdf
+    COMMAND ${PYTHON_EXECUTABLE}
+    ARGS ${PROJECT_SOURCE_DIR}/benchmarks/throughput/rate_histogram.py ${FIGURE_OUTPUT_DIR}/throughput.pdf
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/benchmarks/throughput
+)
+
+
+add_custom_command (
     OUTPUT ${PROJECT_BINARY_DIR}/comet.pdf
     COMMAND ${LATEXMK_EXECUTABLE}
     ARGS -pdf -pdflatex=\"pdflatex --shell-escape %O %S\" ${PROJECT_BINARY_DIR}/comet.tex
     DEPENDS
         ${FIGURE_OUTPUT_DIR}/vtp.pdf
+        ${FIGURE_OUTPUT_DIR}/tcp.pdf
         ${FIGURE_OUTPUT_DIR}/latency.pdf
         ${FIGURE_OUTPUT_DIR}/subscribers.pdf
+        ${FIGURE_OUTPUT_DIR}/throughput.pdf
         ${PROJECT_BINARY_DIR}/comet.tex
 )
 
