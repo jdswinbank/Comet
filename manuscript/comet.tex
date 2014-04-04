@@ -957,15 +957,72 @@ repeated 10 times.
   \includegraphics[width=\columnwidth]{@FIGURE_OUTPUT_DIR@/throughput.pdf}
   \end{center}
 
-  \caption{Mean throughput of events as transmitted by the author and as
-  received by the subscriber as a function of number of concurrent connections
-  from author to broker.}
+  \caption{At top, the mean throughput of events as transmitted by
+  the author and as received by the subscriber as a function of number of
+  concurrent connections from author to broker. The central panel shows the
+  standard deviation of the measured rates. The number of events which were
+  not successfully received by the subscriber is shown at the bottom.}
 
   \label{fig:throughput}
 \end{figure}
 
-Figure \ref{fig:throughput} shows the mean event rate measured at both broker
-and subscriber as a function of the number of connections. 
+Figure \ref{fig:throughput} shows the how the event rate measured at both
+author and subscriber varies with the number of concurrent connections. With a
+single connection a rate of 283.7 events/second at the author and 283.8
+events/second at the subscriber is achieved. This increases to a peak of 519.2
+events/second at the author and 534.2 events/second at the subscriber with 64
+concurrent connections; after this, increasing he number of connections causes
+the overall throughput to drop. The standard deviation of the measured rate is
+also plotted: the throughput is relatively stable at low connection counts,
+but substantial variations are seen with 256 and 512 concurrent connections.
+
+At the highest connection counts, the rate is not only seen to drop
+substantially, but also some events are lost in transit: at the end of the
+test, the subscriber had received fewer than 10000 VOEvent packets. Since the
+throughput was lower at these rates, and since reliable transmission is
+essential, concurrency levels higher than 512 connections were not
+investigated.
+
+These results may be explained by considering the balance between the
+per-connection overhead and the compute load on the broker. Since each event
+is delivered by making a new connection to the broker (as per the protocol
+described in \S\ref{sec:vtp}) there is a per-event overhead due to creating
+and tearing down the connection (\S\ref{sec:perf:highlatency} discusses some
+of the overheads in managing TCP connections). At low connection counts, this
+latency dominates; as the concurrency increases, the throughput is dominated
+by the broker load.
+
+At the highest connection counts, the configuration of the Linux kernel's
+networking stack comes in to play. Large numbers of short lived connections
+are a relatively uncommon phenomenon, and the standard configuration of the
+Linux kernel is not optimized to handle them efficiently. Indeed, at very high
+connection counts, the kernel logged warnings that it was was under a
+``\textsc{syn} flood'' attack \citep{CERT:1996}. Under this load, connections
+may be dropped or rejected by the kernel, leading to events never reaching
+their destination, as seen in the lowest panel of Fig. \ref{fig:throughput}.
+Many options within the kernel may be tuned to improve its performance under
+these network loads. However, since the peak throughput was already limited by
+Comet's CPU requirements at lower connection counts, they were not
+investigated here.
+
+It is worth noting that, at low connection counts, the throughput from author
+to broker and from broker to subscriber were effectively identical, but they
+began to diverge as the concurrency increased. This is again due to the
+per-connection overhead: since the connection from the broker to the
+subscriber is permanently kept open, it is significantly more efficient, and
+provides a continuously-available high bandwidth connection. At high
+connection counts the latency involved in servicing many connections means
+that such high bandwidths cannot be achieved here.
+
+Without special tuning, the peak throughput of over 500 event/second is over
+70\% of that required to service the peak event rate predicted from LSST.
+Note, though, this test was limited by CPU performance on desktop-class
+hardware that will be substantially more than a decade old before LSST is
+commissioned. Further, the predictions refer to a peak rate, not sustained
+production. In these terms, then, servicing an LSST event stream with a VTP
+based broker seems plausible---although it is worth emphasizing that the
+events used in this benchmark did not carry a scientific payload, and hence
+are likely significantly smaller than those which might be produced by LSST.
 
 \subsection{High-latency connections}
 \label{sec:perf:highlatency}
