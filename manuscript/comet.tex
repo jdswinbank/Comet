@@ -1071,15 +1071,168 @@ acknowledgement, and then closing the connection. Sending the event and
 waiting for acknowledgement involves a network round-trip.  However, data is
 transmitted over TCP \citep{Cerf:1974}, we use thestandard TCP mechanisms for
 creating and terminating connections, each of which involves another network
-round trip. This process is illustrated in Fig. \ref{fig:tcp}: in total, given
-a network round trip time of $t_\mathrm{RT}$, submitting a single event to the
-broker would take $3 t_\mathrm{RT}$. Assuming that events are sent in series,
-and given a round trip time of, say, 250\,ms, this would limit the total
-number of events which may be sent in a 12 hour period to 57600, far short of
-the predicted event rate.
+round trip. This process is illustrated in Fig. \ref{fig:tcp}: the complete
+transaction involved in submitting a single event to the broker, given a
+network round trip time of $t_\mathrm{RT}$, takes $3 t_\mathrm{RT}$. In
+practice, after transmitting the final \textsc{fin} packet, the author may
+assume that the connection is closed without waiting for a response, and hence
+initiate a new connection, so the figure of $2 t_\mathrm{RT}$ describes the
+interval between connection attempts.  Assuming that events are sent in
+sequentially, and given a round trip time of, say, 200\,ms, this would limit
+the total number of events which may be sent in a 12 hour period to 86400, far
+short of the rates discussion in \S\ref{sec:perf:total}. However, the same
+section also demonstrated that events may be sent concurrently over multiple
+connections. Here, we investigate to what extent that approach can mitigate
+this issue.
 
-\section{Security}
+\subsubsection{Test setup}
+
+Events were generated, sent the the broker, and thence onwards to a single
+subscriber as per \S\ref{sec:perf:total:setup}, and times were measured in
+exactly the same way. Connection counts were again increased logarithmically.
+Given the relative stability of the throughput (at least for modest connection
+counts) shown in Fig \ref{fig:throughput}, a single set of 10000 events was
+sent for each level of concurrency.
+
+Link-level network latency was simulated using NetEm \citep{Hemminger:2005},
+the network emulation functionality available as part of the Linux kernel.
+Given a (virtual, in this case) network device named \texttt{vethXXX}, a
+delay of \texttt{YYY}\,ms may be added to each packet sent through it by
+running:
+\begin{minted}{sh}
+tc qdisc add dev vethXXX root netem delay YYYms
+\end{minted}
+Note that this delay applies only to packets sent through the interface: no
+delay is applied to packets received at the interface. To simulate a symmetric
+network delay using this approach, it would therefore be necessary to add a
+latency of $t_\mathrm{RT} / 2$ at both the author and the subscriber
+interfaces. However, this is complicated by the fact that the subscriber also
+communicates with the broker over its interface. Therefore, instead the whole
+delay was applied to the output of the author. Given the symmetric nature of
+Fig. \ref{fig:tcp}, the observed effect is identical.
+
+\subsubsection{Results}
+
+\section{Authentication}
 \label{sec:security}
+
+For many applications involving VOEvents, it is important to be certain of the
+authenticitity of the event. That is, to provide a guarantee that the event
+genuinely describes the results of observations by its supposed author. This
+is important both for event authors, to protect their reputation for issuing
+high quality, trustworthy events, and to subscribers, who cannot run the risk
+of using expensive, often taxpayer-funded, facilities chasing phantoms. While
+the overt motivation for forging events is low---there is no obvious way to
+exploit a VOEvent for monetary gain, for example---the potential for
+mischief-makers to play havoc with event networks cannot be ignored.
+
+Two approaches may be taken to securing an event distribution system. The
+first is to authenticate the transport layer: to ensure that every time one
+network entity receives an event from another, the recipient verifies beyond
+doubt the identity of the sender, and makes that information available to any
+other entities to which it may pass the event in future. In this way, any
+given recipient of the event can trace the path the event has taken across the
+network to reach them, ultimately verifying that it came from a legitimate
+source.  However, implementing an authenticated transport layer is complex,
+particularly given the complex topology of mutually interconnected brokers
+described in \S\ref{sec:vtp}. As such, this is not a mechanism which the VTP
+system supports.
+
+The alternative is to authenticate individual VOEvent packets. This can be
+done by applying a cryptographic signature to the event using a technology
+such as OpenPGP \citep{Callas:2007} or XML Digital Signatures
+\citep{Bartel:2008}. The recipient of an event can then verify that it is
+identical to the event to which the signature was originally applied.
+
+Work has already been carried out on applying XML Digital Signatures to
+VOEvents \citep{Allen:2008} outside the framework of VTP. However, the
+implementation is relatively complex: not only is there a relative paucity of
+libraries providing a convenient implementation of the standard, but even the
+library the authors chose to use\footnote{\url{XMLSec;
+http://www.aleksey.com/xmlsec/}} required source-level modifications to meet
+their requirements.
+
+On the other hand, both commerical and open-source implementations of OpenPGP
+are widely available both as stand-alone tools and with programming language
+interfaces. Furthermore, \citet{Denny:2008} descibes a mechanism for attaching
+an OpenPGP signature to a VOEvent with specific reference to VTP. For these
+reasons, a prototype version of Comet with OpenPGP support has been made
+available for testing.
+
+\subsection{Implementation considerations}
+
+The OpenPGP standard itself is widely used and tested: the basic cryptographic
+guarantees it provides are as close to unimpeachable as it is reasonable to
+ask for. However, there are three key hurdles which must be overcome before it
+can be directly used in the context of VOEvents and VTP.
+
+\subsubsection{Bitstream immutability}
+
+Section \ref{sec:design:dedup} discussed the considerations regarding whether
+two VOEvent packets can be regarded as ``the same'' and the requirement that
+entities participating in a VTP network should transmit events unchanged. When
+considering cryptographic signatures, this requirement becomes absolutely
+fundamental. The signature is applied to a particular collection of bits, with
+no semantic understanding of what those bits represent. If a single bit is
+changed, the signature is invalidated, even if that change does not alter the
+information content of the document and however inconsequential the change
+might be.
+
+Beyond its direct requirements on the transport layer, this could have
+implications for various uses to which VOEvents may be put. For example, when
+storing an event in an archival database, it would not be adequate to simply
+extract the information from the event and store that, re-serializing it to
+XML if and when required. Rather, it would be necessary for the archive to
+store the exact bitstream to which a signature had been applied.
+
+\subsubsection{Event formatting}
+
+The original proposal described by \citet{Denny:2008} makes use of the OpenPGP
+cleartext signature framework. However, as \citet[\S7]{Callas:2007} makes clear, the
+cleartext signature framework ``is not intended to be reversible'': in other
+words, applying such a signature may modify the contents of the event packet
+itself. Such modifications are generally insignificant (primarily concering
+the way in which lines starting with a ``-''---the ``hyphen-minus'' character,
+Unicode code point U+002D---are handled), but, nevertheless, we regard any
+mutation of the event data as unacceptable.
+
+To avoid these proposals, we suggest adopting a modification of
+\citeauthor{Denny:2008}'s proposal based on a detached signature
+\citep[\S11.4]{Callas:2007} which is bundled with the VOEvent. It is this
+modified proposal which is implemented in Comet.
+
+\subsubsection{Trust model and key infrastructure}
+
+Any entity can generate an OpenPGP key with whatever identifying name they
+please and use it to apply a signature to a document. The recipient of the
+document has a strong guarantee that the document was geuinely signed by the
+given key, but has no particular reason to trust that the key was in the
+possession of a reputable entity at the time the signature was made. At level,
+subverting the system by signing VOEvents with valid-but-worthless keys
+becomes a trivial exercise.
+
+The most direct solution is for the owner of a key to directly provide it to
+likely recipients in person or by some other tamperproof means of
+transmission. The recipient then knows that this particular key belongs to a
+particular entity, and can take this into account when deciding whether a
+signed event is genuine.
+
+OpenPGP adopts extends this approach to the ``web of trust'' model. Here,
+entities who have received a copy of the key directly from its owner can
+themselves sign it, and redistribute it. The recipients can they choose
+whether they belive the intermediary to be trustworthy to warrant the identity
+of the owner. The recipients may sign and distribute the key further,
+eventually building up a ``web'' of certified keys.
+
+The same model may be applied to events themselves. Rather than simply
+checking for a valid signature made by the author of the event, a legitimate
+approach would be to check for a valid signature applied to the event by any
+entity which the recipient regards as trustworthy to guarantee the event's
+authenticity. This could include, for example, intermediate brokers or event
+aggregators.
+
+\subsection{Usage in Comet}
+
 
 \section{Availability}
 \label{sec:avail}
