@@ -1307,19 +1307,73 @@ broker when not checking a signature (\S\ref{sec:perf:latency:results}). While
 not prohibitively expensive, then, the overhead introduced by this technique
 cannot be ignored by administrators of heavily-loaded brokers.
 
-\section{Availability}
-\label{sec:avail}
-
-\section{Future VTP revision}
+\section{Future VOEvent and VTP revision}
 \label{sec:futurevtp}
 
-* De-duplication.
+This manuscript has described both VTP itself and the issues that have arisen
+when developing a specific implementation of it.  From these considerations,
+five specific recommendations for future evolution of the VOEvent and VTP
+standards can be drawn. Some of these will be incorportated into a revised
+version of VTP which will be submitted for IVOA standardization at a later
+date.
 
-* Events must be unchanged.
+\subsection{Event identity}
+\label{sec:future:identity}
 
-* Official support for specifying filters or other metadata.
+Section \ref{sec:design:dedup} discussed the question of the identity of a
+VOEvent. In particular, it considered whether two events encoding identifical
+information but in with a different (perhaps only marginally) serialization
+could be regarded as the same event. This is not well defined by the current
+VOEvent standard \citep{Seaman:2011}.
 
-* Bulk transportation; avoiding a "cascade" of other events.
+As discussed, the question of the identity of events is important to the
+implementation of VTP networks. However, it is also of wider relevance: the
+VOEvent identifier provides a convenient means to refer to a particular
+celestial transient in a variety of context, but can only be reliably used as
+such if it is unambiguously defined.
+
+\subsection{Event immutability}
+\label{sec:future:immutability}
+
+It is an implicit requirement of VTP and of event authentication techniques
+based on OpenPGP signatures that the \textit{bitstream} an event must be
+unchanged by the process of transmission over VTP. This requirement goes
+beyond the minimal requirement that the \textit{information contained within}
+an event must be unchanged. The more stringent requirements of VTP are not
+explicit in the current version of the protocol definition.
+
+\subsection{Event de-duplication}
+\label{sec:future:dedup}
+
+Section \ref{sec:design:dedup} described the requirement for event
+de-duplication to avoid loops on a VTP network. This requirement is not
+explicit within the current VTP definition. Comet has demonstrated an
+effective approach to this problem building upon \S\S\ref{sec:future:identity}
+and \ref{sec:future:immutability}.
+
+\subsection{Filtering}
+\label{sec:future:filter}
+
+Section \ref{sec:filter} demonstrated that the design of VTP is easily
+extensible to accommodate relatively complex broker-side filtering
+capabilities. However, the implementation of these filters in Comet requires a
+non-standard extension to the protocol. Future VTP revisions should consider a
+formalized means of enabling brokers to advertise what filtering capabilities
+they are capable of providing, if any, and for subscribers to specify any
+filters required.
+
+\subsection{Bulk event submission}
+\label{sec:future:bulk}
+
+Section \ref{sec:perf} demonstrated that Comet was capable of receiving and
+distributing large numbers of events with relatively low latency. However, the
+major limiting factor is the requirement that each individual event submission
+by an author takes place over a new TCP connection. Future versions of VTP
+should consider the possibility of re-using existing connections to reduce
+latency and increase throughput for bulk event submission.
+
+\section{Availability}
+\label{sec:avail}
 
 \section{Conclusions}
 \label{sec:conclusions}
