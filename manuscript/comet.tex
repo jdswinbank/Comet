@@ -1375,8 +1375,43 @@ latency and increase throughput for bulk event submission.
 \section{Availability}
 \label{sec:avail}
 
+Comet is freely available, open source software released under a two-clause
+BSD-style\footnote{\url{http://opensource.org/licenses/BSD-2-Clause}} license.
+It includes a comprehensive test suite and documentation. It is developed
+using a public code repository; contributions and bug reports are actively
+solicited.
+
+All materials used to generate this manuscript, including the Docker
+configuration, benchmarking scripts, and latency measurement plugin are
+available from the Comet repository.
+
+Further details, including download and installation instructions, are
+available from the project
+website\footnote{\url{http://comet.transientskp.org/}}.
+
 \section{Conclusions}
 \label{sec:conclusions}
+
+The VOEvent Transport Protocol is an intentionally minimal mechanism for
+distributing notifications of transient celestial events in the form of
+VOEvent messages. Comet has been developed to implement all the core aspects
+of VTP. It is production-ready software, and is freely available and ready to
+be integrated into a variety of scienctific projects.
+
+This manuscript has described how Comet has been designed to meet the
+requirements of VTP based upon an asynchronous, event-driven style of
+programming. This has made it possible to provide a robust, high-performance
+and easily extensible implementation of the protocol. The development of Comet
+cast light on a small number of areas of the protocol and of the wider VOEvent
+infrastructure where additional clarity and specification is needed.
+
+Using Comet as a testbed, we have investigated the performance characteristics
+of VTP under a variety of conditions. We have demonstrated that it is capable
+of meeting or exceeding the anticipated requirements of the next-generation of
+large scale transient survey projects. We have also shown a prototype of a
+highly-configuratble event filtering system which will enable end users to
+sift through high-volume event streams and receive only those events which are
+of relevance to their own scientific goals.
 
 \section{Acknowledgements}
 \label{sec:ack}
