@@ -71,7 +71,7 @@ generation of large-scale survey telescopes such as Gaia, SKA and LSST promise
 hundreds, thousands or even millions of transient detections every day. The
 sheer volume of events presents a massive scalability challenge: it is no
 longer practical for even large teams of astronomers to consider manually
-reading, understanding and responding to these notifcations. Instead,
+reading, understanding and responding to these notifications. Instead,
 automation is essential. Furthermore, the diverse nature of these transient
 hunting facilities---covering not only electromagnetic gamut from
 low-frequency radio to space based X- and $\gamma$-ray monitors, but also
@@ -110,7 +110,7 @@ baseline.
 
 This manuscript describes Comet, an implementation of all the components
 necessary for interacting with the VOEvent Transport Protocol while acting as
-a testbed for production-level VTP deployments and for new technologies and
+a test-bed for production-level VTP deployments and for new technologies and
 ``value-added'' services to assist in addressing the event deluge.  In
 \S\ref{sec:vtp}, a description of the protocol is provided to set the tool in
 context. \S\ref{sec:design} describes how Comet has been designed and built to
@@ -147,7 +147,7 @@ transportation systems in \S\ref{sec:conclusions}.
 \end{figure*}
 
 VTP provides a simple, minimalist system for distributing VOEvents from one or
-more authors to a distribute network of potentially inerested subscribers. It
+more authors to a distribute network of potentially interested subscribers. It
 builds upon the semantics of VOEvent interchange described in the VOEvent
 standard \citep{Seaman:2011}, but includes only those entities which directly
 interact by means of the network. To wit, VTP defines the following network
@@ -163,7 +163,7 @@ roles:
 
   \item[Broker]{The broker receives VOEvents from other network entities
   re-distributes them to one or more subscribers. In addition, the broker may
-  perform ``added value'' on behalf of the subcriber, for example by filtering
+  perform ``added value'' on behalf of the subscriber, for example by filtering
   the event stream and forwarding only events of interest, or by annotating
   events with additional information.}
 
@@ -180,9 +180,9 @@ standard defines three types of connection:
 
   \item[Broker to Subscriber]{The author opens a TCP connection to the broker,
   which remains open indefinitely. The broker and subscriber send periodic
-  ``heartbeat'' messages over the conenction to verify that it remains live.
+  ``heartbeat'' messages over the connection to verify that it remains live.
   When the broker receives an event for distribution, it sends it to the
-  subscriber over this connection. The subcriber replies with an
+  subscriber over this connection. The subscriber replies with an
   acknowledgement.}
 
   \item[Broker to Broker]{A broker may subscriber to the output of another
@@ -243,7 +243,7 @@ can immediately start using to service their science goals, and as a
 convenient system for exploring the characteristics of VTP and exploring and
 prototyping future extensions to the protocol. The first aim has already been
 met: see, for example, \citet{Staley:2013}. Early results from the second aim
-are described in the subsequeny sections of this manuscript.
+are described in the subsequent sections of this manuscript.
 
 \subsection{Twisted Python and event-driven programming}
 \label{sec:design:twisted}
@@ -258,7 +258,7 @@ Conventionally, we thing of programs as being executed in order: the system
 executes the instructions described by the first statement, followed by the
 second statement, and so on until the process is complete. Of course,
 spreading a process across multiple threads of execution makes the precise
-ordering of statements nondeterministic \citep[and, indeed, introduces a whole
+ordering of statements non-deterministic \citep[and, indeed, introduces a whole
 new level of complexity in the process;][]{Lee:2006}, but the fundamental
 point remains: the aim is to execute the program as rapidly and efficiently as
 possible and then exit.
@@ -362,7 +362,7 @@ available. For example, we could define a version of
 \texttt{parse()}---call it
 \texttt{deferred\_parse()}---that, rather than returning an object
 representing a parsed version of the VOEvent document, returns a promise to
-eventually parse the documument in the future and then make it available for
+eventually parse the document in the future and then make it available for
 further processing. We can then queue up our other functions to run only when
 parsing is complete. For example, see Listing \ref{lst:deferred}, in which we
 queue up a number of callbacks to be run when parsing is complete and also add
@@ -417,7 +417,7 @@ operation.
 Comet is built around the four protocols discussed in
 \S\ref{sec:design:twisted}. These enable it to take the part of either side in
 each of the three connection types discussion in \S\ref{sec:vtp}. For the
-convenience of end users, these are made accessible udner two distinct front
+convenience of end users, these are made accessible under two distinct front
 ends. In this section, we first introduce those components and describe the
 relationship between them, and then discuss how Comet implements some specific
 requirements of VTP.
@@ -450,7 +450,7 @@ run as a ``daemon'', or background process. The Comet daemon can:
 \end{enumerate}
 
 A single Comet daemon is capable of performing any or all of these actions,
-depding upon configuration: it is not necessary to start separate ``broker''
+depending upon configuration: it is not necessary to start separate ``broker''
 and ``subscriber'' daemons, for example.
 
 Both \textit{comet-sendvo} and the Comet daemon make extensive use of the
@@ -470,7 +470,7 @@ event. To avoid this problem, Comet refuses to process any given event more
 than once: if a newly received event is the same as one which has been
 previously seen, it is simply dropped without being further distributed.
 
-In order for this approch to be effective, it is necessary to define what it
+In order for this approach to be effective, it is necessary to define what it
 means for an event to be ``the same''. In particular, due to the nature of
 XML, it is possible for exactly the same information about an event (the
 ``infoset'') to be encoded in multiple different, but all equally valid, XML
@@ -547,13 +547,13 @@ see \S\ref{sec:futurevtp} for further discussion.
 
 The released version of Comet at the time of writing (1.1.0; see
 \ref{sec:avail}) does not implement an authentication scheme based on
-cryptographc signatures as described in \S\ref{sec:vtp}. Work is ongoing on
-prototyping such a scheme using Comet as a testbed: this is described in
+cryptographic signatures as described in \S\ref{sec:vtp}. Work is ongoing on
+prototyping such a scheme using Comet as a test-bed: this is described in
 \S\ref{sec:security}.
 
 When acting as a broker, Comet includes the ability to check authors
 submitting events against a whitelist of IP addresses. Multiple disjoint
-ranges of addresses to whitelist may be specificed using CIDR notation
+ranges of addresses to whitelist may be specified using CIDR notation
 \citep{Fuller:1993}, making the system very flexible.
 
 Comet does not currently provide built-in whitelisting support for
@@ -577,7 +577,7 @@ The simplest option is that when a new event is received, Comet can spawn an
 external process and provide the text of the event to it on standard input.
 The process is run asynchronously, so that potentially lengthy processing jobs
 can be run on events without interrupting Comet's operation. Comet monitors
-the execution of the process and logs a warning if it is unsucessful (that
+the execution of the process and logs a warning if it is unsuccessful (that
 is, if it exits with a status other than \texttt{0}), but otherwise has no
 control over the processing performed.
 
@@ -654,9 +654,9 @@ document. XPath expressions may return one of four different result types:
 \end{itemize}
 
 XPath expressions enable users to specify complex queries, including testing
-the values of arbitrary elements or attributes specifed in the document and
+the values of arbitrary elements or attributes specified in the document and
 combining those tests with Boolean logic. A complete reference is outside the
-scope of this manuscript, but some examples may serve to illustate the
+scope of this manuscript, but some examples may serve to illustrate the
 possibilities.
 
 Starting with string matching, \mint{xml}|//Who/Author[shortName="VO-GCN"]|
@@ -666,7 +666,7 @@ name'' as \texttt{VO-GCN}. More complex matches can use functions, such as
 nodes which mention ``Swift'' in the context of a describing how the data was
 obtained. Numerical comparisons are also possible:
 \mint{xml}|//Param[@name="Sun_Distance" and @value>40]| provides the set of
-all paramters called \texttt{Sun\_Distance} with a numerical value greater
+all parameters called \texttt{Sun\_Distance} with a numerical value greater
 than 40.
 
 These expression can be combined, so that for example
@@ -676,7 +676,7 @@ These expression can be combined, so that for example
     and //Who/Author[shortName="VO-GCN"]) )
 \end{minted}
 returns a Boolean value which is true if the event either mentions ``Swift''
-or both has a \texttt{Sun\_Distance} paramter greater than 40 and originates
+or both has a \texttt{Sun\_Distance} parameter greater than 40 and originates
 from GCN, and false otherwise.
 
 \subsection{Integration with Comet}
@@ -747,7 +747,7 @@ Comet repository; see \S\ref{sec:avail}.
 \subsection{Latency}
 \label{sec:perf:latency}
 
-For certain science cases, maximising the scientific relevance of follow-up
+For certain science cases, maximizing the scientific relevance of follow-up
 observations requires extremely rapid response. For example, identifying
 precursors of fast radio bursts \citep{Thornton:2013} would require action on
 a timescale a tens of milliseconds. It is therefore important that the VOEvent
@@ -841,7 +841,7 @@ The default reactor implementation used by Twisted on the system used for
 testing is based on the \texttt{poll()} system call \citep{Posix1:2013}.
 However, modern Linux systems provide the alternative \texttt{epoll()} call
 \citep{Kerrisk:2014} which provides a more efficient alternative. Twisted
-provdes a reactor which is based upon \texttt{epoll()}. In the middle panel of
+provides a reactor which is based upon \texttt{epoll()}. In the middle panel of
 Fig. \ref{fig:latency} the same experiment was repeated, but with both broker
 and subscriber based on this alternative reactor. This provided a somewhat
 improved mean latency of 0.019\,s with a standard deviation of 0.011\,s, and a
@@ -889,7 +889,7 @@ recorded the latency of each event received to a log file.
 
 Each Comet process takes approximately 32\,MB of memory, used to hold the
 Comet code itself, the associated libraries, the Python interpreter, and the
-overhead assocated with the Docker container. The test system contained 8\,GB
+overhead associated with the Docker container. The test system contained 8\,GB
 RAM. When testing with 256 subscribers, the machine ran out of memory and
 started to swap to disk. This set an upper bound on the number of subscribers
 which could be tested.
@@ -911,7 +911,7 @@ which could be tested.
 
 Figure \ref{fig:subscribers} shows the event latency as a function of
 subscriber count. The latency increases gradually with increasing subscriber
-count, from a mean of 0.0063\,s for a single subcriber to 0.0931\,s for 256
+count, from a mean of 0.0063\,s for a single subscriber to 0.0931\,s for 256
 subscribers, the highest number tested: even at this level, the mean latency
 was less than 0.1\,s. The maximum latency rose to a peak of 0.49\,s.
 
@@ -1078,12 +1078,12 @@ created. Given that long range multi-gigabit per second connections are widely
 available, the total amount of data to be transmitted is unlikely to be
 intractable.
 
-Network latency, however, presents a futher problem. As described in
+Network latency, however, presents a further problem. As described in
 \S\ref{sec:vtp}, each event must be submitted by the author initiating a new
 connection to the broker, submitting the event, waiting for an
 acknowledgement, and then closing the connection. Sending the event and
 waiting for acknowledgement involves a network round-trip.  However, data is
-transmitted over TCP \citep{Cerf:1974}, we use thestandard TCP mechanisms for
+transmitted over TCP \citep{Cerf:1974}, we use the standard TCP mechanisms for
 creating and terminating connections, each of which involves another network
 round trip. This process is illustrated in Fig. \ref{fig:tcp}: the complete
 transaction involved in submitting a single event to the broker, given a
@@ -1131,7 +1131,7 @@ Fig. \ref{fig:tcp}, the observed effect is identical.
 \label{sec:security}
 
 For many applications involving VOEvents, it is important to be certain of the
-authenticitity of the event. That is, to provide a guarantee that the event
+authenticity of the event. That is, to provide a guarantee that the event
 genuinely describes the results of observations by its supposed author. This
 is important both for event authors, to protect their reputation for issuing
 high quality, trustworthy events, and to subscribers, who cannot run the risk
@@ -1166,9 +1166,9 @@ library the authors chose to use\footnote{\url{XMLSec;
 http://www.aleksey.com/xmlsec/}} required source-level modifications to meet
 their requirements.
 
-On the other hand, both commerical and open-source implementations of OpenPGP
+On the other hand, both commercial and open-source implementations of OpenPGP
 are widely available both as stand-alone tools and with programming language
-interfaces. Furthermore, \citet{Denny:2008} descibes a mechanism for attaching
+interfaces. Furthermore, \citet{Denny:2008} describes a mechanism for attaching
 an OpenPGP signature to a VOEvent with specific reference to VTP. For these
 reasons, a prototype version of Comet with OpenPGP support has been made
 available for testing.
@@ -1205,7 +1205,7 @@ The original proposal described by \citet{Denny:2008} makes use of the OpenPGP
 cleartext signature framework. However, as \citet[\S7]{Callas:2007} makes clear, the
 cleartext signature framework ``is not intended to be reversible'': in other
 words, applying such a signature may modify the contents of the event packet
-itself. Such modifications are generally insignificant (primarily concering
+itself. Such modifications are generally insignificant (primarily concerning
 the way in which lines starting with a ``-''---the ``hyphen-minus'' character,
 Unicode code point U+002D---are handled), but, nevertheless, we regard any
 mutation of the event data as unacceptable.
@@ -1219,14 +1219,14 @@ modified proposal which is implemented in Comet.
 
 Any entity can generate an OpenPGP key with whatever identifying name they
 please and use it to apply a signature to a document. The recipient of the
-document has a strong guarantee that the document was geuinely signed by the
+document has a strong guarantee that the document was genuinely signed by the
 given key, but has no particular reason to trust that the key was in the
 possession of a reputable entity at the time the signature was made. At level,
 subverting the system by signing VOEvents with valid-but-worthless keys
 becomes a trivial exercise.
 
 The most direct solution is for the owner of a key to directly provide it to
-likely recipients in person or by some other tamperproof means of
+likely recipients in person or by some other tamper-proof means of
 transmission. The recipient then knows that this particular key belongs to a
 particular entity, and can take this into account when deciding whether a
 signed event is genuine.
@@ -1234,7 +1234,7 @@ signed event is genuine.
 OpenPGP adopts extends this approach to the ``web of trust'' model. Here,
 entities who have received a copy of the key directly from its owner can
 themselves sign it, and redistribute it. The recipients can they choose
-whether they belive the intermediary to be trustworthy to warrant the identity
+whether they believe the intermediary to be trustworthy to warrant the identity
 of the owner. The recipients may sign and distribute the key further,
 eventually building up a ``web'' of certified keys.
 
@@ -1325,7 +1325,7 @@ cannot be ignored by administrators of heavily-loaded brokers.
 This manuscript has described both VTP itself and the issues that have arisen
 when developing a specific implementation of it.  From these considerations,
 five specific recommendations for future evolution of the VOEvent and VTP
-standards can be drawn. Some of these will be incorportated into a revised
+standards can be drawn. Some of these will be incorporated into a revised
 version of VTP which will be submitted for IVOA standardization at a later
 date.
 
@@ -1333,7 +1333,7 @@ date.
 \label{sec:future:identity}
 
 Section \ref{sec:design:dedup} discussed the question of the identity of a
-VOEvent. In particular, it considered whether two events encoding identifical
+VOEvent. In particular, it considered whether two events encoding identical
 information but in with a different (perhaps only marginally) serialization
 could be regarded as the same event. This is not well defined by the current
 VOEvent standard \citep{Seaman:2011}.
@@ -1408,7 +1408,7 @@ The VOEvent Transport Protocol is an intentionally minimal mechanism for
 distributing notifications of transient celestial events in the form of
 VOEvent messages. Comet has been developed to implement all the core aspects
 of VTP. It is production-ready software, and is freely available and ready to
-be integrated into a variety of scienctific projects.
+be integrated into a variety of scientific projects.
 
 This manuscript has described how Comet has been designed to meet the
 requirements of VTP based upon an asynchronous, event-driven style of
@@ -1417,11 +1417,11 @@ and easily extensible implementation of the protocol. The development of Comet
 cast light on a small number of areas of the protocol and of the wider VOEvent
 infrastructure where additional clarity and specification is needed.
 
-Using Comet as a testbed, we have investigated the performance characteristics
+Using Comet as a test-bed, we have investigated the performance characteristics
 of VTP under a variety of conditions. We have demonstrated that it is capable
 of meeting or exceeding the anticipated requirements of the next-generation of
 large scale transient survey projects. We have also shown a prototype of a
-highly-configuratble event filtering system which will enable end users to
+highly-configurable event filtering system which will enable end users to
 sift through high-volume event streams and receive only those events which are
 of relevance to their own scientific goals.
 
