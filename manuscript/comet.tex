@@ -533,11 +533,11 @@ see \S\ref{sec:futurevtp} for further discussion.
 \subsubsection{Security and whitelisting}
 \label{sec:design:security}
 
-At time of writing, the released version of Comet\footnote{Version 1.1.0;
-\url{https://github.com/jdswinbank/Comet/tree/1.1.0}} does not implement an
-authentication scheme based on cryptographc signatures as described in
-\S\ref{sec:vtp}. Work is ongoing on prototyping such a scheme using Comet as a
-testbed: this is described in \S\ref{sec:security}.
+The released version of Comet at the time of writing (1.1.0; see
+\ref{sec:avail}) does not implement an authentication scheme based on
+cryptographc signatures as described in \S\ref{sec:vtp}. Work is ongoing on
+prototyping such a scheme using Comet as a testbed: this is described in
+\S\ref{sec:security}.
 
 When acting as a broker, Comet includes the ability to check authors
 submitting events against a whitelist of IP addresses. Multiple disjoint
@@ -705,6 +705,7 @@ of processing, the latency which it introduces to the event stream, and the
 number of subscribers which a broker can conveniently service.
 
 \subsection{Test system configuration}
+\label{sec:perf:system}
 
 The basic configuration of all tests below consists of one or more authors
 connecting to a broker and sending it events which the broker then distributes
@@ -795,6 +796,7 @@ Both the benchmarking script and the plugin described are available from the
 Comet repository (\S\ref{sec:avail}).
 
 \subsubsection{Results}
+\label{sec:perf:latency:results}
 
 \begin{figure}
   \begin{center}
@@ -1229,10 +1231,81 @@ checking for a valid signature made by the author of the event, a legitimate
 approach would be to check for a valid signature applied to the event by any
 entity which the recipient regards as trustworthy to guarantee the event's
 authenticity. This could include, for example, intermediate brokers or event
-aggregators.
+aggregators. However, this scheme is not provided for in the note by
+\citeauthor{Denny:2008}, and has the significant downside of much increased
+management overhead, particularly when automatic response to genuine events is
+required: the recipient must indicate which entities they trust to sign events
+from which authors.
 
 \subsection{Usage in Comet}
 
+The release version of Comet at the time of writing does not include support
+for OpenPGP based event authentication. However, there is an experimental
+version available which may be used for experimenting with these technologies.
+See \S\ref{sec:avail} for information on how to obtain both released and
+experimental versions of Comet.
+
+Comet provides comprehensive support for all the modes in which event
+authentication may be used within VTP. Specifically:
+
+\begin{itemize}
+
+  \item{When submitting to a broker, \textit{comet-sendvo} can apply a
+  signature to the event being sent;}
+
+  \item{When receiving an event from an author, the Comet can be set to
+  only accept events which are appropriately signed;}
+
+  \item{When receiving an event from a broker, Comet can be set to only act
+  upon and redistribute events which are appropriately signed.}
+
+\end{itemize}
+
+Comet also supports subscriber authentication by applying the same signing
+mechanisms to Transport documents (\S\ref{sec:vtp}). Using this technique:
+
+\begin{itemize}
+
+  \item{When receiving a connection from a subscriber, Comet can request that
+  the subscriber authenticate themselves by means of a signed Transport
+  message, and can then only distribute events to subscribers which provide
+  trustworthy signatures.}
+
+  \item{When subscribing to a remote broker, Comet can provide a signed
+  Transport message in response to an authentication request.}
+
+\end{itemize}
+
+
+Comet's OpenPGP support is based upon GnuPG\footnote{\url{http://gnupg.org}}.
+Comet does not provide any mechanism for managing the configuration of GnuPG:
+instead, the standard GnuPG tools should be used for this, and Comet inherits
+the configuration and key database from them.
+
+Of course, generating and verifying a cryptographic signature requires some
+numerical calculation. Furthermore, for security reasons, directly linking
+GnuPG as a library in application code is not possible. Handling cryptographic
+operations in-process is therefore not possible. Instead, it is necessary to
+fork a separate GnuPG process, incurring additional overhead. Therefore, the
+impact of OpenPGP support on Comet's performance must be considered.
+
+In practice, the overhead of signing an event is insignificant: any one author
+is likely to be generating only a limited number of events, and, even if that
+number is large, they can trivially spread the load across multiple machines.
+However, the Comet broker must check the signatures of all events received: it
+is here that performance issues become critical.
+
+A simple test was performed to measure the time taken to check the signature
+on a VOEvent packet. 1000 distinct VOEvent packets of the form shown in
+Listing \ref{lst:testmessage} were generated and signed using the Comet
+codebase. Each signature in turn was then checked for validity. The total
+time taken to check all signatures on the system described in
+\ref{sec:perf:system} was 22.90\,s, or around 0.023\,s per event. This is
+broadly comparable to values which might be expected due to network latency,
+and is a factor of $\sim3.6$ greater than the latency introduced by the Comet
+broker when not checking a signature (\S\ref{sec:perf:latency:results}). While
+not prohibitively expensive, then, the overhead introduced by this technique
+cannot be ignored by administrators of heavily-loaded brokers.
 
 \section{Availability}
 \label{sec:avail}
