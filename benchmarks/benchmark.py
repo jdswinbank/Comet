@@ -1,22 +1,27 @@
 #!/usr/bin/env python
 
-# VOEvent sender.
-# John Swinbank, <swinbank@transientskp.org>.
+# VTP Benchmarking Tool.
+#
+# Schedule and send large numbers of timestampted VOEvents. Can operate in two
+# modes:
+#
+#  - "latency" mode sends an infinite stream of events at a user-specified
+#    interval.
+#  - "througput" mode generated a number of events and attempts to send them
+#    all as quickly as possible.
+#
+# Requires Comet to be available for import.
 
-# Python standard library
 import sys
 import threading
 import datetime
 
-# Twisted
 from twisted.python.log import startLogging
 from twisted.python import usage
 from twisted.internet import reactor
 from twisted.internet.task import LoopingCall
 
-# VOEvent transport protocol
 from comet.tcp.protocol import VOEventSenderFactory
-
 from comet.utility import log
 from comet.utility.voevent import broker_test_message
 from comet.utility.xml import xml_document
@@ -130,7 +135,10 @@ class ConnectionPool(object):
         self._create_connection()
 
     def print_status(self):
-        log.debug("%d open connections; %d/%d/%d messages queued/sent/failed" % (self.connections, len(self.queue), self._sent, self._failed))
+        log.debug(
+            "%d open connections; %d/%d/%d messages queued/sent/failed" %
+            (self.connections, len(self.queue), self._sent, self._failed)
+        )
 
 
 if __name__ == "__main__":
@@ -140,7 +148,9 @@ if __name__ == "__main__":
     startLogging(sys.stdout)
 
     if config.subCommand == "latency":
-        pool = ConnectionPool(config['host'], config['port'], config['connections'], False)
+        pool = ConnectionPool(
+            config['host'], config['port'], config['connections'], False
+        )
         loop = LoopingCall(
             lambda pool, ivorn: pool.enqueue(broker_test_message(ivorn)),
             pool, config['ivorn']
@@ -148,7 +158,9 @@ if __name__ == "__main__":
         loop.start(config.subOptions['interval'])
 
     elif config.subCommand == "throughput":
-        pool = ConnectionPool(config['host'], config['port'], config['connections'], True)
+        pool = ConnectionPool(
+            config['host'], config['port'], config['connections'], True
+        )
         for i in xrange(config.subOptions['num-events']):
             pool.enqueue(broker_test_message(config['ivorn']))
 
@@ -162,5 +174,9 @@ if __name__ == "__main__":
     start_time = datetime.datetime.now()
     reactor.run()
     stop_time = datetime.datetime.now()
-    print "Total reactor running time: %fs" % ((stop_time - start_time).total_seconds(),)
-    print "%d/%d/%d messages queued/sent/failed" % (len(pool.queue), pool._sent, pool._failed)
+    print "Total reactor running time: %fs" % (
+        (stop_time - start_time).total_seconds(),
+    )
+    print "%d/%d/%d messages queued/sent/failed" % (
+        len(pool.queue), pool._sent, pool._failed
+    )
