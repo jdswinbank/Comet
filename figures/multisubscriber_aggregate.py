@@ -24,5 +24,5 @@ for n_subscribers in [1, 2, 4, 8, 16, 32, 64, 128, 256]:
     dataset["min"].append(latencies.min())
     dataset["max"].append(latencies.max())
 
-with open('overall.json', 'w') as f:
+with open('multisubscriber.json', 'w') as f:
     json.dump(dataset, f)

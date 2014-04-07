@@ -1,6 +1,9 @@
-=========================
-Comet Throughput Measures
-=========================
+================
+Comet Benchmarks
+================
+
+Throughput Measures
+-------------------
 
 10000 events are generated on the author side and submitted to a broker with
 one connected subscriber. We can measure:
@@ -50,8 +53,50 @@ We can also introduce latency to the network interface::
 
   sudo tc qdisc add dev vethXXXX root netem delay 100ms
 
-We store the results in a big directory tree with structure
+We store the results in a directory tree with structure
 ``${latency}ms/${n_clients}c/run{N}``. These contain both the log from the
 author and the event databases from the broker and the subscriber. We
 translate this into a JSON summary of the results using
 ``throughtput_aggregate.py``.
+
+
+Multi-Subscriber Latency
+------------------------
+
+We set up a Comet broker and provide it with N subscribers. All are using
+epoll, and writing the event db to tmpfs.
+
+We use ``benchmark.py`` to generate 1000 events and submit them to the broker.
+Each subscriber keeps track of the latency of events received, writing the log
+files stored in the obvious places here.
+
+Note that at 256 subscribers we started to hit the limits of what pc-swinbank
+was capable of in two ways:
+
+* It's hard to start more than ~200 Docker instances, as you run out of open
+  files. Modified the init script to call ulimit -n before starting Docker to
+  work around this.
+
+* Each twisted process uses about 32 MB of memory. Once we hit 256 processes,
+  plus the broker, plus the other services on the machine, we start swapping.
+
+We store the log from the ``latency.py`` plugin in a directory structure
+labelled by the number of subscribers and then generate aggregate data into
+JSON format using ``multisubscriber_aggregate.py``.
+
+
+Comet Latency Measures
+----------------------
+
+We used ``benchmark.py`` to generate 3000 events and submit them to the Comet
+broker. The broker had one subscriber, running on the same host but in a
+different Docker instance. That subscriber received all the events and used
+the ``latency`` plugin to measure the time between event generation and
+receipt.
+
+We did this three times: once with a "default" setup, once when both broker
+and subscriber were using the EPoll reactor, and once with both the EPoll
+reactor and storing the event database on tmpfs (ie, a RAM disk). The
+latencies are in the three appropriately named log files.
+
+The pythons script plots histograms showing how the latencies compare.

@@ -36,28 +36,26 @@ configure_file (
 add_custom_command (
     OUTPUT ${FIGURE_OUTPUT_DIR}/latency.pdf
     COMMAND ${PYTHON_EXECUTABLE}
-    ARGS ${PROJECT_SOURCE_DIR}/benchmarks/latency/latency_histogram.py ${FIGURE_OUTPUT_DIR}/latency.pdf
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/benchmarks/latency
-    DEPENDS
-        ${PROJECT_SOURCE_DIR}/benchmarks/latency/1sub-noepoll-notmpfs.log
-        ${PROJECT_SOURCE_DIR}/benchmarks/latency/1sub-epoll-notmpfs.log
-        ${PROJECT_SOURCE_DIR}/benchmarks/latency/1sub-epoll-tmpfs.log
+    ARGS ${PROJECT_SOURCE_DIR}/figures/latency_plot.py ${FIGURE_OUTPUT_DIR}/latency.pdf
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/figures
+    DEPENDS ${PROJECT_SOURCE_DIR}/figures/latency.json
 )
 
 add_custom_command (
     OUTPUT ${FIGURE_OUTPUT_DIR}/subscribers.pdf
     COMMAND ${PYTHON_EXECUTABLE}
-    ARGS ${PROJECT_SOURCE_DIR}/benchmarks/multi_client/generate_plot.py ${FIGURE_OUTPUT_DIR}/subscribers.pdf
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/benchmarks/multi_client
+    ARGS ${PROJECT_SOURCE_DIR}/figures/multisubscriber_plot.py ${FIGURE_OUTPUT_DIR}/subscribers.pdf
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/figures
+    DEPENDS ${PROJECT_SOURCE_DIR}/figures/multisubscriber.json
 )
 
 add_custom_command (
     OUTPUT ${FIGURE_OUTPUT_DIR}/throughput.pdf
     COMMAND ${PYTHON_EXECUTABLE}
-    ARGS ${PROJECT_SOURCE_DIR}/benchmarks/throughput/throughput_plot.py ${FIGURE_OUTPUT_DIR}/throughput.pdf
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/benchmarks/throughput
+    ARGS ${PROJECT_SOURCE_DIR}/figures/throughput_plot.py ${FIGURE_OUTPUT_DIR}/throughput.pdf
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/figures
+    DEPENDS ${PROJECT_SOURCE_DIR}/figures/throughput.json
 )
-
 
 add_custom_command (
     OUTPUT ${PROJECT_BINARY_DIR}/comet.pdf

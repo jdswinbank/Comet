@@ -1,19 +1,21 @@
 import sys
 import numpy
+import json
 from matplotlib import pyplot
 
-with open('1sub-noepoll-notmpfs.log', 'r') as f:
-    noepoll_notmpfs = numpy.array([float(x) for x in f.readlines()])
-    noepoll_notmpfs_weights = numpy.ones(noepoll_notmpfs.shape) / len(noepoll_notmpfs)
+data = {}
 
-with open('1sub-epoll-notmpfs.log', 'r') as f:
-    epoll_notmpfs = numpy.array([float(x) for x in f.readlines()])
-    epoll_notmpfs_weights = numpy.ones(epoll_notmpfs.shape) / len(epoll_notmpfs)
+with open('latency.json', 'r') as f:
+    data = json.load(f)
 
-with open('1sub-epoll-tmpfs.log', 'r') as f:
-    epoll_tmpfs = numpy.array([float(x) for x in f.readlines()])
-    epoll_tmpfs_weights = numpy.ones(epoll_tmpfs.shape) / len(epoll_tmpfs)
+noepoll_notmpfs = numpy.array(data['noepoll_notmpfs'])
+noepoll_notmpfs_weights = numpy.ones(noepoll_notmpfs.shape) / len(noepoll_notmpfs)
 
+epoll_notmpfs = numpy.array(data['epoll_notmpfs'])
+epoll_notmpfs_weights = numpy.ones(epoll_notmpfs.shape) / len(epoll_notmpfs)
+
+epoll_tmpfs = numpy.array(data['epoll_tmpfs'])
+epoll_tmpfs_weights = numpy.ones(epoll_tmpfs.shape) / len(epoll_tmpfs)
 
 print("No EPoll, no tmpfs: %f +- %f s; max %f" %
     (noepoll_notmpfs.mean(), noepoll_notmpfs.std(), noepoll_notmpfs.max())

@@ -2,7 +2,6 @@
 # Plugin to measure the latency of received events.
 # Assumes that each received event has a "VOEvent/Who/Date" element providing
 # a timestamp for the time the event was produced.
-# John Swinbank, <swinbank@trtransientskp.org>.
 
 import os
 import datetime

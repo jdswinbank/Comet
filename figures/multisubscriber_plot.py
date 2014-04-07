@@ -23,7 +23,7 @@ params = {'backend': 'pdf',
 pyplot.rcParams.update(params)
 pyplot.rc("font", size=8, family="sans", serif="Computer Sans")
 
-with open("overall.json", "r") as f:
+with open("multisubscriber.json", "r") as f:
     data = json.load(f)
 
 pyplot.errorbar(data["n_subscribers"], data["latency"], yerr=data["std"], fmt='b-')

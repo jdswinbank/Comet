@@ -81,5 +81,5 @@ def calculate_rates():
     return rate
 
 if __name__ == "__main__":
-    with open('rate.json', 'w') as f:
+    with open('throughput.json', 'w') as f:
         json.dump(calculate_rates(), f, indent=4)

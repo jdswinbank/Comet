@@ -36,7 +36,7 @@ total_width = []
 
 missing = []
 
-with open('rate.json', 'r') as f:
+with open('throughput.json', 'r') as f:
     # We only want the 0ms latency data here
     rate = json.load(f)["0"]
 

@@ -1,3 +1,7 @@
+# Comet VOEvent Broker.
+# Quick & simple GPG test.
+# Relies on the Comet test suite.
+
 import time
 import tempfile
 import os
