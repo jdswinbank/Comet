@@ -47,14 +47,14 @@ add_custom_command (
 add_custom_command (
     OUTPUT ${FIGURE_OUTPUT_DIR}/subscribers.pdf
     COMMAND ${PYTHON_EXECUTABLE}
-    ARGS ${PROJECT_SOURCE_DIR}/benchmarks/multi_client/read_times.py ${FIGURE_OUTPUT_DIR}/subscribers.pdf
+    ARGS ${PROJECT_SOURCE_DIR}/benchmarks/multi_client/generate_plot.py ${FIGURE_OUTPUT_DIR}/subscribers.pdf
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/benchmarks/multi_client
 )
 
 add_custom_command (
     OUTPUT ${FIGURE_OUTPUT_DIR}/throughput.pdf
     COMMAND ${PYTHON_EXECUTABLE}
-    ARGS ${PROJECT_SOURCE_DIR}/benchmarks/throughput/rate_histogram.py ${FIGURE_OUTPUT_DIR}/throughput.pdf
+    ARGS ${PROJECT_SOURCE_DIR}/benchmarks/throughput/throughput_plot.py ${FIGURE_OUTPUT_DIR}/throughput.pdf
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/benchmarks/throughput
 )
 

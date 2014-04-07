@@ -25,15 +25,33 @@ The subscriber is started::
 
   $ docker docker run -d --link=comet-broker:broker -v /tmp/eventdb/subscriber:/tmp:rw comet:1.1.0-bench bash -c 'twistd -n -repoll comet --remote=${BROKER_PORT_8099_TCP_ADDR}'
 
-We repeat each benchmark 100 times to check that the results are stable. To
-run the benchmark, we use a script like this::
+We can repeat each bencmark N times to check if the results are stable. To do
+that, we use script like this::
 
   for i in {1..100}
   do
-    echo "Run ${i}"
     mkdir -p ./throughput_tests/run${i}
+    echo "Starting broker:"
+    broker=$(docker.io run -d --expose=8098 --expose=8099 --name=comet-broker -v /tmp/eventdb/broker/:/tmp:rw comet:1.1.0-bench twistd -n -repoll comet -r -b)
+    echo "Starting subscriber:"
+    sub=$(docker.io run -d --link=comet-broker:broker -v /tmp/eventdb/subscriber:/tmp:rw comet:1.1.0-bench bash -c 'twistd -n -repoll comet --remote=${BROKER_PORT_8099_TCP_ADDR}')
+    sleep 1
     docker run --link=comet-broker:broker comet:1.1.0-bench bash -c 'benchmark.py -q --host=$BROKER_PORT_8098_TCP_ADDR throughput' > /tmp/eventdb/author.log
+    docker.io stop ${sub}
+    docker.io stop ${broker}
+    docker.io rm ${sub}
+    docker.io rm ${broker}
     mv /tmp/eventdb/author.log ./throughput_tests/run${i}/author.logi
     mv /tmp/eventdb/broker/comet.broker_test ./throughput_tests/run${i}/broker.db
     mv /tmp/eventdb/subscriber/comet.broker_test ./throughput_tests/run${i}/subscriber.db
   done
+
+We can also introduce latency to the network interface::
+
+  sudo tc qdisc add dev vethXXXX root netem delay 100ms
+
+We store the results in a big directory tree with structure
+``${latency}ms/${n_clients}c/run{N}``. These contain both the log from the
+author and the event databases from the broker and the subscriber. We
+translate this into a JSON summary of the results using
+``throughtput_aggregate.py``.

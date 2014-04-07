@@ -26,8 +26,6 @@ pyplot.rc("font", size=8, family="sans", serif="Computer Sans")
 with open("overall.json", "r") as f:
     data = json.load(f)
 
-
-#pyplot.plot(x_vals, y_vals)
 pyplot.errorbar(data["n_subscribers"], data["latency"], yerr=data["std"], fmt='b-')
 pyplot.plot(data["n_subscribers"], data["min"], 'g--')
 pyplot.plot(data["n_subscribers"], data["max"], 'g--')
