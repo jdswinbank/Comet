@@ -1,6 +1,8 @@
 import sys
+import json
 import numpy
 from matplotlib import pyplot
+from matplotlib import gridspec
 
 # The following is based on
 # <http://wiki.scipy.org/Cookbook/Matplotlib/LaTeX_Examples>.
@@ -15,9 +17,6 @@ params = {'backend': 'pdf',
           'figure.figsize': fig_size,
           'figure.subplot.top': 0.97,
           'figure.subplot.right': 0.95}
-
-#          'figure.subplot.bottom': 0.15,
-#          'figure.subplot.left': 0.15}
 pyplot.rcParams.update(params)
 pyplot.rc("font", size=8, family="sans", serif="Computer Sans")
 
@@ -37,33 +36,29 @@ total_width = []
 
 missing = []
 
-with open('rate.data', 'r') as f:
-    for line in f:
-        if line.strip()[0] == "#": continue
-        data = [float(val) for val in line.split()]
+with open('rate.json', 'r') as f:
+    # We only want the 0ms latency data here
+    rate = json.load(f)["0"]
 
-        log_centre = numpy.log10(data[0])
+for connections, data in rate.items():
+        connections = float(connections)
+        log_centre = numpy.log10(connections)
         bottom_edge = 10**(log_centre - log_width)
         top_edge = 10**(log_centre + log_width)
         aut_ax.append(bottom_edge)
-        sub_ax.append(data[0])
-        aut_width.append(data[0] - bottom_edge)
-        sub_width.append(top_edge - data[0])
+        sub_ax.append(connections)
+        aut_width.append(connections - bottom_edge)
+        sub_width.append(top_edge - connections)
         total_width.append(top_edge - bottom_edge)
 
-        aut_mean.append(data[3])
-        aut_std.append(data[4])
-        sub_mean.append(data[-3])
-        sub_std.append(data[-2])
-        missing.append(data[-1])
-
-#fig, (ax0, ax1, ax3) = pyplot.subplots(nrows=3)
-#pyplot.subplots_adjust(hspace=0.0, wspace=0.2)
+        aut_mean.append(data['author']['mean'])
+        aut_std.append(data['author']['std'])
+        sub_mean.append(data['subscriber']['mean'])
+        sub_std.append(data['subscriber']['std'])
+        missing.append(data['missing'])
 
 f = pyplot.figure()
-import matplotlib.gridspec as gridspec
 gs = gridspec.GridSpec(3, 1, height_ratios=[2,1,1], wspace=0.2, hspace=0.0)
-
 
 pyplot.subplot(gs[0])
 pyplot.bar(left=aut_ax, width=aut_width, height=aut_mean, color="b")
