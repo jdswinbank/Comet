@@ -1,11 +1,14 @@
 Release History
 ===============
 
+See the :ref:`release procedure <sec-release>` section for more details on
+version numbering and how releases are made.
+
 Version 1.0.x
 -------------
 
-1.0 (2012-08-27) [`Download <https://github.com/jdswinbank/Comet/tarball/1.0.0>`__]
-   Initial public release
+1.0.0 (2012-08-27) [`Download <https://github.com/jdswinbank/Comet/tarball/1.0.0>`__]
+   Initial public release.
 
 1.0.1 (2012-08-28) [`Download <https://github.com/jdswinbank/Comet/tarball/1.0.1>`__]
    Fix for badly formed XML ``Transport`` element.
@@ -26,7 +29,7 @@ Version 1.0.x
 Version 1.1.x
 -------------
 
-1.1 (not yet released)
+1.1.0 (2014-02-26)
     Improved documentation.
 
     Interval between broadcast test events is user configurable, and they may
