@@ -10,6 +10,7 @@ from utils import write_json
 from utils import write_figure
 from utils import configure_pyplot
 from utils import PlotOptions
+from utils import GOLDEN_MEAN
 
 class AggregateOptions(usage.Options):
     optParameters = [
@@ -22,7 +23,8 @@ class AggregateOptions(usage.Options):
 
 
 class Options(usage.Options):
-    subCommands = [['plot', None, PlotOptions, "Generate plot"],
+    subCommands = [['plot_tp', None, PlotOptions, "Generate plot"],
+                   ['plot_rtt', None, PlotOptions, "Generate plot"],
                    ['aggregate', None, AggregateOptions, "Aggregate data"]]
 
 
@@ -115,6 +117,42 @@ def calculate_rates(input_root, num_sent):
             }
     return rate
 
+def generate_plot_latency(rate, figure_width, output_file):
+    configure_pyplot(figure_width, figure_width * GOLDEN_MEAN,
+        {
+            'figure.subplot.bottom': 0.15,
+            'figure.subplot.left': 0.15,
+            'figure.subplot.top': 0.95,
+            'figure.subplot.right': 0.97
+        }
+    )
+
+    rtt1 = []
+    rtt2 = []
+    rtt3 = []
+    rtt4 = []
+    rtt5 = []
+    cons = ['1', '2', '4', '8', '16', '32', '64', '128', '256', '512']
+
+    for n_con in cons:
+        rtt1.append(rate['100'][n_con]['subscriber']['mean'])
+        rtt2.append(rate['200'][n_con]['subscriber']['mean'])
+        rtt3.append(rate['300'][n_con]['subscriber']['mean'])
+        rtt4.append(rate['400'][n_con]['subscriber']['mean'])
+        rtt5.append(rate['500'][n_con]['subscriber']['mean'])
+
+    pyplot.plot(cons, rtt1, '-', label="100\,ms")
+    pyplot.plot(cons, rtt2, '--', label="200\,ms")
+    pyplot.plot(cons, rtt3, '-.', label="300\,ms")
+    pyplot.plot(cons, rtt4, ':m', label="400\,ms")
+    pyplot.plot(cons, rtt5, '.-c', label="500\,ms")
+    pyplot.xscale("log")
+    pyplot.xlabel("Number of concurrent connections")
+    pyplot.ylim(0, 550)
+    pyplot.ylabel("Throughput (events/second)")
+    pyplot.legend()
+    pyplot.legend(ncol=1, fontsize=8, loc='upper left')
+    write_figure(output_file)
 
 def generate_plot(rate, figure_width, output_file):
     configure_pyplot(figure_width, figure_width,
@@ -197,8 +235,13 @@ if __name__ == "__main__":
             ),
             config.subOptions['output_file']
         )
-    elif config.subCommand == "plot":
+    elif config.subCommand == "plot_tp":
         generate_plot(
+            load_json(config.subOptions['input_file']),
+            config.subOptions['figure-width'], config.subOptions['output_file']
+        )
+    elif config.subCommand == "plot_rtt":
+        generate_plot_latency(
             load_json(config.subOptions['input_file']),
             config.subOptions['figure-width'], config.subOptions['output_file']
         )

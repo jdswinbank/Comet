@@ -107,9 +107,19 @@ add_custom_command (
 add_custom_command (
     OUTPUT ${FIGURE_OUTPUT_DIR}/throughput.pdf
     COMMAND ${PYTHON_EXECUTABLE}
-    ARGS ${PROJECT_SOURCE_DIR}/figures/throughput.py plot
+    ARGS ${PROJECT_SOURCE_DIR}/figures/throughput.py plot_tp
          ${FIGURE_OUTPUT_DIR}/throughput.json
          ${FIGURE_OUTPUT_DIR}/throughput.pdf
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/figures
+    DEPENDS ${FIGURE_OUTPUT_DIR}/throughput.json
+)
+
+add_custom_command (
+    OUTPUT ${FIGURE_OUTPUT_DIR}/rtt.pdf
+    COMMAND ${PYTHON_EXECUTABLE}
+    ARGS ${PROJECT_SOURCE_DIR}/figures/throughput.py plot_rtt
+         ${FIGURE_OUTPUT_DIR}/throughput.json
+         ${FIGURE_OUTPUT_DIR}/rtt.pdf
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/figures
     DEPENDS ${FIGURE_OUTPUT_DIR}/throughput.json
 )
@@ -124,6 +134,7 @@ add_custom_command (
         ${FIGURE_OUTPUT_DIR}/latency.pdf
         ${FIGURE_OUTPUT_DIR}/subscribers.pdf
         ${FIGURE_OUTPUT_DIR}/throughput.pdf
+        ${FIGURE_OUTPUT_DIR}/rtt.pdf
         ${PROJECT_BINARY_DIR}/comet.tex
 )
 
