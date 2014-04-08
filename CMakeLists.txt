@@ -21,13 +21,13 @@ configure_file (
 )
 
 configure_file (
-    ${PROJECT_SOURCE_DIR}/manuscript/vtp.pdf
+    ${PROJECT_SOURCE_DIR}/figures/vtp.pdf
     ${FIGURE_OUTPUT_DIR}/vtp.pdf
     COPYONLY
 )
 
 configure_file (
-    ${PROJECT_SOURCE_DIR}/manuscript/tcp.pdf
+    ${PROJECT_SOURCE_DIR}/figures/tcp.pdf
     ${FIGURE_OUTPUT_DIR}/tcp.pdf
     COPYONLY
 )
