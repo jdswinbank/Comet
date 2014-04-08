@@ -273,7 +273,7 @@ executed sequentially, we define the actions that should be taken in response
 to possible events. Twisted then provides an ``event loop'' which waits for
 events and calls the appropriate actions when they occur.
 
-\begin{listing}[H]
+\begin{listing}
 \begin{minted}[frame=lines]{python}
 class VOEventReceiver(Protocol):
   TIMEOUT = 20
@@ -369,7 +369,7 @@ queue up a number of callbacks to be run when parsing is complete and also add
 an ``errback'' which handles logging a message if any of the callbacks fail to
 run successfully.
 
-\begin{listing}[H]
+\begin{listing}
 \begin{minted}[frame=lines]{python}
 def stringReceived(self, data):
   d = deferred_parse(data)
@@ -393,7 +393,7 @@ the deferred fires with its result. Conveniently, Twisted makes it easy to
 apply this pattern to a blocking function such as our \texttt{parse()}: see
 Listing \ref{lst:deferToThread}.
 
-\begin{listing}[H]
+\begin{listing}
 \begin{minted}[frame=lines]{python}
 from twisted.internet.threads import \
      deferToThread
@@ -589,7 +589,7 @@ provide a \texttt{\_\_call\_\_()} method which is invoked with the contents of
 an event whenever one is received. An example is shown in Listing
 \ref{lst:plugin}.
 
-\begin{listing}[H]
+\begin{listing}
 \begin{minted}[frame=lines]{python}
 from zope.interface import implementer
 from twisted.plugin import IPlugin
@@ -1299,7 +1299,7 @@ mechanisms to Transport documents (\S\ref{sec:vtp}). Using this technique:
 \end{itemize}
 
 
-Comet's OpenPGP support is based upon GnuPG\footnote{\url{http://gnupg.org}}.
+Comet's OpenPGP support is based upon GnuPG\footnote{\url{http://gnupg.org/}}.
 Comet does not provide any mechanism for managing the configuration of GnuPG:
 instead, the standard GnuPG tools should be used for this, and Comet inherits
 the configuration and key database from them.
