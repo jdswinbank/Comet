@@ -16,7 +16,8 @@ Comet is developed targeting Python 2.6 and 2.7. It depends upon:
 
 If the optional support for :ref:`authentication <sec-authentication>` is to
 be enabled, `PyGPGME <https://launchpad.net/pygpgme>`_ (and all of its
-dependencies) is also required.
+dependencies) is also required. Note that `GnuPG <http://gnupg.org/>`_ version
+2 is not supported.
 
 How you make these dependencies available on your system is up to your (or,
 perhaps, to your system administrator). However, the author strongly suggests
