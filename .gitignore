@@ -30,4 +30,5 @@
 *.vrb
 *.xdy
 *.tdo
+*.pyc
 build
