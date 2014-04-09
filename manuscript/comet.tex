@@ -1149,7 +1149,7 @@ of connections can mitigate the effects of network-induced latency. However,
 attempting to initiate more than 512 connections always resulted in a large
 number of events getting dropped in transit, as the kernel refused to service
 so many simultaneous network connections. Thus, the peak rates achieved at the
-higher round-trip times were always suppressed relative to the througput
+higher round-trip times were always suppressed relative to the throughput
 measured with no latency. As discussed in \S\ref{sec:perf:total:results},
 appropriate tuning of the kernel networking stack could be used to help
 overcome this issue; however, a better approach would be to address it at the
