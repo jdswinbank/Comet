@@ -26,16 +26,16 @@
 The VOEvent standard provides a means of describing a transient celestial
 event in a machine-readable format. This is an essential step towards
 addressing the large volumes of transients which will be detected by current
-and future surveys. The VOEvent Transport Protocol (VTP) describes a system by
-which VOEvents may be distributed to the community. We describe the design and
-implementation of Comet, a freely available, open source implementation of
+and future surveys. The VOEvent Transport Protocol (VTP) defines a system by
+which VOEvents may be disseminated to the community. We describe the design
+and implementation of Comet, a freely available, open source implementation of
 VTP. We use Comet as a base to explore the performance characteristics of the
 VTP system, in particular with reference to meeting the requirements of future
 large survey projects. We describe how, with the aid of simple extensions to
 VTP, Comet can help users filter high-volume streams of VOEvents to extract
-only those which are of relevance to particular science cases.  Based on the
-experience of developing Comet, we derive a number of recommendations for
-future refinements of the VTP standard.
+only those which are of relevance to particular science cases.  Based on these
+tests and on the experience of developing Comet, we derive a number of
+recommendations for future refinements of the VTP standard.
 
 \end{abstract}
 
@@ -48,78 +48,74 @@ VOEvent \sep Astronomical transients \sep Time domain astrophysics \sep Network 
 \section{Introduction}
 \label{sec:intro}
 
-The exploration of the astrophysical time domain through timely follow-up
-observations of transients offers the potential of many and varied potential
-scientific results. However, to achieve these results it is necessary to
-overcome a range of technical challenges in terms of identifying and
-classifying transients, disseminating notifications of them to the community,
-and coordinating follow-up efforts.
+Exploring the astrophysical time domain through timely follow-up observations
+of transient and variable sources offers the potential of many and varied
+scientific results. However, achieving these results requires a fast and
+reliable way of disseminating sufficient information about new transients to
+appropriate follow-up facilities.
 
 Mechanisms for distributing news of transient events already exist: both the
 NASA Gamma-ray Coordinates Network\footnote{\url{http://gcn.gsfc.nasa.gov/}}
 (GCN) and The Astronomer's
-Telegram\footnote{\url{http://www.astronomerstelegram.org/}} have long and
-distinguished track records of enabling transient astronomy. However, the next
-generation of large-scale survey telescopes such as Gaia, SKA and LSST promise
-hundreds, thousands or even millions of transient detections every day. The
-sheer volume of events presents a massive scalability challenge: it is no
-longer practical for even large teams of astronomers to consider manually
-reading, understanding and responding to these notifications. Instead,
-automation is essential. Furthermore, the diverse nature of these transient
-hunting facilities---covering not only electromagnetic gamut from
-low-frequency radio to space based X- and $\gamma$-ray monitors, but also
-potentially including other types of signal such as gravitational
-waves---means that a flexible and adaptable machine-readable mechanism must be
-adopted for describing transients.
+Telegram\footnote{\url{http://www.astronomerstelegram.org/}} have long track
+records of enabling transient astronomy. However, the next generation of
+large-scale survey telescopes such as Gaia, SKA and LSST promise an increase
+by several orders of magnitude in the rate of transients being reported.  The
+sheer volume of events presents a scalability challenge: it is no longer
+practical for even large teams of astronomers to consider reading,
+understanding and responding to these notifications manually. Automation is
+essential. Furthermore, the diverse nature of these transient hunting
+facilities---covering not just electromagnetic gamut from low-frequency radio
+to space based X- and $\gamma$-ray monitors, but also potentially other types
+of signal such as gravitational waves---means that a flexible and adaptable
+machine-readable mechanism must be adopted for describing transients.
 
-In an effort to address these challenges, the IVOA has introduced the
-`VOEvent'\footnote{\url{http://www.voevent.org/}} \citep{Seaman:2011}
-standard. VOEvent provides a standardized, machine- and human-readable way of
-describing a wide range of transient astronomical phenomena. An individual
-VOEvent describes a particular transient event, providing not only information
-about what has been observed and how the observations were made, but also
-making it possible for the author to include a scientific motivation for why
-this particular event is interesting. Furthermore, a VOEvent may cite other
-VOEvents, providing more information about a given transient or, if necessary,
-superseding or retracting an earlier message.
+The IVOA has developed the `VOEvent'\footnote{\url{http://www.voevent.org/}}
+\citep{Seaman:2011} standard to address these issues. VOEvent provides a
+standardized, machine- and human-readable way of describing a wide range of
+transient astronomical phenomena. An individual VOEvent describes a particular
+transient event, providing not only information about what has been observed
+and how the observations were made, but also making it possible for the author
+to include a scientific motivation for why this particular event is
+interesting.  Furthermore, a VOEvent may cite other VOEvents, providing more
+information about a given transient or, if necessary, superseding or
+retracting an earlier message.
 
 VOEvents are published as XML \citep{Bray:2008} XML documents which should be
 in compliance with schema \citep{Gau:2012, Peterson:2012} produced by the
 IVOA. Working in XML enables VOEvent to make extensive use of other relevant
-IVOA standards (?? cite STC, ucd, etc?) and enables convenient processing with
-a wide range of standard commercial and open-source tools.
+IVOA standards and enables convenient processing with a wide range of
+commercial and open-source software.
 
-The VOEvent standard defines the structure and content of a VOEvent document,
+The VOEvent standard defines the structure and content of a VOEvent packet,
 but it does not describe a mechanism by which the author of a VOEvent may
-distribute it to potentially interested recipients. This transport-agnosticism
-is intentional: it is intended to provide the maximum possible flexibility, as
-individual projects may disseminate events by whatever means best meets their
-science goals. However, it is widely recognized that a baseline specification
-for a simple transport protocol is of value in terms of providing a common
-starting point for building international VOEvent distribution networks
-\citep{Williams:2012}. The VOEvent Transport Protocol
-\citep[VTP;][]{Allan:2009} is now seeing widespread adoption as such a
-baseline.
+distribute it to potentially interested recipients. This transport agnosticism
+is provides the maximum possible flexibility for individual projects to
+disseminate events by whatever means best meets their science goals. However,
+it is widely recognized that a baseline specification for a simple transport
+protocol is of value in terms of providing a common starting point for
+building international VOEvent distribution networks \citep{Williams:2012}.
+The VOEvent Transport Protocol \citep[VTP;][]{Allan:2009} is now seeing
+widespread adoption as such a baseline.
 
 This manuscript describes Comet, an implementation of all the components
-necessary for interacting with the VOEvent Transport Protocol while acting as
-a test-bed for production-level VTP deployments and for new technologies and
-``value-added'' services to assist in addressing the event deluge.  In
-\S\ref{sec:vtp}, a description of the protocol is provided to set the tool in
-context. \S\ref{sec:design} describes how Comet has been designed and built to
-meet the protocol specifications. \S\ref{sec:filter} describes how Comet
-builds upon VTP to help address future challenges in VOEvent filtering and
-selection. \S\ref{sec:perf} considers the performance implications of
-deploying VTP in support of next-generation astronomical infrastructure,
-considering both the scalability of the protocol to large numbers of events
-and to high latency connections. In \S\ref{sec:security} we consider the
-security implications of VOEvents, how they can be mitigated at the transport
-level, and describe a system being prototyped in Comet. \S\ref{sec:avail}
-describes the terms under which Comet is available and how to download,
-install and use it. Implications for future revisions of the VTP standard are
-summarized in \S\ref{sec:future}, while a summary of the results are
-presented and some more general conclusions drawn for future of VOEvent
-transportation systems in \S\ref{sec:conclusions}.
+necessary for interacting with the VTP while acting as a test-bed for
+production-level VTP deployments and for new technologies and ``value-added''
+services to assist in addressing the transient deluge. In \S\ref{sec:vtp}, a
+description of VTP is provided to set the tool in context.  \S\ref{sec:design}
+describes how Comet has been designed and built to meet the protocol
+specifications. \S\ref{sec:filter} describes how Comet builds upon VTP to help
+address future challenges in VOEvent filtering and selection.
+\S\ref{sec:perf} considers the performance implications of deploying VTP in
+support of next-generation astronomical infrastructure, considering both the
+scalability of the protocol to large numbers of events and to high latency
+connections. In \S\ref{sec:security} we consider the security implications of
+VOEvents, how they can be addressed at the transport level, and describe a
+system being prototyped in Comet. Implications for future revisions of the VTP
+standard are summarized in \S\ref{sec:future}.  \S\ref{sec:avail} describes
+the terms under which Comet is available and how to download, install and use
+it, while a summary of the results are presented and some more general
+conclusions drawn for future of VOEvent transport in \S\ref{sec:conclusions}.
 
 \section{VOEvent Transport Protocol}
 \label{sec:vtp}
@@ -139,12 +135,11 @@ transportation systems in \S\ref{sec:conclusions}.
   \label{fig:vtp}
 \end{figure}
 
-VTP provides a simple, minimalist system for distributing VOEvents from one or
-more authors to a distribute network of potentially interested subscribers. It
-builds upon the semantics of VOEvent interchange described in the VOEvent
-standard \citep{Seaman:2011}, but includes only those entities which directly
-interact by means of the network. To wit, VTP defines the following network
-roles:
+VTP provides a simple system for distributing VOEvents from one or more
+authors to a network of potentially interested subscribers. It builds upon the
+semantics of VOEvent interchange described in the VOEvent standard
+\citep{Seaman:2011}, but includes only those entities which directly interact
+by means of the network. To wit, VTP defines the following network roles:
 
 \begin{description}
 
@@ -154,11 +149,11 @@ roles:
   \item[Subscriber]{A subscriber is interested in receiving the VOEvents
   generated by one or more authors.}
 
-  \item[Broker]{The broker receives VOEvents from other network entities
-  re-distributes them to one or more subscribers. In addition, the broker may
-  perform ``added value'' on behalf of the subscriber, for example by filtering
-  the event stream and forwarding only events of interest, or by annotating
-  events with additional information.}
+  \item[Broker]{A broker receives VOEvents from other network entities
+  re-distributes them to one or more subscribers. In addition, a broker may
+  perform ``added value'' services on behalf of the subscriber, for example by
+  filtering the event stream and forwarding only events of interest, or by
+  annotating events with additional information.}
 
 \end{description}
 
@@ -191,13 +186,13 @@ a previous event is still being processed: otherwise, a backlog of events
 waiting to be sent to a particular subscriber could build up and overload the
 broker.
 
-By causing brokers to subscriber to the output from other brokers, we can
-build extended networks of mutually-interconnected brokers. An author need
-only publish to one broker, and ultimately their event id distributed to all
-entities on the network. This is not only efficient, it is also robust: the
-failure of any given entity can only cause local disruption to the
-distribution network. The topology of such a network, and the path a VOEvent
-packet might take across it, is shown in Fig. \ref{fig:vtp}.
+By causing brokers to subscriber to the output from other brokers, it is
+possible to build extended networks of mutually-interconnected brokers. An
+author need only publish to one broker and ultimately their event will be
+distributed to all entities on the network. This is not only efficient, it is
+also robust: the failure of any given entity can only cause local disruption
+to the distribution system. The topology of such a network, and the path a
+VOEvent packet might take across it, is shown in Fig. \ref{fig:vtp}.
 
 In addition to passing VOEvent XML documents, VTP defines a ``Transport''
 document type. Transport documents are used for the heartbeat messages between
@@ -217,26 +212,30 @@ multiple addresses. An alternative is therefore suggested in the standard
 based on cryptographically signed transport messages, which enable an entity
 to securely demonstrate its identity on connection. The means by which these
 signatures may be applied is not specified in the VTP standard, which rather
-refers to the systems proposed by \citet{Denny:2008}, \citet{Allen:2008} and
-\citet{Rixon:2005}. The application of cryptographic signatures to XML
+refers to the systems proposed by \citet{Rixon:2005}, \citet{Denny:2008} and
+\citet{Allen:2008}.  The application of cryptographic signatures to XML
 documents is a potentially complex topic, and one to which we return in
 \S\ref{sec:security}.
 
-\section{The Design and Implementation of Comet}
+\section{The Design and implementation of Comet}
 \label{sec:design}
 
-Comet\footnote{\url{http://comet.transientskp.org/}} is a freely available,
-open source implementation of VTP. It is capable of acting any or all of the
-roles within a VTP network: it can receive events from remote brokers (the
-subscriber role), receive events from authors and distribute them to
-subscribers (the broker role) and it provides a tool which can publish a
-VOEvent to a remote broker (the author role). Comet has the twin aims of
-acting both as a production-ready event distribution system, which projects
-can immediately start using to service their science goals, and as a
+Comet is a freely available, open source implementation of VTP. It is capable
+of acting any or all of the roles within a VTP network: it can receive events
+from remote brokers (the subscriber role), receive events from authors and
+distribute them to subscribers (the broker role) and it provides a tool which
+can publish a VOEvent to a remote broker (the author role). Comet has the twin
+aims of acting both as a production-ready event distribution system, which
+projects can immediately start using to service their science goals, and as a
 convenient system for exploring the characteristics of VTP and exploring and
 prototyping future extensions to the protocol. The first aim has already been
 met: see, for example, \citet{Staley:2013}. Early results from the second aim
 are described in the subsequent sections of this manuscript.
+
+Version 1.1.0 of Comet was released in February of 2014 and is current stable
+version at time of writing. Here, we specifically consider the implementaiton
+of this version, although there are currently no plans for major architectural
+changes in the future.
 
 \subsection{Twisted Python and event-driven programming}
 \label{sec:design:twisted}
@@ -731,11 +730,12 @@ process containers using Docker\footnote{https://www.docker.io/}. Docker-based
 containers operate in much the same way as traditional virtual machines,
 except they incur no virtualization overhead, directly addressing the same
 kernel as the host system, but only able to communicate with each other over
-(virtual) network interfaces.  Within each container a minimal
+(virtual) network interfaces. Within each container a minimal
 Ubuntu\footnote{\url{http://www.ubuntu.com/}} Linux 12.04 system was
-installed, providing Python 2.7.3 and Twisted 11.1.0. The ``Dockerfile'' used
-to create exactly the configuration used for testing is available from the
-Comet repository; see \S\ref{sec:avail}.
+installed, providing Python 2.7.3 and Twisted 11.1.0. All testing was carried
+out with Comet 1.1.0. The ``Dockerfile'' used to create exactly the
+system used for these tests is available from the Comet repository; see
+\S\ref{sec:avail}.
 
 \subsection{Latency}
 \label{sec:perf:latency}
