@@ -5,8 +5,8 @@ set (CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 set (FIGURE_OUTPUT_DIR ${PROJECT_BINARY_DIR}/figures)
 
 find_package (LATEX REQUIRED)
-find_package (LATEXMK REQUIRED)
-find_package (PYTHONINTERP REQUIRED)
+find_package (LatexMk REQUIRED)
+find_package (PythonInterp REQUIRED)
 
 configure_file (
     ${PROJECT_SOURCE_DIR}/manuscript/comet.tex
