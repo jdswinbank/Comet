@@ -618,15 +618,14 @@ these are also exposed on the command line.
 \label{sec:filter}
 
 Next generation telescopes such as LSST promise to detect and announce
-transients using VOEvent at a rate of millions of events per night
-\citep{Kantor:2014}. It is unlikely that most individual subscribers will have
-a use for all of these events. Winnowing that event stream down so that each
-subscriber receives only those events which are of direct relevance to them is
-both efficient in terms of resource usage, as fewer events need to be
-transported to and processed by the subscriber, but also enables subscribers
-to focus simple, well-targeted systems that address their science goals,
-rather than attempting to devise efficient ways to process millions of VOEvent
-packets.
+transients using VOEvent at a rate of millions of events per night.  It is
+unlikely that most individual subscribers will have a use for all of these
+events. Winnowing that event stream down so that each subscriber receives only
+those events which are of direct relevance to them is both efficient in terms
+of resource usage, as fewer events need to be transported to and processed by
+the subscriber, but also enables subscribers to focus simple, well-targeted
+systems that address their science goals, rather than attempting to devise
+efficient ways to process millions of VOEvent packets.
 
 Efforts to develop intelligent systems for alerting users only of those events
 which are of relevance to them are ongoing, and will continue into the future
@@ -930,13 +929,13 @@ subscribers with 0.1\,s latency.
 \label{sec:perf:total}
 
 Next-generation facilities will announce transients at rates far outstripping
-those seen at present. Notably, LSST is predicted to peak at rates of
-$3\times10^7$ events per night \citep{Kantor:2014}: assuming those events are
-evenly spaced over a 12 hour period, this is equivalent to nearly 700 events
-per second.
-
-Here, we measure how the event rate processed by the Comet broker running on
-the test system.
+those seen at present. Notably, LSST is predicted to reach an averate rate of
+$1\times10^7$ events per night: assuming those events are evenly spaced over a
+12 hour period, this is equivalent to over 230 events per second. This is the
+output from just a single instrument, albeit a prolific one, and takes no
+account of the cascade of follow-up packets that a significant transient would
+likely generate. Here, we measure how the event rate processed by the Comet
+broker running on the test system.
 
 \subsubsection{Test setup}
 \label{sec:perf:total:setup}
@@ -1021,15 +1020,16 @@ provides a continuously-available high bandwidth connection. At high
 connection counts the latency involved in servicing many connections means
 that such high bandwidths cannot be achieved here.
 
-Without special tuning, the peak throughput of over 500 event/second is over
-70\% of that required to service the peak event rate predicted from LSST.
-Note, though, this test was limited by CPU performance on desktop-class
+Without special tuning, a throughput of over 500 events per second is more
+than twice that required to service the average event rate predicted from
+LSST. Further, this test was limited by CPU performance on desktop-class
 hardware that will be substantially more than a decade old before LSST is
-commissioned. Further, the predictions refer to a peak rate, not sustained
-production. In these terms, then, servicing an LSST event stream with a VTP
-based broker seems plausible---although it is worth emphasizing that the
-events used in this benchmark did not carry a scientific payload, and hence
-are likely significantly smaller than those which might be produced by LSST.
+commissioned. In these terms, servicing an LSST event stream with a VTP based
+broker seems plausible, although it is worth emphasizing that this calculation
+takes no account of follow-up traffic generated in response to events and that
+the events used in this benchmark did not carry a scientific payload, and
+hence are likely significantly smaller than those which might be produced by
+LSST.
 
 \subsection{High-latency connections}
 \label{sec:perf:highlatency}
@@ -1461,7 +1461,8 @@ of relevance to their own scientific goals.
 The author is grateful to Bob Denny and Alasdair Allan for many useful
 discussions on the design and implementation of the VOEvent Transport Protocol
 and to Tim Staley and Roy Williams for their feedback on the design and
-capabilities of Comet.
+capabilities of Comet. Thanks to Jeff Kantor for details of the predicted LSST
+event rates.
 
 Comet relies on some excellent open-source software.
 Python\footnote{\url{https://www.python.org/}} provides both a convenient
