@@ -117,7 +117,7 @@ security implications of VOEvents, how they can be mitigated at the transport
 level, and describe a system being prototyped in Comet. \S\ref{sec:avail}
 describes the terms under which Comet is available and how to download,
 install and use it. Implications for future revisions of the VTP standard are
-summarized in \S\ref{sec:futurevtp}, while a summary of the results are
+summarized in \S\ref{sec:future}, while a summary of the results are
 presented and some more general conclusions drawn for future of VOEvent
 transportation systems in \S\ref{sec:conclusions}.
 
@@ -533,7 +533,7 @@ on the network forward events unchanged: even an apparently inconsequential
 change to an event packet which results in a valid event encoding the same
 infoset as before would result in a different SHA-1 hash for the event. The
 current VTP standard implies but does not absolutely require this behaviour:
-see \S\ref{sec:futurevtp} for further discussion.
+see \S\ref{sec:future} for further discussion.
 
 \subsubsection{Security and whitelisting}
 \label{sec:design:security}
@@ -1085,12 +1085,13 @@ practice, after transmitting the final \textsc{fin} packet, the author may
 assume that the connection is closed without waiting for a response, and hence
 initiate a new connection, so the figure of $2 t_\mathrm{RT}$ describes the
 interval between connection attempts.  Assuming that events are sent in
-sequentially, and given a round trip time of, say, 200\,ms, this would limit
-the total number of events which may be sent in a 12 hour period to 86400, far
-short of the rates discussion in \S\ref{sec:perf:total}. However, the same
-section also demonstrated that events may be sent concurrently over multiple
-connections. Here, we investigate to what extent that approach can mitigate
-this issue.
+sequentially, and given a round trip time of, say, 500\,ms, this would limit
+the rate at which events can be sent to 1 per second, or 43200 in a 12 hour
+period. This is far short of the throughput discussed in
+\S\ref{sec:perf:total}, and certainly inadequate for the rate expected from
+instruments such as LSST.  However, the same section also demonstrated that
+events may be sent concurrently over multiple connections. Here, we
+investigate to what extent that approach can mitigate this issue.
 
 \subsubsection{Test setup}
 
@@ -1125,10 +1126,34 @@ Fig. \ref{fig:tcp}, the observed effect is identical.
   \includegraphics[width=\columnwidth]{@FIGURE_OUTPUT_DIR@/rtt.pdf}
   \end{center}
 
-  \caption{A plot.}
+  \caption{Variation of throughput, as measured by the rate of events received
+  by the subscriber, as a function of number of concurrent connections shown
+  for a variety of network round trip times.}
 
   \label{fig:rtt}
 \end{figure}
+
+Figure \ref{fig:rtt} shows how the throughput varies with the number of
+concurrent connections for a variety of network round trip times. As expected,
+at low concurrencies, the throughput is extremely low: the network round trip
+time completely dominates the transmission rate. However, this is
+substantially mitigated by increasing the concurrency: with a round trip time
+of 100\,ms, using 256 concurrent connections provides a rate of 500
+events/second, which approaches the peak rate achieved in in
+\S\ref{sec:perf:total:results}. At higher concurrencies, though, the rate
+begins to diminish as the load incurred in managing connections dominates,
+as seen in \S\ref{sec:perf:total:results}.
+
+A similar pattern is seen for other round trip delays: increasing the number
+of connections can mitigate the effects of network-induced latency. However,
+attempting to initiate more than 512 connections always resulted in a large
+number of events getting dropped in transit, as the kernel refused to service
+so many simultaneous network connections. Thus, the peak rates achieved at the
+higher round-trip times were always suppressed relative to the througput
+measured with no latency. As discussed in \S\ref{sec:perf:total:results},
+appropriate tuning of the kernel networking stack could be used to help
+overcome this issue; however, a better approach would be to address it at the
+protocol level, an idea to which we return in \S\ref{sec:future}.
 
 \section{Authentication}
 \label{sec:security}
@@ -1323,7 +1348,7 @@ not prohibitively expensive, then, the overhead introduced by this technique
 cannot be ignored by administrators of heavily-loaded brokers.
 
 \section{Future VOEvent and VTP revision}
-\label{sec:futurevtp}
+\label{sec:future}
 
 This manuscript has described both VTP itself and the issues that have arisen
 when developing a specific implementation of it.  From these considerations,
@@ -1381,11 +1406,13 @@ filters required.
 \label{sec:future:bulk}
 
 Section \ref{sec:perf} demonstrated that Comet was capable of receiving and
-distributing large numbers of events with relatively low latency. However, the
-major limiting factor is the requirement that each individual event submission
-by an author takes place over a new TCP connection. Future versions of VTP
-should consider the possibility of re-using existing connections to reduce
-latency and increase throughput for bulk event submission.
+distributing large numbers of events with relatively low latency. However,
+\S\S\ref{sec:perf:throughput} and \ref{sec:perf:highlatency} demonstrated that
+the major limiting factor on performance, in particular in the case of high
+network round trip times, is the requirement that each individual event
+submission by an author take place over a new TCP connection.  Future versions
+of VTP should consider the possibility of re-using existing connections to
+reduce latency and increase throughput for bulk event submission.
 
 \section{Availability}
 \label{sec:avail}
