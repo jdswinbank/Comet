@@ -24,4 +24,4 @@ Given the raw benchmark data (several hundred MiB; available for download
 separately), you can re-generate the aggregates as part of the build. Use the
 following CMake invocation::
 
-  $ cmake -DCOMET_BENCHMARK_DATA=${PATH_TO_DATA}
+  $ cmake -DBENCHMARK_DATA=${PATH_TO_DATA} ..

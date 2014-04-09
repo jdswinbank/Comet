@@ -32,40 +32,40 @@ configure_file (
     COPYONLY
 )
 
-if (IS_DIRECTORY ${COMET_BENCHMARK_DATA})
+if (IS_DIRECTORY ${BENCHMARK_DATA})
     message (STATUS "Got raw benchmark measurements")
     add_custom_command (
         OUTPUT ${FIGURE_OUTPUT_DIR}/latency.json
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS ${PROJECT_SOURCE_DIR}/figures/latency.py aggregate
-             ${COMET_BENCHMARK_DATA}/latency/1sub-noepoll-notmpfs.log
-             ${COMET_BENCHMARK_DATA}/latency/1sub-epoll-notmpfs.log
-             ${COMET_BENCHMARK_DATA}/latency/1sub-epoll-tmpfs.log
+             ${BENCHMARK_DATA}/latency/1sub-noepoll-notmpfs.log
+             ${BENCHMARK_DATA}/latency/1sub-epoll-notmpfs.log
+             ${BENCHMARK_DATA}/latency/1sub-epoll-tmpfs.log
              ${FIGURE_OUTPUT_DIR}/latency.json
         DEPENDS
-             ${COMET_BENCHMARK_DATA}/latency/1sub-noepoll-notmpfs.log
-             ${COMET_BENCHMARK_DATA}/latency/1sub-epoll-notmpfs.log
-             ${COMET_BENCHMARK_DATA}/latency/1sub-epoll-tmpfs.log
+             ${BENCHMARK_DATA}/latency/1sub-noepoll-notmpfs.log
+             ${BENCHMARK_DATA}/latency/1sub-epoll-notmpfs.log
+             ${BENCHMARK_DATA}/latency/1sub-epoll-tmpfs.log
     )
     add_custom_command (
         OUTPUT ${FIGURE_OUTPUT_DIR}/multisubscriber.json
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS ${PROJECT_SOURCE_DIR}/figures/multisubscriber.py aggregate
-             ${COMET_BENCHMARK_DATA}/multisubscriber
+             ${BENCHMARK_DATA}/multisubscriber
              ${FIGURE_OUTPUT_DIR}/multisubscriber.json
         DEPENDS
-             ${COMET_BENCHMARK_DATA}/multisubscriber
+             ${BENCHMARK_DATA}/multisubscriber
     )
     add_custom_command (
         OUTPUT ${FIGURE_OUTPUT_DIR}/throughput.json
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS ${PROJECT_SOURCE_DIR}/figures/throughput.py aggregate
-             ${COMET_BENCHMARK_DATA}/throughput
+             ${BENCHMARK_DATA}/throughput
              ${FIGURE_OUTPUT_DIR}/throughput.json
         DEPENDS
-             ${COMET_BENCHMARK_DATA}/throughput
+             ${BENCHMARK_DATA}/throughput
     )
-else (IS_DIRECTORY ${COMET_BENCHMARK_DATA})
+else (IS_DIRECTORY ${BENCHMARK_DATA})
     message (STATUS "Raw Benchmark data not available; using defaults")
     configure_file (
         ${PROJECT_SOURCE_DIR}/figures/latency.json
@@ -82,7 +82,7 @@ else (IS_DIRECTORY ${COMET_BENCHMARK_DATA})
         ${FIGURE_OUTPUT_DIR}/throughput.json
         COPYONLY
     )
-endif (IS_DIRECTORY ${COMET_BENCHMARK_DATA})
+endif (IS_DIRECTORY ${BENCHMARK_DATA})
 
 add_custom_command (
     OUTPUT ${FIGURE_OUTPUT_DIR}/latency.pdf
