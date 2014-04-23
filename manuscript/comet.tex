@@ -1046,9 +1046,9 @@ produced by LSST.
   \end{center}
 
   \caption{The complete network packet exchange as an author uploads a VOEvent
-  to a broker. Packets with specific flags set have those flags indicated in
-  black.  Packets containing payload data (a VOEvent or a Transport message)
-  are labelled in green.  Time increases down the diagram. The network round
+  to a broker. Packets with specific TCP flags set have those flags indicated
+  in upper case. Payload data (a VOEvent or Transport packet) are indidcated
+  by the word ``Payload''. Time increases down the diagram. The network round
   trip time is denoted by $t_\mathrm{RT}$. A dashed time axis indicates
   packets being sent with no interval between them. For example, at time
   $t_\mathrm{RT}$ the author sends \textsc{ack} immediately followed by
