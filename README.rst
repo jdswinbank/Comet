@@ -20,8 +20,10 @@ Use CMake to build the document based on pre-computed benchmark aggregates::
   $ cmake ..
   $ make
 
-Given the raw benchmark data (several hundred MiB; available for download
-separately), you can re-generate the aggregates as part of the build. Use the
-following CMake invocation::
+Given the raw benchmark data, you can re-generate the aggregates as part of
+the build. The data is available for download through the `GitHub Release
+system
+<https://github.com/jdswinbank/Comet/releases/tag/submitted-2014-04-25>`_.
+Once the data is installed, use the following CMake invocation::
 
   $ cmake -DBENCHMARK_DATA=${PATH_TO_DATA} ..
