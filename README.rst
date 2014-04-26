@@ -39,6 +39,10 @@ This repository contains the following branches:
 ``gh-pages``
     The source for the `Comet website <http://comet.transientskp.org>`_.
 
-Comet is developed by `John Swinbank <http://swinbank.org/>`_ as
-part of the `LOFAR <http://www.lofar.org/>`_ `Transients Key Project
-<http://www.transientskp.org/>`_. Comments and corrections welcome.
+Comet is developed by `John Swinbank <http://swinbank.org/>`_ as part of the
+`LOFAR <http://www.lofar.org/>`_ `Transients Key Project
+<http://www.transientskp.org/>`_. It is indexed by the `Astrophysics Source
+Code Library <http://asterisk.apod.com/wp/>`_ as `ascl:1404.008
+<http://ascl.net/1404.008>`_.
+
+Comments and corrections welcome.
