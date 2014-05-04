@@ -31,8 +31,7 @@ class Event_DB(object):
         otherwise.
         """
         db_path, key = self._get_event_details(event)
-        try:
-            self.databases[db_path].acquire()
+        with self.databases[db_path]: # Acquire lock
             db = anydbm.open(os.path.join(self.root, db_path), 'c')
             try:
                 if db.has_key(key):
@@ -41,21 +40,18 @@ class Event_DB(object):
                     return True # Ok to forward
             finally:
                 db.close()
-        finally:
-            self.databases[db_path].release()
 
     def record_event(self, event):
         """
         Record an event as having been seen in the database.
         """
         db_path, key = self._get_event_details(event)
-        try:
-            self.databases[db_path].acquire()
-            db = anydbm.open(os.path.join(self.root, db_path), 'c')
-            db[key] = str(time.time())
-        finally:
-            db.close()
-            self.databases[db_path].release()
+        with self.databases[db_path]: # Acquire lock
+            try:
+                db = anydbm.open(os.path.join(self.root, db_path), 'c')
+                db[key] = str(time.time())
+            finally:
+                db.close()
 
     def prune(self, expiry_time):
         """
@@ -63,38 +59,36 @@ class Event_DB(object):
         """
         def expire_db(db_path, lock):
             remove = []
-            lock.acquire()
-            db = anydbm.open(os.path.join(self.root, db_path), 'c')
-            # The database returned by anydbm is guaranteed to have a .keys()
-            # method, but not necessarily .(iter)items().
-            for key in db.keys():
-                value = db[key]
-                try:
-                    # New style databases store seconds since the epoch
-                    db_time = float(value)
-                except ValueError:
-                    # Old style databases store %Y-%m-%d %H:%M:%S.ssss
-                    # Parse that...
-                    integral_part, fractional_part = value.split('.')
-                    db_time = time.mktime(
-                        time.strptime(integral_part, "%Y-%m-%d %H:%M:%S")
-                    ) + float('0.' + fractional_part)
-                    # ...and update db to new format.
-                    db[key] = str(db_time)
-                if int(time.time() - db_time) >= expiry_time:
-                    # Rounding to nearest int avoids an issue when we call
-                    # call prune(0) *immediately* after an insertion and might
-                    # get hit by floating point weirdness.
-                    remove.append(key)
-            log.msg("Expiring %d events from %s" % (len(remove), db_path))
-            for key in remove: del db[key]
-            db.close()
-            lock.release()
+            with lock:
+                db = anydbm.open(os.path.join(self.root, db_path), 'c')
+                # The database returned by anydbm is guaranteed to have a
+                # .keys() method, but not necessarily .(iter)items().
+                for key in db.keys():
+                    value = db[key]
+                    try:
+                        # New style databases store seconds since the epoch
+                        db_time = float(value)
+                    except ValueError:
+                        # Old style databases store %Y-%m-%d %H:%M:%S.ssss
+                        # Parse that...
+                        integral_part, fractional_part = value.split('.')
+                        db_time = time.mktime(
+                            time.strptime(integral_part, "%Y-%m-%d %H:%M:%S")
+                        ) + float('0.' + fractional_part)
+                        # ...and update db to new format.
+                        db[key] = str(db_time)
+                    if int(time.time() - db_time) >= expiry_time:
+                        # Rounding to nearest int avoids an issue when we call
+                        # call prune(0) *immediately* after an insertion and might
+                        # get hit by floating point weirdness.
+                        remove.append(key)
+                log.msg("Expiring %d events from %s" % (len(remove), db_path))
+                for key in remove: del db[key]
+                db.close()
 
         return DeferredList(
             [
                 deferToThread(expire_db, db_path, lock)
                 for db_path, lock in self.databases.iteritems()
-            ],
-            consumeErrors=True
+            ]
         )
