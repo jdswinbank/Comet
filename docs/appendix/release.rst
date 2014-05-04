@@ -71,8 +71,5 @@ indicate that it is now a pre-release of the next version of Comet (e.g.,
 ``N.M+1.0-pre``). Make sure that the release history is correct here too.
 Commit and push.
 
-Update the website (on the ``gh-pages`` branch of the repository) to reflect
-the new release.
-
 E-mail an announcement to the IVOA Time Domain Interest Group `mailing list
 <http://www.ivoa.net/mailman/listinfo/voevent>`_.

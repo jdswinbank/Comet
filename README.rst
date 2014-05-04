@@ -12,9 +12,8 @@ The core of Comet is a multi-functional VOEvent broker. It is capable of
 receiving events either by subscribing to one or more remote brokers or by
 direct connection from authors, and can then both process those events locally
 and forward them to its own subscribers. In addition, Comet provides a tool
-for publishing VOEvents to a remote broker.  See the `Comet website
-<http://comet.transientskp.org>`_ for further details, or go straight to the
-`documentation <http://comet.readthedocs.org/>`_.
+for publishing VOEvents to a remote broker.  See the `website
+<http://comet.transientskp.org>`_ for further details and documentation.
 
 Comet is developed targeting Python 2.6 and 2.7. It depends upon `Twisted
 <http://twistedmatrix.com/>`_, `lxml <http://lxml.de/>`_ and `ipaddr-py
