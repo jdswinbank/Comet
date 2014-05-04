@@ -65,7 +65,10 @@ class Event_DB(object):
             remove = []
             lock.acquire()
             db = anydbm.open(os.path.join(self.root, db_path), 'c')
-            for key, value in db.iteritems():
+            # The database returned by anydbm is guaranteed to have a .keys()
+            # method, but not necessarily .(iter)items().
+            for key in db.keys():
+                value = db[key]
                 try:
                     # New style databases store seconds since the epoch
                     db_time = float(value)
