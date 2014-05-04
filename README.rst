@@ -35,9 +35,6 @@ This repository contains the following branches:
     A manuscript describing Comet, submitted for publication in `Astronomy and
     Computing <http://www.journals.elsevier.com/astronomy-and-computing/>`_.
 
-``gh-pages``
-    The source for the `Comet website <http://comet.transientskp.org>`_.
-
 Comet is developed by `John Swinbank <http://swinbank.org/>`_ as part of the
 `LOFAR <http://www.lofar.org/>`_ `Transients Key Project
 <http://www.transientskp.org/>`_. It is indexed by the `Astrophysics Source
