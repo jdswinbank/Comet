@@ -1,11 +1,23 @@
 Obtaining and Installing Comet
 ==============================
 
-Comet is intended to easy to install, but does have a few dependencies. Your
-feedback as to how this process could be streamlined is welcome.
+Installation using pip
+----------------------
+
+The latest version of Comet and all of the tools it depends upon can be
+installed using `pip <http://www.pip-installer.org/>`_. It is generally a good
+idea to use `virtualenv <http://www.virtualenv.org/>`_ to create an isolated,
+self-contained installation::
+
+  $ virtualenv comet
+  $ . comet/bin/activate
+  $ pip install comet
+
+Manual installation
+-------------------
 
 Requirements
-------------
+^^^^^^^^^^^^
 
 Comet is developed targeting Python 2.6 and 2.7. It depends upon:
 
@@ -20,19 +32,17 @@ you might start by taking a look at `virtualenv
 <http://www.virtualenv.org/>`_.
 
 Downloading
------------
+^^^^^^^^^^^
 
-The latest released version of Comet is available to download from `its
-website <http://comet.transientskp.org>`_.
-
-Comet is hosted on `GitHub <http://www.github.com/jdswinbank/Comet>`_. The
-latest version of the source can be obtained using `git
-<http://git-scm.org>`_::
+See the :ref:`release history <sec-history>` to obtain the latest version of
+Comet or check out the source from the `GitHub repository
+<http://www.github.com/jdswinbank/Comet>`_. The latest version of the source
+can be obtained using `git <http://git-scm.org>`_::
 
   $ git clone https://github.com/jdswinbank/Comet.git
 
 Installation
-------------
+^^^^^^^^^^^^
 
 Comet includes a `distutils <http://docs.python.org/distutils/index.html>`_
 setup script which can be used for installation. To install in your
@@ -47,7 +57,7 @@ A number of other options are available: see also::
 Testing
 -------
 
-After installation, you should check that Comet is properly installed. The
+After installation, you should check that Comet is working properly. The
 Twisted framework Comet used by Comet makes this easy with its ``trial`` tool.
 Simply run::
 

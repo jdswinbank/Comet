@@ -1,3 +1,5 @@
+.. _sec-history:
+
 Release History
 ===============
 
@@ -26,7 +28,7 @@ Version 1.0.x
 Version 1.1.x
 -------------
 
-1.1.0 (2014-02-26)
+1.1.0 (2014-02-26) [`Download <https://github.com/jdswinbank/Comet/tarball/1.1.0>`__]
     Improved documentation.
 
     Interval between broadcast test events is user configurable, and they may
