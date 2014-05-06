@@ -20,9 +20,11 @@ to publish your own events to the global VOEvent backbone.
    appendix/index
 
 Comet is developed by `John Swinbank <http://swinbank.org/>`_ as part of the
-`LOFAR Transients Key Project <http://www.transientskp.org/>`_. See the
-:ref:`release history <sec-history>` for the latest vesion, or follow ongoing
-development at the `GitHub repository <https://github.com/jdswinbank/Comet>`_
+`LOFAR Transients Key Project <http://www.transientskp.org/>`_.  It is indexed
+by the `Astrophysics Source Code Library <http://asterisk.apod.com/wp/>`_ as
+`ascl:1404.008 <http://ascl.net/1404.008>`_. See the :ref:`release history
+<sec-history>` for the latest vesion, or follow ongoing development at the
+`GitHub repository <https://github.com/jdswinbank/Comet>`_.
 
 Feedback is always welcome. For bug reports and feature requests, please use
 the `issue tracker <https://github.com/jdswinbank/Comet/issues>`_.
