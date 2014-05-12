@@ -23,7 +23,7 @@ which are not marked as a test::
       http://www.telescope-networks.org/schema/Transport-v1.1.xsd">
     <Origin>ivo://origin</Origin>
     <Response>ivo://response</Response>
-    <TimeStamp>2012-02-08T21:13:53</TimeStamp>
+    <TimeStamp>2012-02-08T21:13:53Z</TimeStamp>
     <Meta>
       <filter type="xpath">/*[local-name()="VOEvent" and @role!="test"]</filter>
     </Meta>

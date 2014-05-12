@@ -31,7 +31,7 @@ def origin_response_message(local_ivo, remote_ivo):
     response = ElementTree.SubElement(root_element, "Response")
     response.text = local_ivo
     timestamp = ElementTree.SubElement(root_element, "TimeStamp")
-    timestamp.text = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
+    timestamp.text = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
     return xml_document(root_element)
 
 def iamalive(local_ivo):
@@ -40,7 +40,7 @@ def iamalive(local_ivo):
     origin = ElementTree.SubElement(root_element, "Origin")
     origin.text = local_ivo
     timestamp = ElementTree.SubElement(root_element, "TimeStamp")
-    timestamp.text = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
+    timestamp.text = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
     return xml_document(root_element)
 
 def iamaliveresponse(local_ivo, remote_ivo):
@@ -68,7 +68,7 @@ def authenticate(local_ivo):
     origin = ElementTree.SubElement(root_element, "Origin")
     origin.text = local_ivo
     timestamp = ElementTree.SubElement(root_element, "TimeStamp")
-    timestamp.text = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
+    timestamp.text = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
     return xml_document(root_element)
 
 def authenticateresponse(local_ivo, remote_ivo, filters):

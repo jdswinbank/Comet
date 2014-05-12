@@ -12,7 +12,7 @@ DUMMY_IAMALIVE = """
             http://www.telescope-networks.org/schema/Transport-v1.1.xsd"
         version="1.0" role="iamalive">
         <Origin>%s</Origin>
-        <TimeStamp>2012-01-01T00:00:00</TimeStamp>
+        <TimeStamp>2012-01-01T00:00:00Z</TimeStamp>
     </trn:Transport>
 """ % (DUMMY_EVENT_IVORN,)
 DUMMY_IAMALIVE = textwrap.dedent(DUMMY_IAMALIVE).strip()
@@ -25,7 +25,7 @@ DUMMY_AUTHENTICATE = """
             http://www.telescope-networks.org/schema/Transport-v1.1.xsd"
         version="1.0" role="authenticate">
         <Origin>%s</Origin>
-        <TimeStamp>2012-01-01T00:00:00</TimeStamp>
+        <TimeStamp>2012-01-01T00:00:00Z</TimeStamp>
     </trn:Transport>
 """ % (DUMMY_EVENT_IVORN,)
 DUMMY_AUTHENTICATE = textwrap.dedent(DUMMY_AUTHENTICATE).strip()
@@ -54,7 +54,7 @@ DUMMY_ACK = """
         version="1.0" role="ack">
         <Origin>%s</Origin>
         <Response>%s</Response>
-        <TimeStamp>2012-01-01T00:00:00</TimeStamp>
+        <TimeStamp>2012-01-01T00:00:00Z</TimeStamp>
     </trn:Transport>
 """ % (DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN)
 DUMMY_ACK = textwrap.dedent(DUMMY_ACK).strip()
@@ -68,7 +68,7 @@ DUMMY_NAK = """
         version="1.0" role="nak">
         <Origin>%s</Origin>
         <Response>%s</Response>
-        <TimeStamp>2012-01-01T00:00:00</TimeStamp>
+        <TimeStamp>2012-01-01T00:00:00Z</TimeStamp>
     </trn:Transport>
 """ % (DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN)
 DUMMY_NAK = textwrap.dedent(DUMMY_NAK).strip()
@@ -82,7 +82,7 @@ DUMMY_AUTHENTICATE = """
         version="1.0" role="authenticate">
         <Origin>%s</Origin>
         <Response>%s</Response>
-        <TimeStamp>2012-01-01T00:00:00</TimeStamp>
+        <TimeStamp>2012-01-01T00:00:00Z</TimeStamp>
         <Meta>
             <filter type="xpath">%s</filter>
         </Meta>
