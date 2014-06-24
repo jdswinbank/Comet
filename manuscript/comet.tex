@@ -30,14 +30,14 @@ where appropriate, responding to the large volumes of transients which will be
 detected by future large scale surveys. The VOEvent Transport Protocol (VTP)
 defines a system by which VOEvents may be disseminated to the community. We
 describe the design and implementation of Comet, a freely available, open
-source implementation of VTP. We use Comet as a base to explore the
+source implementation of VTP\@. We use Comet as a base to explore the
 performance characteristics of the VTP system, in particular with reference to
-meeting the requirements of future survey projects. We describe how,
-with the aid of simple extensions to VTP, Comet can help users filter
-high-volume streams of VOEvents to extract only those which are of relevance
-to particular science cases.  Based on these tests and on the experience of
-developing Comet, we derive a number of recommendations for future refinements
-of the VTP standard.
+meeting the requirements of future survey projects. We describe how, with the
+aid of simple extensions to VTP, Comet can help users filter high-volume
+streams of VOEvents to extract only those which are of relevance to particular
+science cases.  Based on these tests and on the experience of developing
+Comet, we derive a number of recommendations for future refinements of the VTP
+standard.
 
 \end{abstract}
 
@@ -86,7 +86,7 @@ information about a given transient or, if necessary, superseding or
 retracting an earlier message.
 
 VOEvents are published as XML \citep{Bray:2008} documents which should be in
-compliance with schema \citep{Gau:2012, Peterson:2012} produced by the IVOA.
+compliance with schema \citep{Gau:2012, Peterson:2012} produced by the IVOA\@.
 Working in XML enables VOEvent to make extensive use of other relevant IVOA
 standards and enables convenient processing with a wide range of commercial
 and open-source software.
@@ -105,22 +105,22 @@ baseline.
 This manuscript describes Comet, an implementation of all the components
 necessary for interacting with VTP while acting as a test-bed for
 production-level VTP deployments and for new technologies and ``value-added''
-services to assist in addressing the transient deluge. Section \ref{sec:vtp}
+services to assist in addressing the transient deluge. Section~\ref{sec:vtp}
 provides an overview of VTP and discusses the general topology of event
-distribution networks.  \S\ref{sec:design} describes how Comet has been
+distribution networks. \S\ref{sec:design} describes how Comet has been
 designed and built to meet the protocol specifications. \S\ref{sec:filter}
 describes how Comet builds upon VTP to help address future challenges in
-VOEvent filtering and selection.  \S\ref{sec:perf} considers the performance
+VOEvent filtering and selection. \S\ref{sec:perf} considers the performance
 implications of deploying VTP in support of next-generation astronomical
 infrastructure, considering both the scalability of the protocol to large
 numbers of events and to high latency connections. In \S\ref{sec:security} we
 consider the security implications of VOEvents, how they can be addressed at
 the transport level, and describe a system being prototyped in Comet.
 Implications for future revisions of the VTP standard are summarized in
-\S\ref{sec:future}.  \S\ref{sec:avail} describes the terms under which Comet
-is available and how to obtain it, while a summary of the results are
-presented and some more general conclusions drawn for future of VOEvent
-transport in \S\ref{sec:conclusions}.
+\S\ref{sec:future}. \S\ref{sec:avail} describes the terms under which Comet is
+available and how to obtain it, while a summary of the results are presented
+and some more general conclusions drawn for future of VOEvent transport in
+\S\ref{sec:conclusions}.
 
 \section{VOEvent Transport Protocol}
 \label{sec:vtp}
@@ -197,7 +197,7 @@ only publish to one broker and ultimately their event will be distributed to
 all entities on the network. This is not only efficient, it is also robust:
 the failure of any given entity can only cause local disruption to the
 distribution system. The topology of such a network, and the path a VOEvent
-packet might take across it, is shown in Fig. \ref{fig:vtp}.
+packet might take across it, is shown in Fig.~\ref{fig:vtp}.
 
 In addition to passing VOEvent XML documents, VTP defines a ``Transport''
 document type. Transport documents are used for the heartbeat messages between
@@ -304,8 +304,8 @@ class VOEventReceiver(Protocol):
 
 When talking to the network, Twisted provides the \textit{Protocol} as an
 abstraction for managing events. A protocol defines the interaction that a
-particular component of the system has with the network. For example, Listing
-\ref{lst:event} shows a simplified version of the protocol for Comet's
+particular component of the system has with the network. For example,
+Listing~\ref{lst:event} shows a simplified version of the protocol for Comet's
 \texttt{VOEventReceiver}. This is the part of the broker which listens to the
 network for submissions from authors. Four separate events are handled by this
 protocol:
@@ -340,7 +340,7 @@ network events. However, it does not address issues regarding concurrency. As
 described in \S\ref{sec:vtp}, VTP requires that even immediately after
 receiving an event subscribers must be ready to accept another: there can be
 no delay while the event is ingested. Contrast this with the model described
-above and outlined in Listing \ref{lst:event}: here, when an event is
+above and outlined in Listing~\ref{lst:event}: here, when an event is
 received, each of the functions \texttt{parse()}, \texttt{is\_valid()},
 \texttt{acknowledge()}, \texttt{process\_event()} and
 \texttt{close\_connection()} is called in turn.  If these operations are not
@@ -362,7 +362,7 @@ available. For example, we could define a version of
 representing a parsed version of the VOEvent document, returns a promise to
 eventually parse the document in the future and then make it available for
 further processing. We can then queue up our other functions to run only when
-parsing is complete. For example, see Listing \ref{lst:deferred}, in which we
+parsing is complete. For example, see Listing~\ref{lst:deferred}, in which we
 queue up a number of callbacks to be run when parsing is complete and also add
 an ``errback'' which handles logging a message if any of the callbacks fail to
 run successfully.
@@ -379,7 +379,7 @@ def stringReceived(self, data):
   d.addCallback(close_connection)
 \end{minted}
 \caption{A version of \texttt{VOEventReceiver.stringReceived()} (shown in
-Listing \ref{lst:event}) based on deferred processing.}
+Listing~\ref{lst:event}) based on deferred processing.}
 \label{lst:deferred}
 \end{listing}
 
@@ -389,7 +389,7 @@ create a dedicated thread which is devoted to parsing the data, and have it
 run concurrently with the rest of the application. When that thread completes,
 the deferred fires with its result. Conveniently, Twisted makes it easy to
 apply this pattern to a blocking function such as our \texttt{parse()}: see
-Listing \ref{lst:deferToThread}.
+Listing~\ref{lst:deferToThread}.
 
 \begin{listing}
 \begin{minted}[frame=lines]{python}
@@ -708,9 +708,9 @@ VOEvent brokers are processing perhaps a few hundred events per day, so the
 total computational and storage demands are extremely modest. However, it is
 informative to consider both how Comet and the VTP architecture scale to cope
 with the millions of events per night promised by future facilities such as
-LSST. In this section, we quantify both the number of events Comet is capable
-of processing, the latency which it introduces to the event stream, and the
-number of subscribers which a broker can conveniently service.
+LSST\@. In this section, we quantify both the number of events Comet is
+capable of processing, the latency which it introduces to the event stream,
+and the number of subscribers which a broker can conveniently service.
 
 \subsection{Test system configuration}
 \label{sec:perf:system}
@@ -720,7 +720,7 @@ connecting to a broker and sending it events which the broker then distributes
 to one or more subscribers. The processes acting as authors, brokers and
 subscribers were all run on the same modest desktop system, based on an Intel
 Core i7 940 CPU\footnote{Four cores with two threads each running at
-2.93\,GHz.} and 8\,GiB RAM. Storage was provided by two 7200\,RPM magnetic
+2.93\,GHz.} and 8\,GiB RAM\@. Storage was provided by two 7200\,RPM magnetic
 disks configured as a RAID-0 array. The system was running
 Debian\footnote{\url{http://www.debian.org/}} GNU/Linux with kernel version
 3.13.
@@ -793,8 +793,8 @@ was created.}
 A script was used to generate 3000 individual VOEvent packets and submit them
 to a broker at intervals of 0.3 seconds.  Each packet was compliant with the
 VOEvent schema, but carried a relatively small payload amounting to little
-more than a timestamp reflecting when the event was created: see Listing
-\ref{lst:testmessage} for an example.
+more than a timestamp reflecting when the event was created: see
+Listing~\ref{lst:testmessage} for an example.
 
 A plugin (\S\ref{sec:design:plugin}) was written which, whenever an event of
 the form described above is received, compares the timestamp in the event with
@@ -823,9 +823,10 @@ Comet repository (\S\ref{sec:avail}).
 \end{figure}
 
 The distribution of latencies among the received events when this test was run
-in the default configuration is shown in the top panel of Fig.
-\ref{fig:latency}. The mean latency was 0.022\,s with a standard deviation of
-0.011\,s; the longest recorded latency for any event was 0.171\,s.
+in the default configuration is shown in the top panel of
+Fig.~\ref{fig:latency}. The mean latency was 0.022\,s with a standard
+deviation of 0.011\,s; the longest recorded latency for any event was
+0.171\,s.
 
 As described in \S\ref{sec:design:twisted}, Twisted provides an event-driven
 framework. The core of this framework is the ``reactor'', which provides a
@@ -839,7 +840,7 @@ testing is based on the \texttt{poll()} system call \citep{Posix1:2013}.
 However, modern Linux systems provide the alternative \texttt{epoll()} call
 \citep{Kerrisk:2014} which provides a more efficient alternative. Twisted
 provides a reactor which is based upon \texttt{epoll()}. In the middle panel of
-Fig. \ref{fig:latency} the same experiment was repeated, but with both broker
+Fig.~\ref{fig:latency} the same experiment was repeated, but with both broker
 and subscriber based on this alternative reactor. This provided a somewhat
 improved mean latency of 0.019\,s with a standard deviation of 0.011\,s, and a
 reduced maximum latency of 0.130\,s.
@@ -858,7 +859,7 @@ not survive if the system were powered down or rebooted: whether this risk is
 appropriate in a production deployment would be a matter of judgement.
 
 The results based on the \texttt{tmpfs} filesystem are shown in the bottom
-panel of Fig. \ref{fig:latency}. Clearly, these latencies are both lower (mean
+panel of Fig.~\ref{fig:latency}. Clearly, these latencies are both lower (mean
 0.0063\,s, maximum 0.013\,s) and more consistent (standard deviation
 0.00033\,s) than the previous tests.
 
@@ -888,19 +889,19 @@ recorded the latency of each event received to a log file.
 Each Comet process takes approximately 32\,MB of memory, used to hold the
 Comet code itself, the associated libraries, the Python interpreter, and the
 overhead associated with the Docker container. The test system contained 8\,GB
-RAM. When testing with 256 subscribers, the machine ran out of memory and
+RAM\@. When testing with 256 subscribers, the machine ran out of memory and
 started to swap to disk. This set an upper bound on the number of subscribers
 which could be tested.
 
 \subsubsection{Results}
 
-Figure \ref{fig:subscribers} shows the event latency as a function of
+Figure~\ref{fig:subscribers} shows the event latency as a function of
 subscriber count. The latency increases gradually with increasing subscriber
 count, from a mean of 0.0063\,s for a single subscriber to 0.0931\,s for 256
 subscribers, the highest number tested: even at this level, the mean latency
 was less than 0.1\,s. The maximum latency rose to a peak of 0.49\,s.
 
-A latency of around 0.1\,s is comparable to a long range (e.g. transatlantic)
+A latency of around 0.1\,s is comparable to a long range (e.g.\ transatlantic)
 network round trip times and is at a level where it may start to impact on
 time-critical astronomical applications.
 
@@ -948,15 +949,15 @@ broker running on the test system.
 \label{sec:perf:total:setup}
 
 A script was used to generate 10000 individual VOEvent messages, which were
-stored in RAM. After all of the events had been generated, the author started
-submitting them to a Comet broker which had a single subscriber attached. The
-total time taken by the author from the start of the submission of the first
-event to the closing of the connection after the submission of the last event
-was measured by recording its running time. The total time from the receipt of
-the first event to the receipt of the last event by the subscriber was
-measured by taking the difference between the latest and the earliest
-timestamps recorded in the event database (\S\ref{sec:design:dedup}). These
-times are then converted into an per-second event rate.
+stored in RAM\@. After all of the events had been generated, the author
+started submitting them to a Comet broker which had a single subscriber
+attached. The total time taken by the author from the start of the submission
+of the first event to the closing of the connection after the submission of
+the last event was measured by recording its running time. The total time from
+the receipt of the first event to the receipt of the last event by the
+subscriber was measured by taking the difference between the latest and the
+earliest timestamps recorded in the event database (\S\ref{sec:design:dedup}).
+These times are then converted into an per-second event rate.
 
 The number of concurrent connections between the author and the broker was
 varied logarithmically. For each number of connections, the experiment was
@@ -979,7 +980,7 @@ repeated 10 times.
   \label{fig:throughput}
 \end{figure}
 
-Figure \ref{fig:throughput} shows the how the event rate measured at both
+Figure~\ref{fig:throughput} shows the how the event rate measured at both
 author and subscriber varies with the number of concurrent connections. With a
 single connection a rate of 283.7 events/second at the author and 283.8
 events/second at the subscriber is achieved. This increases to a peak of 519.2
@@ -1012,7 +1013,7 @@ Linux kernel is not optimized to handle them efficiently. Indeed, at very high
 connection counts, the kernel logged warnings that it was was under a
 ``\textsc{syn} flood'' attack \citep{CERT:1996}. Under this load, connections
 may be dropped or rejected by the kernel, leading to events never reaching
-their destination, as seen in the lowest panel of Fig. \ref{fig:throughput}.
+their destination, as seen in the lowest panel of Fig.~\ref{fig:throughput}.
 Many options within the kernel may be tuned to improve its performance under
 these network loads. However, since the peak throughput was already limited by
 Comet's CPU requirements at lower connection counts, they were not
@@ -1029,7 +1030,7 @@ that such high bandwidth cannot be achieved here when submitting events.
 
 Without special tuning, a throughput of over 500 events per second is more
 than twice that required to service the average event rate predicted from
-LSST. Further, this test was limited by CPU performance on desktop-class
+LSST\@. Further, this test was limited by CPU performance on desktop-class
 hardware that will be substantially more than a decade old before LSST is
 commissioned. In these terms, servicing an LSST event stream with a VTP based
 broker seems eminently plausible, although it is worth emphasizing that this
@@ -1085,7 +1086,7 @@ acknowledgement, and then closing the connection. Sending the event and
 waiting for acknowledgement involves a network round-trip.  However, data is
 transmitted over TCP \citep{Cerf:1974}, we use the standard TCP mechanisms for
 creating and terminating connections, each of which involves another network
-round trip. This process is illustrated in Fig. \ref{fig:tcp}: the complete
+round trip. This process is illustrated in Fig.~\ref{fig:tcp}: the complete
 transaction involved in submitting a single event to the broker, given a
 network round trip time of $t_\mathrm{RT}$, takes $3 t_\mathrm{RT}$. In
 practice, after transmitting the final \textsc{fin} packet, the author may
@@ -1096,7 +1097,7 @@ sequentially, and given a round trip time of, say, 500\,ms, this would limit
 the rate at which events can be sent to 1 per second, or 43200 in a 12 hour
 period. This is far short of the throughput discussed in
 \S\ref{sec:perf:total}, and certainly inadequate for the rate expected from
-instruments such as LSST.  However, the same section also demonstrated that
+instruments such as LSST\@.  However, the same section also demonstrated that
 events may be sent concurrently over multiple connections. Here, we
 investigate to what extent that approach can mitigate this issue.
 
@@ -1106,7 +1107,7 @@ Events were generated, sent the the broker, and thence onwards to a single
 subscriber as per \S\ref{sec:perf:total:setup}, and was carried out as
 described in that section. Connection counts were again increased
 logarithmically.  Given the relative stability of the throughput (at least for
-modest connection counts) shown in Fig \ref{fig:throughput}, a single set of
+modest connection counts) shown in Fig~\ref{fig:throughput}, a single set of
 10000 events was sent for each level of concurrency.
 
 Link-level network latency was simulated using NetEm \citep{Hemminger:2005},
@@ -1124,7 +1125,7 @@ latency of $t_\mathrm{RT} / 2$ at both the author and the subscriber
 interfaces. However, this is complicated in the test system since the
 subscriber also communicates with the broker over its interface. Therefore,
 instead the whole delay was applied to the output of the author. Given the
-symmetric nature of Fig. \ref{fig:tcp}, the observed effect is identical.
+symmetric nature of Fig.~\ref{fig:tcp}, the observed effect is identical.
 
 \subsubsection{Results}
 
@@ -1140,7 +1141,7 @@ symmetric nature of Fig. \ref{fig:tcp}, the observed effect is identical.
   \label{fig:rtt}
 \end{figure}
 
-Figure \ref{fig:rtt} shows how the throughput varies with the number of
+Figure~\ref{fig:rtt} shows how the throughput varies with the number of
 concurrent connections for a variety of network round trip times. As expected,
 at low concurrencies, the throughput is extremely low: the network round trip
 time completely dominates the transmission rate. However, this is
@@ -1194,7 +1195,7 @@ such as OpenPGP \citep{Callas:2007} or XML Digital Signatures
 identical to the event to which the signature was originally applied.
 
 Work has already been carried out on applying XML Digital Signatures to
-VOEvents \citep{Allen:2008} outside the framework of VTP. However, the
+VOEvents \citep{Allen:2008} outside the framework of VTP\@. However, the
 implementation is relatively complex: not only is there a paucity of libraries
 providing a convenient implementation of the standard, but even the library
 the authors chose to use\footnote{XMLSec;
@@ -1203,10 +1204,10 @@ meet their requirements.
 
 On the other hand, both commercial and open-source implementations of OpenPGP
 are widely available both as stand-alone tools and with programming language
-interfaces. Furthermore, \citet{Denny:2008} describes a mechanism for attaching
-an OpenPGP signature to a VOEvent with specific reference to VTP. For these
-reasons, a prototype version of Comet with OpenPGP support has been made
-available for testing.
+interfaces. Furthermore, \citet{Denny:2008} describes a mechanism for
+attaching an OpenPGP signature to a VOEvent with specific reference to VTP\@.
+For these reasons, a prototype version of Comet with OpenPGP support has been
+made available for testing.
 
 \subsection{Implementation considerations}
 
@@ -1293,7 +1294,7 @@ See \S\ref{sec:avail} for information on how to obtain both released and
 experimental versions of Comet.
 
 Comet provides comprehensive support for all the modes in which event
-authentication may be used within VTP. Specifically:
+authentication may be used within VTP\@. Specifically:
 
 \begin{itemize}
 
@@ -1345,10 +1346,10 @@ is here that performance issues become critical.
 
 A simple test was performed to measure the time taken to check the signature
 on a VOEvent packet. 1000 distinct VOEvent packets of the form shown in
-Listing \ref{lst:testmessage} were generated and signed using the Comet
+Listing~\ref{lst:testmessage} were generated and signed using the Comet
 codebase. Each signature in turn was then checked for validity. The total
 time taken to check all signatures on the system described in
-\ref{sec:perf:system} was 22.90\,s, or around 0.023\,s per event. This is
+\S\ref{sec:perf:system} was 22.90\,s, or around 0.023\,s per event. This is
 broadly comparable to values which might be expected due to network latency,
 and is a factor of $\sim3.6$ greater than the latency introduced by the Comet
 broker when not checking a signature (\S\ref{sec:perf:latency:results}). While
@@ -1368,7 +1369,7 @@ date.
 \subsection{Event identity}
 \label{sec:future:identity}
 
-Section \ref{sec:design:dedup} discussed the question of the identity of a
+Section~\ref{sec:design:dedup} discussed the question of the identity of a
 VOEvent. In particular, it considered whether two events encoding identical
 information but in with a different (perhaps only marginally) serialization
 could be regarded as the same event. This is not well defined by the current
@@ -1385,7 +1386,7 @@ such if it is unambiguously defined.
 
 It is an implicit requirement of VTP and of event authentication techniques
 based on OpenPGP signatures that the \textit{bitstream} of a packet must be
-unchanged by the process of transmission over VTP. This requirement goes
+unchanged by the process of transmission over VTP\@. This requirement goes
 beyond the straightforward requirement that the \textit{information contained
 within} an event must be unchanged. The more stringent requirements of VTP are
 not explicit in the current version of the protocol definition.
@@ -1393,7 +1394,7 @@ not explicit in the current version of the protocol definition.
 \subsection{Event de-duplication}
 \label{sec:future:dedup}
 
-Section \ref{sec:design:dedup} described de-duplication to avoid loops on a
+Section~\ref{sec:design:dedup} described de-duplication to avoid loops on a
 VTP network. This requirement is not explicit within the current VTP
 definition. Comet has demonstrated an effective approach to this problem
 building upon \S\S\ref{sec:future:identity} and \ref{sec:future:immutability}.
@@ -1401,7 +1402,7 @@ building upon \S\S\ref{sec:future:identity} and \ref{sec:future:immutability}.
 \subsection{Filtering}
 \label{sec:future:filter}
 
-Section \ref{sec:filter} demonstrated that the design of VTP is easily
+Section~\ref{sec:filter} demonstrated that the design of VTP is easily
 extensible to accommodate relatively complex broker-side filtering
 capabilities. However, the implementation of these filters in Comet requires a
 non-standard extension to the protocol. Future VTP revisions should consider a
@@ -1412,7 +1413,7 @@ filters required.
 \subsection{Bulk event submission}
 \label{sec:future:bulk}
 
-Section \ref{sec:perf} demonstrated that Comet was capable of receiving and
+Section~\ref{sec:perf} demonstrated that Comet was capable of receiving and
 distributing large numbers of events with relatively low latency. However,
 \S\S\ref{sec:perf:total} and \ref{sec:perf:highlatency} demonstrated that
 the major limiting factor on performance, in particular in the case of high
@@ -1444,7 +1445,7 @@ website\footnote{\url{http://comet.transientskp.org/}}.
 The VOEvent Transport Protocol is an intentionally minimal mechanism for
 distributing notifications of transient celestial events in the form of
 VOEvent messages. Comet has been developed to implement all the core aspects
-of VTP. It is production-ready software, and is freely available and ready to
+of VTP\@. It is production-ready software, and is freely available and ready to
 be integrated into a variety of scientific projects.
 
 This manuscript has described how Comet has been designed to meet the
