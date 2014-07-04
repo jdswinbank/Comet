@@ -15,9 +15,11 @@ from ..protocol import VOEventSubscriberFactory
 
 class VOEventSubscriberFactoryTestCase(unittest.TestCase):
     def setUp(self):
-        factory = VOEventSubscriberFactory(DUMMY_IVORN)
-        self.proto = factory.buildProtocol(('127.0.0.1', 0))
-        self.proto.makeConnection(proto_helpers.StringTransport())
+        self.clock = task.Clock()
+        self.factory = VOEventSubscriberFactory(DUMMY_IVORN)
+        self.factory.callLater = self.clock.callLater
+        self.transport = proto_helpers.StringTransportWithDisconnection()
+        self.proto = self.factory.buildProtocol(('127.0.0.1', 0))
 
     def tearDown(self):
         self.proto.connectionLost()
@@ -25,13 +27,26 @@ class VOEventSubscriberFactoryTestCase(unittest.TestCase):
     def test_protocol(self):
         self.assertIsInstance(self.proto, VOEventSubscriber)
 
+    def test_reconnect_delay(self):
+        # Retries and delay are not reset immediately on connection, but
+        # rather only after RESET_DELAY seconds have passed.
+        self.factory.retries = VOEventSubscriberFactory.retries + 1
+        self.factory.delay = VOEventSubscriberFactory.delay + 1
+        self.proto.makeConnection(self.transport)
+        self.assertNotEqual(self.factory.retries, VOEventSubscriberFactory.retries)
+        self.assertNotEqual(self.factory.delay, VOEventSubscriberFactory.delay)
+        self.clock.advance(VOEventSubscriberFactory.RESET_DELAY)
+        self.assertEqual(self.factory.retries, VOEventSubscriberFactory.retries)
+        self.assertEqual(self.factory.delay, VOEventSubscriberFactory.delay)
+
 
 class VOEventSubscriberTimeoutTestCase(unittest.TestCase):
     def setUp(self):
         factory = VOEventSubscriberFactory(DUMMY_IVORN)
-        self.proto = factory.buildProtocol(('127.0.0.1', 0))
         self.clock = task.Clock()
-        self.proto.callLater = self.clock.callLater
+        factory.callLater = self.clock.callLater
+        self.proto = factory.buildProtocol(('127.0.0.1', 0))
+        self.proto.callLater = self.clock.callLater # Original in TimeoutMixin
         self.tr = proto_helpers.StringTransportWithDisconnection()
         self.proto.makeConnection(self.tr)
         self.tr.protocol = self.proto
@@ -44,6 +59,7 @@ class VOEventSubscriberTimeoutTestCase(unittest.TestCase):
 class VOEventSubscriberTestCase(unittest.TestCase):
     def setUp(self):
         factory = VOEventSubscriberFactory(DUMMY_SERVICE_IVORN)
+        factory.callLater = task.Clock().callLater
         self.proto = factory.buildProtocol(('127.0.0.1', 0))
         self.tr = proto_helpers.StringTransport()
         self.proto.makeConnection(self.tr)

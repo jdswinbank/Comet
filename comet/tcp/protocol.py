@@ -225,8 +225,10 @@ class VOEventSubscriber(EventHandler, TimeoutMixin):
             )
 
 class VOEventSubscriberFactory(ReconnectingClientFactory):
+    RESET_DELAY = 5 # Reset exponential backoff after connection survives for
+                    # at least RESET_DELAY seconds
     protocol = VOEventSubscriber
-
+    callLater = reactor.callLater
     def __init__(self,
         local_ivo, validators=None, handlers=None, filters=None,
     ):
@@ -234,12 +236,19 @@ class VOEventSubscriberFactory(ReconnectingClientFactory):
         self.handlers = handlers or []
         self.validators = validators or []
         self.filters = filters or []
+        # Calling resetDelay() now is not necessary, but we want
+        # self.reset_call always to exist when we use it later
+        self.reset_call = self.callLater(0, self.resetDelay)
 
     def buildProtocol(self, addr):
-        self.resetDelay()
+        self.reset_call = self.callLater(self.RESET_DELAY, self.resetDelay)
         p = self.protocol(self.filters)
         p.factory = self
         return p
+
+    def stopFactory(self):
+        if self.reset_call.active():
+            self.reset_call.cancel()
 
     def clientConnectionFailed(self, connector, reason):
         log.msg(
@@ -256,6 +265,8 @@ class VOEventSubscriberFactory(ReconnectingClientFactory):
             (connector.getDestination(), self.delay, "" if self.delay == 1 else "s"),
             system="VOEventSubscriberFactory"
         )
+        if self.reset_call.active():
+            self.reset_call.cancel()
         ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
 
 
