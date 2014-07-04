@@ -156,7 +156,6 @@ class EventHandler(ElementSender):
 class VOEventSubscriber(EventHandler, TimeoutMixin):
     ALIVE_INTERVAL = 120 # If we get no traffic for ALIVE_INTERVAL seconds,
                          # assume our peer forgot us.
-    callLater = reactor.callLater
     def __init__(self, filters=[]):
         self.filters = filters
 
@@ -228,7 +227,7 @@ class VOEventSubscriberFactory(ReconnectingClientFactory):
     RESET_DELAY = 5 # Reset exponential backoff after connection survives for
                     # at least RESET_DELAY seconds
     protocol = VOEventSubscriber
-    callLater = reactor.callLater
+    callLater = reactor.callLater # Can be replaced in test cases
     def __init__(self,
         local_ivo, validators=None, handlers=None, filters=None,
     ):
