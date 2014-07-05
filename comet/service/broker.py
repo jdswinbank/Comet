@@ -158,12 +158,6 @@ def makeService(config):
         config['handlers'].append(EventRelay(broadcaster_factory))
 
     if config['receive']:
-        validators = [
-            CheckPreviouslySeen(event_db),
-            CheckSchema(
-                os.path.join(comet.__path__[0], "schema/VOEvent-v2.0.xsd")
-            )
-        ]
         receiver_factory = VOEventReceiverFactory(
             local_ivo=config['local-ivo'],
             validators=[
