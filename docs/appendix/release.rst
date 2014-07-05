@@ -62,7 +62,7 @@ release branch is marked as active (i.e. that documentation for that branch
 will be built). Normally, the most recent release should be marked as the
 "default version".
 
-Push an update to `PyPI <http://pypi.python.org>/`_. Should be as simple as::
+Push an update to `PyPI <http://pypi.python.org>`_. Should be as simple as::
 
   $ python setup.py sdist upload.
 
