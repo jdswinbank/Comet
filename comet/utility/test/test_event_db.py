@@ -1,5 +1,7 @@
 import tempfile
 import shutil
+from multiprocessing.pool import ThreadPool
+from itertools import repeat
 
 from twisted.trial import unittest
 
@@ -18,9 +20,16 @@ class Event_DB_TestCase(unittest.TestCase):
 
     def test_seen(self):
         # Seen event -> return False
-        self.event_db.record_event(self.event)
         self.event_db.check_event(self.event)
         self.assertFalse(self.event_db.check_event(self.event))
+
+    def test_threadsafe(self):
+        # Ensure that the eventdb is thread-safe by hammering on it with
+        # multiple threads simultaneously. We should only get one positive.
+        pool = ThreadPool(10)
+        results = pool.map(self.event_db.check_event, repeat(self.event, 1000))
+        self.assertEqual(results.count(True), 1)
+        self.assertEqual(results.count(False), 999)
 
     def test_prune(self):
         def done_prune(result):
