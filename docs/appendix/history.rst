@@ -6,6 +6,21 @@ Release History
 See the :ref:`release procedure <sec-release>` section for more details on
 version numbering and how releases are made.
 
+Version 2.0.x
+-------------
+
+2.0.0 (In progress)
+    When subscribing to a remote broker, we wait for a short period after the
+    initial connection is made before marking it as successful. This means
+    that if the broker rapidly drops the connection (e.g. due to an
+    authentication failure), we retry the connection with an exponential
+    back-off rather than an immediate reconnection (`GitHub #29`_).
+
+    Timestamps in ``iamalive`` messages are marked as being in UTC.
+
+.. _GitHub #29: https://github.com/jdswinbank/Comet/issues/29
+
+
 Version 1.1.x
 -------------
 
