@@ -38,23 +38,11 @@ class Event_DB(object):
                 if db.has_key(key):
                     return False # Should not forward
                 else:
+                    db[key] = str(time.time())
                     return True # Ok to forward
             finally:
                 db.close()
         finally:
-            self.databases[db_path].release()
-
-    def record_event(self, event):
-        """
-        Record an event as having been seen in the database.
-        """
-        db_path, key = self._get_event_details(event)
-        try:
-            self.databases[db_path].acquire()
-            db = anydbm.open(os.path.join(self.root, db_path), 'c')
-            db[key] = str(time.time())
-        finally:
-            db.close()
             self.databases[db_path].release()
 
     def prune(self, expiry_time):
