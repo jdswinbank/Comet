@@ -6,7 +6,7 @@ Release History
 Version 1.1.x
 -------------
 
-1.1.1 (In progress)
+1.1.1 (2014-07-08) [`Download <https://github.com/jdswinbank/Comet/tarball/1.1.1>`__]
     Fix a bug which could result in the same VOEvent message being processed
     multiple times (`GitHub #30`_).
 
