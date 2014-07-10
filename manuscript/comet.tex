@@ -107,20 +107,20 @@ necessary for interacting with VTP while acting as a test-bed for
 production-level VTP deployments and for new technologies and ``value-added''
 services to assist in addressing the transient deluge. Section~\ref{sec:vtp}
 provides an overview of VTP and discusses the general topology of event
-distribution networks. \S\ref{sec:design} describes how Comet has been
-designed and built to meet the protocol specifications. \S\ref{sec:filter}
-describes how Comet builds upon VTP to help address future challenges in
-VOEvent filtering and selection. \S\ref{sec:perf} considers the performance
-implications of deploying VTP in support of next-generation astronomical
-infrastructure, considering both the scalability of the protocol to large
-numbers of events and to high latency connections. In \S\ref{sec:security} we
-consider the security implications of VOEvents, how they can be addressed at
-the transport level, and describe a system being prototyped in Comet.
-Implications for future revisions of the VTP standard are summarized in
-\S\ref{sec:future}. \S\ref{sec:avail} describes the terms under which Comet is
-available and how to obtain it, while a summary of the results are presented
-and some more general conclusions drawn for future of VOEvent transport in
-\S\ref{sec:conclusions}.
+distribution networks. Section~\ref{sec:design} describes how Comet has been
+designed and built to meet the protocol specifications.
+Section~\ref{sec:filter} describes how Comet builds upon VTP to help address
+future challenges in VOEvent filtering and selection. Section~\ref{sec:perf}
+considers the performance implications of deploying VTP in support of
+next-generation astronomical infrastructure, considering both the scalability
+of the protocol to large numbers of events and to high latency connections. In
+\S\ref{sec:security} we consider the security implications of VOEvents, how
+they can be addressed at the transport level, and describe a system being
+prototyped in Comet.  Implications for future revisions of the VTP standard
+are summarized in \S\ref{sec:future}. Section \ref{sec:avail} describes the
+terms under which Comet is available and how to obtain it, while a summary of
+the results are presented and some more general conclusions drawn for future
+of VOEvent transport in \S\ref{sec:conclusions}.
 
 \section{VOEvent Transport Protocol}
 \label{sec:vtp}
@@ -131,11 +131,16 @@ and some more general conclusions drawn for future of VOEvent transport in
   \end{center}
 
   \caption{An overview of the passage of a VOEvent through a VTP network. The
-  arrows indicate data flow. First the event is sent by an author to a single
-  broker. This broker then distributes it to all of its subscribers, which may
-  include other brokers, which, in turn, redistribute the event until every
-  entity on the network has received a copy.  Adapted from
-  \citet{Swinbank:2014}.}
+  network roles and connection types described in \S\ref{sec:vtp} are all
+  represented. Arrows indicate the direction of data flow; their style
+  represents the type of connection. The dashed arrow is an author-to-broker
+  connection, while solid arrows are broker-to-subscriber connections
+  (broker-to-broker connections are equivalent). First the event is sent by an
+  author to a single broker. This broker then distributes it to all of its
+  subscribers, which may include other brokers, which, in turn, redistribute
+  the event until every entity on the network has received a single copy:
+  de-duplication, where necessary, is applied as discussed in
+  \S\ref{sec:design:dedup}. Adapted from \citet{Swinbank:2014}.}
 
   \label{fig:vtp}
 \end{figure}
@@ -163,7 +168,7 @@ by means of the network. To wit, VTP defines the following network roles:
 \end{description}
 
 Connections between these entities take place over TCP \citep{Cerf:1974}. The
-standard defines three types of connection:
+VTP standard defines three types of connection:
 
 \begin{description}
 
@@ -184,10 +189,10 @@ standard defines three types of connection:
 
 \end{description}
 
-Note that the the broker-to-subscriber connection remains open at all times,
-even when a subscriber has recently received an event. The standard mandates
-that the subscriber must always be prepared to receive more events, even while
-a previous event is still being processed: otherwise, a backlog of events
+Note that the broker-to-subscriber connection remains open at all times, even
+when a subscriber has recently received an event. The standard mandates that
+the subscriber must always be prepared to receive more events, even while a
+previous event is still being processed: otherwise, a backlog of events
 waiting to be sent to a particular subscriber could build up and overload the
 broker.
 
@@ -403,11 +408,21 @@ def deferred_parse(data):
 \label{lst:deferToThread}
 \end{listing}
 
-
 Although the examples presented in this section are only intended to be
 illustrative, they demonstrate the concepts of asynchronous, event-driven
 programming upon which Comet is built and are fundamental to understanding its
 operation.
+
+It is worth emphasizing that the techniques described in this section are not
+unique to Twisted. Other frameworks such as
+\texttt{gevent}\footnote{\url{http://www.gevent.org/}} and
+\texttt{asyncio}\footnote{Recently added to the Python standard
+library; \url{https://docs.python.org/3.4/library/asyncio.html}} provide
+implementations of similar capabilities in Python, and similar libraries are
+available for many other languages. However, the rich software ecosystem
+supported by Twisted, combined with its demonstrated ability to deliver
+acceptable performance (\S\ref{sec:perf}), have provided an excellent
+platform upon which to develop Comet.
 
 \subsection{Comet architecture}
 \label{sec:design:architecture}
@@ -518,11 +533,11 @@ which is seen by a Comet daemon and storing it, together with the time and
 date at which the packet was seen, in a DBM-style \citep{DBM:1979} persistent
 database\footnote{``DBM-style'' databases provide mappings between ``keys''
 and ``values'' in the manner of an associative array. Various libraries
-implementing this style of database exist exist; Comet uses Python's
-\texttt{anydbm} interface, which automatically chooses a particular
-implementation based upon the platform on which it is running.}. When an event
-is received, its SHA-1 hash is calculated and compared against the contents of
-the database to establish if it has been seen before.
+implementing this style of database exist; Comet uses Python's \texttt{anydbm}
+interface, which automatically chooses a particular implementation based upon
+the platform on which it is running.}. When an event is received, its SHA-1
+hash is calculated and compared against the contents of the database to
+establish if it has been seen before.
 
 Each individual SHA-1 hash is stored as 40 bytes, plus a further 13 bytes are
 used to records the timestamp. The total storage requirement is therefore very
@@ -622,7 +637,7 @@ as command line options.
 \section{Filtering events}
 \label{sec:filter}
 
-Next generation telescopes such as LSST promise to detect and announce
+Next-generation telescopes such as LSST promise to detect and announce
 transients using VOEvent at a rate of millions of events per night.  It is
 unlikely that most individual subscribers will have a use for all of these
 events. Winnowing that event stream down so that each subscriber receives only
@@ -699,6 +714,31 @@ metadata embedded at any time during a VTP session. Comet looks for XPath
 expressions encoded in this metadata and installs them as filters for the
 subscriber; other brokers which comply with the protocol but do not support
 this form of filtering should simply ignore the message.
+
+\subsection{Alternative filtering systems}
+
+XPath provides a convenient, standardized \citep{Clark:1999} and expressive
+language for accessing and performing simple calculations and comparisons
+based upon the contents of XML documents. Incorporating XPath based filtering
+into Comet was straightforward and doing so provides a powerful means of
+winnowing high-volume VOEvent streams.
+
+However, XPath is not appropriate for meeting every possible use case. In
+particular, XPath expressions are evaluated over individual VOEvents, with no
+reference to their surrounding context. Consequently, XPath expressions cannot
+be used to draw scientific conclusions based on the evolving contents of a
+stream of events. Further, XPath provides no specialist astronomical or
+mathematical routines: it is impractical to use it for filtering based on
+operations beyond simple arithmetic and comparisons.
+
+Given these considerations, it is likely that addressing some use cases will
+require a different approach to filtering than that currently supported by
+Comet. The VTP system explicitly allows for this by encouraging
+brokers to layer arbitrary ``added value'' services on top of the basic VTP
+system: a richer, more astronomically-focused and context-aware filtering
+system is an example of the possibilities. Indeed, such a service has
+precedent in the form of SkyAlert \citep{Williams:2009}, which provides a
+Python-based interface to filtering events.
 
 \section{Performance}
 \label{sec:perf}
@@ -781,7 +821,7 @@ author through a Comet broker and on to a Comet-based subscriber.
     <Description>Broker test event generated by Comet 1.1.0.</Description>
     <Reference uri="http://comet.transientskp.org/"/>
   </What>
-<voe:VOEvent>
+</voe:VOEvent>
 \end{minted}
 \caption{An example of the form of VOEvent used for benchmark testing. The
 \texttt{ivorn} attribute of the \texttt{VOEvent} element and the \texttt{Date}
@@ -839,11 +879,12 @@ The default reactor implementation used by Twisted on the system used for
 testing is based on the \texttt{poll()} system call \citep{Posix1:2013}.
 However, modern Linux systems provide the alternative \texttt{epoll()} call
 \citep{Kerrisk:2014} which provides a more efficient alternative. Twisted
-provides a reactor which is based upon \texttt{epoll()}. In the middle panel of
-Fig.~\ref{fig:latency} the same experiment was repeated, but with both broker
-and subscriber based on this alternative reactor. This provided a somewhat
-improved mean latency of 0.019\,s with a standard deviation of 0.011\,s, and a
-reduced maximum latency of 0.130\,s.
+provides a reactor which is based upon \texttt{epoll()}. The same experiment
+was therefore repeated, but with both broker and subscriber based on this
+alternative reactor. The results are shown in the central panel of
+Fig.~\ref{fig:latency}. This provided a somewhat improved mean latency of
+0.019\,s with a standard deviation of 0.011\,s, and a reduced maximum latency
+of 0.130\,s.
 
 As described in \S\ref{sec:design:dedup}, Comet stores a database of the
 arrival times and SHA-1 hashes of each event it processes, both at the broker
