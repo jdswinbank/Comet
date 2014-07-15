@@ -21,7 +21,8 @@ class Options(usage.Options):
     optParameters = [
         ["num-events", None, 10000000, "Total number of events", int],
         ["chunk-size", None, 10000, "Size of timing interval", int],
-        ["eventdb-root", None, "/tmp", "Root directory of Event DB", str]
+        ["eventdb-root", None, "/tmp", "Root directory of Event DB", str],
+        ["output", None, "eventdb-bench.json", "Output file", str]
     ]
 
 # Note that the semantics changed in Comet 1.1.1 such that
@@ -60,4 +61,7 @@ if __name__ == "__main__":
     config = Options()
     config.parseOptions()
     eventdb = Event_DB(config["eventdb-root"])
-    save_json(benchmark(eventdb, config["num-events"], config["chunk-size"]), 'out.json')
+    save_json(
+        benchmark(eventdb, config["num-events"], config["chunk-size"]),
+        config["output"]
+    )
