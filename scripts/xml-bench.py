@@ -76,12 +76,21 @@ def time_xpath(expression):
     """ % (expression,))
     return run_bmark(bmark, setup)
 
+def print_event_stats(event_list):
+    lengths = [len(ev) for ev in event_list]
+    print "Processing %d events:" % (len(lengths),)
+    print "     Min length: %d characters" % (min(lengths),)
+    print "     Max length: %d characters" % (max(lengths),)
+    print "    Mean length: %d characters" % (sum(lengths) / len(lengths),)
+    print "  Median length: %d characters" % (len(sorted(event_list)[len(event_list)/2]),)
+
 if __name__ == "__main__":
     config = Options()
     config.parseOptions()
-    n_events = len(config["event_list"])
 
-    print "Processing %d events." % (n_events,)
+    print_event_stats(config["event_list"])
+
+    n_events = len(config["event_list"])
     print "Time to parse one event: %f s." % (min(time_event_parse()) / n_events)
     print "Time to check one event against schema: %f s." % (min(time_schema_check()) / n_events)
 
