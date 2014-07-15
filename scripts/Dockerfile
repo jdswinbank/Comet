@@ -8,5 +8,5 @@ RUN apt-get install -q -y python-twisted python-lxml python-ipaddr python-pip py
 
 RUN pip install comet==1.1.0
 ADD latency.py /usr/local/lib/python2.7/dist-packages/comet/plugins/
-ADD benchmark.py /usr/local/bin/
-RUN chmod a+x /usr/local/bin/benchmark.py
+ADD vtp-bench.py /usr/local/bin/
+RUN chmod a+x /usr/local/bin/vtp-bench.py

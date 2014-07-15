@@ -12,7 +12,7 @@ one connected subscriber. We can measure:
 * How long it takes for the broker to receive all the events;
 * How long it takes for the subscriber to receive all the events.
 
-The first is in the logging output from ``benchmark.py``. For the other two,
+The first is in the logging output from ``vtp-bench.py``. For the other two,
 we can read the event dbs.
 
 We can vary the number of simultaneous connections the author opens.
@@ -39,7 +39,7 @@ that, we use script like this::
     echo "Starting subscriber:"
     sub=$(docker.io run -d --link=comet-broker:broker -v /tmp/eventdb/subscriber:/tmp:rw comet:1.1.0-bench bash -c 'twistd -n -repoll comet --remote=${BROKER_PORT_8099_TCP_ADDR}')
     sleep 1
-    docker run --link=comet-broker:broker comet:1.1.0-bench bash -c 'benchmark.py -q --host=$BROKER_PORT_8098_TCP_ADDR throughput' > /tmp/eventdb/author.log
+    docker run --link=comet-broker:broker comet:1.1.0-bench bash -c 'vtp-bench.py -q --host=$BROKER_PORT_8098_TCP_ADDR throughput' > /tmp/eventdb/author.log
     docker.io stop ${sub}
     docker.io stop ${broker}
     docker.io rm ${sub}
@@ -66,7 +66,7 @@ Multi-Subscriber Latency
 We set up a Comet broker and provide it with N subscribers. All are using
 epoll, and writing the event db to tmpfs.
 
-We use ``benchmark.py`` to generate 1000 events and submit them to the broker.
+We use ``vtp-bench.py`` to generate 1000 events and submit them to the broker.
 Each subscriber keeps track of the latency of events received, writing the log
 files stored in the obvious places here.
 
@@ -88,7 +88,7 @@ JSON format using ``multisubscriber_aggregate.py``.
 Comet Latency Measures
 ----------------------
 
-We used ``benchmark.py`` to generate 3000 events and submit them to the Comet
+We used ``vtp-bench.py`` to generate 3000 events and submit them to the Comet
 broker. The broker had one subscriber, running on the same host but in a
 different Docker instance. That subscriber received all the events and used
 the ``latency`` plugin to measure the time between event generation and
