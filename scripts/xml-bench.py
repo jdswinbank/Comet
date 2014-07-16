@@ -50,6 +50,18 @@ def time_event_parse():
     """)
     return run_bmark(bmark, setup)
 
+def time_sha1():
+    bmark = dedent("""\
+    for event in event_list:
+        sha1(event.text).hexdigest()
+    """)
+
+    setup = dedent("""\
+    from __main__ import config, xml_document
+    from hashlib import sha1
+    event_list = [xml_document(event) for event in config["event_list"]]
+    """)
+    return run_bmark(bmark, setup)
 
 def time_schema_check():
     bmark = dedent("""\
@@ -91,21 +103,31 @@ if __name__ == "__main__":
     print_event_stats(config["event_list"])
 
     n_events = len(config["event_list"])
-    print "Time to parse one event: %f s." % (min(time_event_parse()) / n_events)
-    print "Time to check one event against schema: %f s." % (min(time_schema_check()) / n_events)
+    parse_time = time_event_parse()
+    print "Time to parse all events: %f s (%f s per event)." % (min(parse_time), min(parse_time) / n_events)
 
-    print "Time to evaluate one event against XPath expressions: "
+    sha1_time = time_sha1()
+    print "Time to calculate SHA1 of all events: %f s (%f s per event)." % (min(sha1_time), min(sha1_time) / n_events)
+
+    schema_check_time = time_schema_check()
+    print "Time to check all events against schema: %f s (%f s per event)." % (min(schema_check_time), min(schema_check_time) / n_events)
+
+    print "Time to evaluate all events against XPath expressions: "
     xpath_text = """//Who/Author[shortName="VO-GCN"]"""
-    print "  %s : %f s." % (xpath_text, min(time_xpath(xpath_text)) / n_events)
+    xpath_time = time_xpath(xpath_text)
+    print "  %s : %f s (%f s per event)." % (xpath_text, min(xpath_time), min(xpath_time) / n_events)
 
     xpath_text = """//How[contains(Description, "Swift")]"""
-    print "  %s : %f s." % (xpath_text, min(time_xpath(xpath_text)) / n_events)
+    xpath_time = time_xpath(xpath_text)
+    print "  %s : %f s (%f s per event)." % (xpath_text, min(xpath_time), min(xpath_time) / n_events)
 
     xpath_text = ("""//Param[@name="Sun_Distance" and @value>40]""")
-    print "  %s : %f s." % (xpath_text, min(time_xpath(xpath_text)) / n_events)
+    xpath_time = time_xpath(xpath_text)
+    print "  %s : %f s (%f s per event)." % (xpath_text, min(xpath_time), min(xpath_time) / n_events)
 
     xpath_text = dedent("""\
         //How[contains(Description, "Swift")] or
              ( //Param[@name="Sun_Distance" and @value>40]
               and //Who/Author[shortName="VO-GCN"])""")
-    print "  %s : %f s." % (xpath_text, min(time_xpath(xpath_text)) / n_events)
+    xpath_time = time_xpath(xpath_text)
+    print "  %s : %f s (%f s per event)." % (xpath_text, min(xpath_time), min(xpath_time) / n_events)
