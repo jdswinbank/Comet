@@ -8,6 +8,7 @@
 \usepackage{color}
 \usepackage{minted}
 \usepackage{microtype}
+\usepackage{booktabs}
 
 \journal{Astronomy and Computing}
 
@@ -653,6 +654,13 @@ which are of relevance to them are ongoing, and will continue into the future
 powerful XPath \citep{Clark:1999} based filtering system.
 
 \subsection{XPath queries}
+\label{sec:filter:xpath}
+
+\begingroup
+\newcounter{savelisting}
+\setcounter{savelisting}{\value{listing}}% Store footnote counter
+\setcounter{listing}{0}
+\renewcommand\listingscaption{XPath expression}
 
 XPath is a language for selecting parts of and computing values over an XML
 document. XPath expressions may return one of four different result types:
@@ -670,26 +678,67 @@ combining those tests with Boolean logic. A complete reference is outside the
 scope of this manuscript, but some examples may serve to illustrate the
 possibilities.
 
-Starting with string matching, \mint{xml}|//Who/Author[shortName="VO-GCN"]|
+Starting with string matching,
+
+\begin{listing}[H]
+\begin{minted}[frame=bottomline]{xml}
+//Who/Author[shortName="VO-GCN"]
+\end{minted}
+\vspace{-19pt}
+\captionsetup{labelsep=none,textformat=empty,justification=raggedleft,singlelinecheck=false}
+\caption{Not shown}
+\label{xpath:exp1}
+\end{listing}
+
 returns a set of all nodes in the document which list the author's ``short
 name'' as \texttt{VO-GCN}. More complex matches can use functions, such as
-\mint{xml}|//How[contains(Description, "Swift")]| which returns the set of all
-nodes which mention ``Swift'' in the context of a describing how the data was
-obtained. Numerical comparisons are also possible:
-\mint{xml}|//Param[@name="Sun_Distance" and @value>40]| provides the set of
-all parameters called \texttt{Sun\_Distance} with a numerical value greater
-than 40.
+
+\begin{listing}[H]
+\begin{minted}[frame=bottomline]{xml}
+//How[contains(Description, "Swift")]
+\end{minted}
+\vspace{-19pt}
+\captionsetup{labelsep=none,textformat=empty,justification=raggedleft,singlelinecheck=false}
+\caption{Not shown}
+\label{xpath:exp2}
+\end{listing}
+
+which returns the set of all nodes which mention ``Swift'' in the context of a
+describing how the data was obtained. Numerical comparisons are also possible:
+
+\begin{listing}[H]
+\begin{minted}[frame=bottomline]{xml}
+//Param[@name="Sun_Distance" and @value>40]
+\end{minted}
+\vspace{-19pt}
+\captionsetup{labelsep=none,textformat=empty,justification=raggedleft,singlelinecheck=false}
+\caption{Not shown}
+\label{xpath:exp3}
+\end{listing}
+
+provides the set of all parameters called \texttt{Sun\_Distance} with a
+numerical value greater than 40.
 
 These expression can be combined, so that for example
-\begin{minted}{xml}
+
+\begin{listing}[H]
+\begin{minted}[frame=bottomline]{xml}
 //How[contains(Description, "Swift")] or
   ( //Param[@name="Sun_Distance" and @value>40]
     and //Who/Author[shortName="VO-GCN"]) )
 \end{minted}
+\vspace{-19pt}
+\captionsetup{labelsep=none,textformat=empty,justification=raggedleft,singlelinecheck=false}
+\caption{Not shown}
+\label{xpath:exp4}
+\end{listing}
+
 returns a Boolean value which is true if the event either mentions ``Swift''
 or both has a \texttt{Sun\_Distance} parameter greater than 40 and originates
 from GCN, and false otherwise.
 
+\setcounter{listing}{\value{savelisting}}% Store footnote counter
+\endgroup
 \subsection{Integration with Comet}
 
 Comet makes it possible for a subscriber to supply one or more XPath
@@ -750,7 +799,11 @@ informative to consider both how Comet and the VTP architecture scale to cope
 with the millions of events per night promised by future facilities such as
 LSST\@. In this section, we quantify both the number of events Comet is
 capable of processing, the latency which it introduces to the event stream,
-and the number of subscribers which a broker can conveniently service.
+and the number of subscribers which a broker can conveniently service. We
+begin by describing the test system, move on to discuss the performance
+characteristics of the major operations which Comet performs when processing
+an individual VOEvent message, and then take a more holistic approach to
+consider the performance of a networked Comet broker under a variety of loads.
 
 \subsection{Test system configuration}
 \label{sec:perf:system}
@@ -781,27 +834,105 @@ out with Comet 1.1.0. The ``Dockerfile'' used to create exactly the system
 used for these tests, as well as all the benchmarking scripts and plugins
 described below, are available from the Comet repository (\S\ref{sec:avail}).
 
-\subsection{Latency}
-\label{sec:perf:latency}
+\subsection{Individual event processing}
+\label{sec:perf:individual}
 
-For certain science cases, maximizing the scientific relevance of follow-up
-observations requires extremely rapid response. For example, identifying
-precursors of fast radio bursts \citep{Thornton:2013} would require action on
-a timescale a tens of milliseconds. It is therefore important that the VOEvent
-transport system does not introduce excessive latency to the dissemination of
-event notifications.
+When an event is received by the Comet broker for redistribution to
+subscribers it passes through five distinct processing stages. These are:
 
-For the purposes of this discussion, we define the ``latency'' of a VOEvent as
-the time elapsed between its creation by an author and the instant at which it
-has been received by a subscriber and that subscriber is in a position to take
-action (using the strategies described in \S\ref{sec:design:plugin}) based
-upon it.
+\begin{enumerate}
 
-In this test, we measure the latency introduced by passing a VOEvent from an
-author through a Comet broker and on to a Comet-based subscriber.
+  \item{The document text is parsed into an internal data structure;}
 
-\subsubsection{Test setup}
-\label{sec:perf:latency:setup}
+  \item{The SHA-1 hash of the document text is calculated;}
+
+  \item{The hash is compared against, and, if necessary, appended to the
+  database of previously seen VOEvents (\S\ref{sec:design:dedup});}
+
+  \item{The VOEvent is checked for validity against the VOEvent 2.0 XML schema;}
+
+  \item{Optionally, one or more XPath expressions are evaluated against the
+  document before it is forwarded to each subscriber (\S\ref{sec:filter}).}
+
+\end{enumerate}
+
+Most of these operations are likely to depend upon the particular VOEvent
+document being handled: a longer and more complex message will naturally
+require more effort to process (the exception is checking and recording the
+document against the event database, which involves processing the IVORN
+rather than the complete document). The tests were therefore carried out
+using a corpus of 16425 VOEvents harvested from currently operation VTP
+brokers between 5 and 15 July 2014\footnote{All documents claiming to comply
+with the VOEvent 2.0 schema which were distributed by any of
+\url{voevent.phys.soton.ac.uk}, \url{voevent.dc3.com},
+\url{voevent.swinbank.org}, \url{68.169.57.253}, \url{209.208.78.170} or
+\url{50.116.49.68} were collected. The three numerical IPv4 addresses are used
+by NASA GCN and do not have DNS PTR records.}. The VOEvents originated from a
+variety of sources, and include both notifications of astronomical phenomena
+and sundry utility and test messages. The longest document consisted of 9647
+bytes; the shortest 636; the median length was 5002 bytes.
+
+\begin{table}
+\renewcommand*\footnoterule{}
+\begin{minipage}{252pt} % Minipage equal to width of column contains footnotes
+\begin{center}
+\caption{Timing measurements for each stage of Comet's processing of 16425
+VOEvent documents collected as described in \S\ref{sec:perf:individual}.}
+\label{tab:perf:individual}
+\begin{tabular}{lcc}
+\toprule
+Processing stage & \multicolumn{1}{c}{Total (s)} &\multicolumn{1}{c}{Per event (s)} \\
+\midrule
+Event parsing & 1.625465 & 0.000099 \\
+SHA-1 calculation & 0.152024 & 0.000009 \\
+\multicolumn{3}{l}{Event database check:\footnote{Also includes SHA-1 calculation.}\footnote{Measured using synthetic data.}} \\
+\hspace{4mm} Magnetic disk  & - & 0.013331 \\
+\hspace{4mm} \texttt{tmpfs} & - & 0.000499 \\
+Schema validation & 1.385420 & 0.000084 \\
+\multicolumn{3}{l}{XPath evaluation:\footnote{Expressions as defined in \S\ref{sec:filter:xpath}}} \\
+\hspace{4mm}  Expression \ref{xpath:exp1} & 0.218424 & 0.000013 \\
+\hspace{4mm}  Expression \ref{xpath:exp2} & 0.221899 & 0.000014 \\
+\hspace{4mm}  Expression \ref{xpath:exp3} & 0.579474 & 0.000035 \\
+\hspace{4mm}  Expression \ref{xpath:exp4} & 0.283376 & 0.000017 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{minipage}
+\end{table}
+
+\subsubsection{XML parsing}
+
+All 16425 test VOEvent documents were read from disk and stored as textual
+data in memory. Each in turn was parsed into Comet's internal VOEvent
+representation\footnote{Comet represents XML documents using a custom-built
+wrapper around the \texttt{Element} class provided by lxml
+(\url{http://lxml.de/}).}. In order to confirm that parsing was successful,
+the Comet API was used to retrieve the \texttt{version} attribute from the
+parsed document and confirm that it was equal to \texttt{"2.0"}. The total
+time taken to parse and read the attribute from all of the events was
+recorded.
+
+The experiment was repeated ten times. The lowest time measured (corresponding
+to the fastest performance) was recorded. This is the best representation of
+the intrinsic time taken to parse an event: other, slower, measurements are
+due to contention for resources from other processes on the test machine.
+
+The time taken to process all of the events, together with the mean time per
+event, are recorded in Tab. \ref{tab:perf:individual}.
+
+\subsubsection{SHA-1 calculation}
+
+All 16425 test VOEvent documents were read from disk, parsed, and stored in
+memory using Comet's internal representation. The total time taken to
+calculate the 40 byte hexadecimal SHA-1 hash for each event in turn was
+measured.
+
+The experiment was repeated ten times; as in the previous section, we regard
+the fastest repetition as the best representation of the true processing time.
+The total time for all events, and the mean time per event, are recorded in
+Tab. \ref{tab:perf:individual}
+
+\subsubsection{Comparision to event database}
 
 \begin{listing*}
 \begin{minted}[frame=lines]{xml}
@@ -830,11 +961,85 @@ was created.}
 \label{lst:testmessage}
 \end{listing*}
 
-A script was used to generate 3000 individual VOEvent packets and submit them
-to a broker at intervals of 0.3 seconds.  Each packet was compliant with the
-VOEvent schema, but carried a relatively small payload amounting to little
-more than a timestamp reflecting when the event was created: see
-Listing~\ref{lst:testmessage} for an example.
+As described above, the contents of a particular VOEvent document are not
+relevant when working with the event database: the database operations only
+involve manipulating the arrival time of the VOEvent and it's SHA-1 hash. For
+this test, therefore, we do not make use of the corpus of events described
+above. Instead, a series of test VOEvent packets of the form shown in
+Listing~\ref{lst:testmessage} was generated.  Each packet was compliant with
+the VOEvent schema, but carried a relatively small payload amounting to little
+more than a timestamp reflecting when the event was created.
+
+A batch of 10000 test messages was generated and stored in memory. The total
+time taken to both verify that each VOEvent was not initially present in the
+event database and then record it in the event database was
+recorded\footnote{In version 1.1.0 of Comet, as tested, checking and recording
+an event are distinct operations. Later versions combine these to form an
+atomic check-and-record operation, which is both improves performance and
+avoids a race condition.}. Comet does not provide an interface to the event
+database which does not involve calculating a SHA-1 hash; the time measured
+includes hash calculation for each event.
+
+The experiment described was initially performed with the event database
+stored on magnetic disk. The mean time taken to check and record an event in
+the database is shown in Tab.~\ref{tab:perf:individual}. Note that this is
+orders of magnitude above the times measured for the other processing steps.
+This is, perhaps, unsurprising: accessing disk storage involves significant
+overhead. To mitigate this, memory-based filesystem was created based on
+\texttt{tmpfs} \citep{Kerrisk:2014} and both broker and subscriber were
+configured to store their event databases here. This storage is entirely
+RAM-based, so avoids the extra delays in writing to disk.
+
+The experiment was repeated with the database stored on the \texttt{tmpfs}
+filesystem; the result was a factor of 25 improvement in the time taken to
+process each event, as shown in Tab.~\ref{tab:perf:individual}.
+
+As per \S\ref{sec:design:dedup}, Comet stores hashes of the VOEvents received
+for 30 days. On a busy VOEvent network, this could involve generating a much
+larger database than the 10000 events tested, which may impact performance.
+The previous experiment was therefore repeated 1000 times using the same
+databases stored on \texttt{tmpfs}, resulting in a database containing $10^7$
+hashes in total. The lowest mean processing time per event was measured when
+processing events 1540000--1549999, at an average of 0.000491\,s per event;
+the highest when processing events 8540000--8549999, at an average of
+0.000502\,s per event. There was no systematic increase in processing time
+with event database size. Testing with a significantly larger database was
+impossible due to the available memory.
+
+\subsubsection{Schema validation}
+
+
+\subsubsection{XPath filtering}
+
+
+
+
+
+\subsection{Latency}
+\label{sec:perf:latency}
+
+For certain science cases, maximizing the scientific relevance of follow-up
+observations requires extremely rapid response. For example, identifying
+precursors of fast radio bursts \citep{Thornton:2013} would require action on
+a timescale a tens of milliseconds. It is therefore important that the VOEvent
+transport system does not introduce excessive latency to the dissemination of
+event notifications.
+
+For the purposes of this discussion, we define the ``latency'' of a VOEvent as
+the time elapsed between its creation by an author and the instant at which it
+has been received by a subscriber and that subscriber is in a position to take
+action (using the strategies described in \S\ref{sec:design:plugin}) based
+upon it.
+
+In this test, we measure the latency introduced by passing a VOEvent from an
+author through a Comet broker and on to a Comet-based subscriber.
+
+\subsubsection{Test setup}
+\label{sec:perf:latency:setup}
+
+A script was used to generate 3000 individual VOEvent packets of the form
+shown in Listing~\ref{lst:testmessage} and submit them to a broker at
+intervals of 0.3 seconds.
 
 A plugin (\S\ref{sec:design:plugin}) was written which, whenever an event of
 the form described above is received, compares the timestamp in the event with
@@ -886,6 +1091,9 @@ Fig.~\ref{fig:latency}. This provided a somewhat improved mean latency of
 0.019\,s with a standard deviation of 0.011\,s, and a reduced maximum latency
 of 0.130\,s.
 
+%
+% TODO: Rework; note that tmpfs is now described in an earlier section.
+%
 As described in \S\ref{sec:design:dedup}, Comet stores a database of the
 arrival times and SHA-1 hashes of each event it processes, both at the broker
 and at the subscriber. This data is regularly written the filesystem as Comet
@@ -1513,11 +1721,10 @@ and to Tim Staley and Roy Williams for their feedback on the design and
 capabilities of Comet. Thanks to Jeff Kantor for details of the predicted LSST
 event rates.
 
-Both Comet itself and the tests described herein rely on a number
-of open source software packages.
-Python\footnote{\url{https://www.python.org/}} provides both a convenient
-development platform and a rich variety of libraries upon which to build; it
-is these, notably Twisted, lxml\footnote{\url{http://lxml.de/}},
+Both Comet itself and the tests described herein rely on a number of open
+source software packages.  Python\footnote{\url{https://www.python.org/}}
+provides both a convenient development platform and a rich variety of
+libraries upon which to build; it is these, notably Twisted, lxml,
 zope.interface\footnote{\url{http://docs.zope.org/zope.interface/}} and
 ipaddr-py\footnote{\url{https://code.google.com/p/ipaddr-py/}} which have made
 the development of Comet possible. Additionally, the support for event
