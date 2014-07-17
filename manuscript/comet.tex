@@ -876,8 +876,12 @@ bytes; the shortest 636; the median length was 5002 bytes.
 \renewcommand*\footnoterule{}
 \begin{minipage}{252pt} % Minipage equal to width of column contains footnotes
 \begin{center}
-\caption{Timing measurements for each stage of Comet's processing of 16425
-VOEvent documents collected as described in \S\ref{sec:perf:individual}.}
+
+\caption{Timing results for each stage of Comet's processing of a VOEvent
+document. All results except the check against the event database were based
+on a corpus of 16425 genuine VOEvent documents; the check against the event
+database was performed using synthetic test data. Each test is described in
+\S\ref{sec:perf:individual}.}
 \label{tab:perf:individual}
 \begin{tabular}{lcc}
 \toprule
@@ -885,11 +889,11 @@ Processing stage & \multicolumn{1}{c}{Total (s)} &\multicolumn{1}{c}{Per event (
 \midrule
 Event parsing & 1.625465 & 0.000099 \\
 SHA-1 calculation & 0.152024 & 0.000009 \\
-\multicolumn{3}{l}{Event database check:\footnote{Also includes SHA-1 calculation.}\footnote{Measured using synthetic data.}} \\
+\multicolumn{3}{l}{Event database check:\footnote{Also includes SHA-1 calculation.}} \\
 \hspace{4mm} Magnetic disk  & - & 0.013331 \\
 \hspace{4mm} \texttt{tmpfs} & - & 0.000499 \\
 Schema validation & 1.385420 & 0.000084 \\
-\multicolumn{3}{l}{XPath evaluation:\footnote{Expressions as defined in \S\ref{sec:filter:xpath}}} \\
+\multicolumn{3}{l}{XPath evaluation:\footnote{Expressions as defined in \S\ref{sec:filter:xpath}.}} \\
 \hspace{4mm}  Expression \ref{xpath:exp1} & 0.218424 & 0.000013 \\
 \hspace{4mm}  Expression \ref{xpath:exp2} & 0.221899 & 0.000014 \\
 \hspace{4mm}  Expression \ref{xpath:exp3} & 0.579474 & 0.000035 \\
@@ -901,6 +905,7 @@ Schema validation & 1.385420 & 0.000084 \\
 \end{table}
 
 \subsubsection{XML parsing}
+\label{sec:perf:individual:parse}
 
 All 16425 test VOEvent documents were read from disk and stored as textual
 data in memory. Each in turn was parsed into Comet's internal VOEvent
@@ -910,17 +915,16 @@ wrapper around the \texttt{Element} class provided by lxml
 the Comet API was used to retrieve the \texttt{version} attribute from the
 parsed document and confirm that it was equal to \texttt{"2.0"}. The total
 time taken to parse and read the attribute from all of the events was
-recorded.
+measured.
 
 The experiment was repeated ten times. The lowest time measured (corresponding
-to the fastest performance) was recorded. This is the best representation of
-the intrinsic time taken to parse an event: other, slower, measurements are
+to the fastest performance) and the corresponding mean parse time per document
+is recorded in Tab.~\ref{tab:perf:individual}. This is the best representation
+of the intrinsic time taken to parse an event: other, slower, measurements are
 due to contention for resources from other processes on the test machine.
 
-The time taken to process all of the events, together with the mean time per
-event, are recorded in Tab. \ref{tab:perf:individual}.
-
 \subsubsection{SHA-1 calculation}
+\label{sec:perf:individual:hash}
 
 All 16425 test VOEvent documents were read from disk, parsed, and stored in
 memory using Comet's internal representation. The total time taken to
@@ -929,8 +933,9 @@ measured.
 
 The experiment was repeated ten times; as in the previous section, we regard
 the fastest repetition as the best representation of the true processing time.
-The total time for all events, and the mean time per event, are recorded in
-Tab. \ref{tab:perf:individual}
+We record this fastest total time for all events, together with the
+corresponding mean hash calculation time per event, in
+Tab.~\ref{tab:perf:individual}.
 
 \subsubsection{Comparision to event database}
 
@@ -1000,20 +1005,55 @@ larger database than the 10000 events tested, which may impact performance.
 The previous experiment was therefore repeated 1000 times using the same
 databases stored on \texttt{tmpfs}, resulting in a database containing $10^7$
 hashes in total. The lowest mean processing time per event was measured when
-processing events 1540000--1549999, at an average of 0.000491\,s per event;
-the highest when processing events 8540000--8549999, at an average of
-0.000502\,s per event. There was no systematic increase in processing time
-with event database size. Testing with a significantly larger database was
-impossible due to the available memory.
+processing batch 155, at an average of 0.000491\,s per event; the highest when
+processing batch 855, at an average of 0.000502\,s per event. There was no
+systematic increase in processing time with event database size. Testing with
+a significantly larger database was impossible due to the available memory.
 
 \subsubsection{Schema validation}
 
+All test VOEvent documents were read from disk, parsed, and stored in memory
+using Comet's internal representation. The VOEvent 2.0 XML schema was also
+read from disk and parsed into an lxml \texttt{XMLSchema} object, the same
+data structure as used by Comet for schema validation during normal
+operations. The total time taken to check all the events against the schema
+was measured. Two of the events failed validation.
+
+As in \S\S\ref{sec:perf:individual:parse} and \ref{sec:perf:individual:hash},
+the experiment was repeated ten times and the fastest result recorded in
+Tab.~\ref{tab:perf:individual}.
 
 \subsubsection{XPath filtering}
 
+The time taken to evaluate an XPath expression over a VOEvent document depends
+not only on the complexity of the document being processed but also on the
+XPath expression itself. A detailed discussion of the performance
+characteristics of XPath is outside the scope of this work; instead, we take
+the example queries given in \S\ref{sec:filter:xpath} as representative of a
+typical workload.
 
+All test VOEvent documents were read from disk, parsed, and stored in memory
+using Comet's internal representation. Each of of the XPath expressions in
+turn was parsed into an lxml \texttt{XPath} object, as used by Comet for XPath
+filtering during normal operations. The total time taken to check all events
+against each expression in turn was measured.
 
+As described in previous sections, each experiment was repeated ten times and
+the fastest result for each expression is recorded in
+Tab.~\ref{tab:perf:individual}.
 
+Note that the results recorded for XPath filtering are not directly comparable
+to those for the other tests described. All the other operations are performed
+once per event received by the broker. In contrast, potentially several
+different XPath expressions are evaluated per subscriber for every event
+received. Thus, even though the time recorded for evaluating the XPath
+expressions is substantially less than that recorded for event parsing or
+schema validation, the total time spent on XPath processing may, in fact, be
+greater in a deployed system.
+
+\subsubsection{Results}
+
+TODO!
 
 \subsection{Latency}
 \label{sec:perf:latency}
