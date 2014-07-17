@@ -899,6 +899,7 @@ to calculate the 40 byte hexadecimal SHA-1 hash for each event in turn was
 measured.
 
 \subsubsection{Event database operations}
+\label{sec:perf:individual:eventdb}
 
 \begin{listing*}
 \begin{minted}[frame=lines]{xml}
@@ -1129,26 +1130,25 @@ Fig.~\ref{fig:latency}. This provided a somewhat improved mean latency of
 0.019\,s with a standard deviation of 0.011\,s, and a reduced maximum latency
 of 0.130\,s.
 
-%
-% TODO: Rework; note that tmpfs is now described in an earlier section.
-%
-As described in \S\ref{sec:design:dedup}, Comet stores a database of the
-arrival times and SHA-1 hashes of each event it processes, both at the broker
-and at the subscriber. This data is regularly written the filesystem as Comet
-is running, and must be searched for duplicates every time a new event is
-received. Accessing disk storage involves a significant overhead, so a new
-memory-based filesystem was created based on \texttt{tmpfs}
-\citep{Kerrisk:2014} and both broker and subscriber were configured to store
-their event databases here. This storage is entirely RAM-based, so avoids the
-extra delays in writing to disk. Of course, the RAM technologies typically
-used in modern systems are inherently volatile, and the event database would
-not survive if the system were powered down or rebooted: whether this risk is
-appropriate in a production deployment would be a matter of judgement.
+Section \ref{sec:perf:individual:eventdb} established that the event database
+operations take an average of 0.013\,s when the database is stored on magnetic
+disk, as it was in this default configuration: this is some 70\,\% of the
+measured event latency. The same section demonstrated a 25-fold improvement
+when the database was stored in RAM using the \texttt{tmpfs} filesystem. This
+performance improvement comes at some cost: RAM technologies typically used in
+modern systems are inherently volatile, and the event database would not
+survive if the system were powered down or rebooted. Further, the $10^7$ event
+database described in \S\ref{sec:perf:individual:eventdb} consumed around
+1\,GiB of storage; given a database retention period of 30 days
+(\S\ref{sec:design:dedup}) and potentially multi-million-per-day event rates
+from next generation facilities, memory capacity may be a limiting factor.
 
-The results based on the \texttt{tmpfs} filesystem are shown in the bottom
-panel of Fig.~\ref{fig:latency}. Clearly, these latencies are both lower (mean
-0.0063\,s, maximum 0.013\,s) and more consistent (standard deviation
-0.00033\,s) than the previous tests.
+These considerations notwithstanding, the database was re-created on a
+\texttt{tmpfs} filesystem and teh test repeated. The results are shown in the
+bottom panel of Fig.~\ref{fig:latency}. Not only are these latencies lower
+(mean 0.0063\,s, maximum 0.013\,s) than those based on magnetic disks, but
+they are also much more consistent than the previous tests (standard deviation
+0.00033\,s).
 
 An overhead of no more than around ten milliseconds is comparable to that
 which might be expected from network delays over short links, and is unlikely
