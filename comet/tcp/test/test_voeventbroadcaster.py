@@ -198,15 +198,22 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
         self.assertEqual(self.tr.value(), "")
         self.assertEqual(self.tr.connected, False)
 
-    def test_receive_authenticate(self):
+    def _test_sets_filter(self, filter_string):
         self.tr.clear()
         self.assertEqual(len(self.proto.filters), 0)
-        self.proto.stringReceived(
-            DUMMY_AUTHENTICATE % "/*[local-name()=\"VOEvent\" and @role=\"test\"]"
-        )
+        self.proto.stringReceived(DUMMY_AUTHENTICATE % filter_string)
         self.assertEqual(self.tr.value(), "")
         self.assertEqual(self.tr.connected, True)
         self.assertEqual(len(self.proto.filters), 1)
+
+    def test_receive_authenticate(self):
+        self._test_sets_filter("/*[local-name()=\"VOEvent\" and @role=\"test\"]")
+
+    def test_receive_authenticate_cdata(self):
+        self._test_sets_filter("<![CDATA[//Param[@name=\"SC_Lat\" and @value<600]]]>")
+
+    def test_receive_authenticate_entity(self):
+        self._test_sets_filter("//Param[@name=\"SC_Lat\" and @value&lt;600]")
 
     def test_receive_authenticate_with_bad_filter(self):
         self.tr.clear()
