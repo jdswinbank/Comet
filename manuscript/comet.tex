@@ -304,7 +304,7 @@ class VOEventReceiver(Protocol):
         else:
             log.warning("Bad message received")
     except ParseError:
-        log.warning("Message unparseable")
+        log.warning("Message unparsable")
     finally:
         close_connection()
 \end{minted}
@@ -485,7 +485,7 @@ command-line driven, and do not rely on configuration files.
 
 It is possible to construct XML documents which claim to be VOEvents but which
 do not, in fact, adhere to the VOEvent XML schema. In some cases, the document
-may be completely unparseable; in others, it may be possible to extract some
+may be completely unparsable; in others, it may be possible to extract some
 data, but with unpredictable results and no guarantee that the recipient
 receives the information the author intended.
 
@@ -694,9 +694,10 @@ powerful XPath \citep{Clark:1999} based filtering system.
 \subsection{XPath queries}
 \label{sec:filter:xpath}
 
+% In this section we'll number XPath queries distinct from regular listings
 \begingroup
 \newcounter{savelisting}
-\setcounter{savelisting}{\value{listing}}% Store footnote counter
+\setcounter{savelisting}{\value{listing}}% Store listings counter
 \setcounter{listing}{0}
 \renewcommand\listingscaption{XPath expression}
 
@@ -775,7 +776,7 @@ returns a Boolean value which is true if the event either mentions ``Swift''
 or both has a \texttt{Sun\_Distance} parameter greater than 40 and originates
 from GCN, and false otherwise.
 
-\setcounter{listing}{\value{savelisting}}% Store footnote counter
+\setcounter{listing}{\value{savelisting}}% Restore listings counter
 \endgroup
 \subsection{Integration with Comet}
 
@@ -804,28 +805,28 @@ this form of filtering should simply ignore the message.
 
 \subsection{Alternative filtering systems}
 
-XPath provides a convenient, standardized \citep{Clark:1999} and expressive
-language for accessing and performing simple calculations and comparisons
-based upon the contents of XML documents. Incorporating XPath based filtering
-into Comet was straightforward and doing so provides a powerful means of
-winnowing high-volume VOEvent streams.
+XPath provides a convenient, standardized and expressive language for
+accessing and performing simple calculations and comparisons based upon the
+contents of XML documents. Incorporating XPath based filtering into Comet was
+straightforward and doing so provides a powerful means of winnowing
+high-volume VOEvent streams.
 
 However, XPath is not appropriate for meeting every possible use case. In
 particular, XPath expressions are evaluated over individual VOEvents, with no
 reference to their surrounding context. Consequently, XPath expressions cannot
-be used to draw scientific conclusions based on the evolving contents of a
-stream of events. Further, XPath provides no specialist astronomical or
-mathematical routines: it is impractical to use it for filtering based on
-operations beyond simple arithmetic and comparisons.
+be used to draw scientific conclusions---or even perform rate-limiting---based
+on the evolving contents of a stream of events. Further, XPath provides no
+specialist astronomical or mathematical routines: it is impractical to use it
+for filtering based on operations beyond simple arithmetic and comparisons.
 
-Given these considerations, it is likely that addressing some use cases will
-require a different approach to filtering than that currently supported by
-Comet. The VTP system explicitly allows for this by encouraging
-brokers to layer arbitrary ``added value'' services on top of the basic VTP
-system: a richer, more astronomically-focused and context-aware filtering
-system is an example of the possibilities. Indeed, such a service has
-precedent in the form of SkyAlert \citep{Williams:2009}, which provides a
-Python-based interface to filtering events.
+Given these considerations, it is likely that addressing some scientific goals
+will require a different approach to filtering than that currently supported
+by Comet. The VTP system explicitly allows for this by encouraging brokers to
+layer arbitrary ``added value'' services on top of the basic VTP system: a
+richer, more astronomically-focused and context-aware filtering system is an
+example of the possibilities. Indeed, such a service has precedent in the form
+of SkyAlert \citep{Williams:2009}, which provides a Python-based interface to
+filtering events.
 
 \section{Performance}
 \label{sec:perf}
@@ -898,12 +899,12 @@ subscribers it passes through five distinct processing stages. These are:
 Most of these operations are likely to depend upon the particular VOEvent
 document being handled: a longer and more complex message will naturally
 require more effort to process (the exception is checking and recording the
-document against the event database, which involves processing the IVORN
-rather than the complete document). The tests were therefore carried out
-using a corpus of 16425 VOEvents harvested from currently operation VTP
-brokers between 5 and 15 July 2014\footnote{All documents claiming to comply
-with the VOEvent 2.0 schema which were distributed by any of
-\url{voevent.phys.soton.ac.uk}, \url{voevent.dc3.com},
+document against the event database, which involves processing just the IVORN
+rather than the complete document). To best represent a real-world workload,
+the tests were carried out using a corpus of 16425 VOEvents harvested from
+currently operation VTP brokers between 5 and 15 July 2014\footnote{All
+documents claiming to comply with the VOEvent 2.0 schema which were
+distributed by any of \url{voevent.phys.soton.ac.uk}, \url{voevent.dc3.com},
 \url{voevent.swinbank.org}, \url{68.169.57.253}, \url{209.208.78.170} or
 \url{50.116.49.68} were collected. The three numerical IPv4 addresses are used
 by NASA GCN and do not have DNS PTR records.}. The VOEvents originated from a
@@ -937,7 +938,6 @@ read from disk and parsed into an lxml \texttt{XMLSchema} object, the same
 data structure as used by Comet for schema validation during normal
 operations. The total time taken to check all the events against the schema
 was measured. Two of the events failed validation.
-
 
 \subsubsection{SHA-1 calculation}
 \label{sec:perf:individual:hash}
@@ -977,24 +977,24 @@ was created.}
 \label{lst:testmessage}
 \end{listing*}
 
-As described above, the contents of a particular VOEvent document are not
-relevant when working with the event database: the database operations only
-involve manipulating the arrival time of the VOEvent and it's SHA-1 hash. For
-this test, therefore, we do not make use of the corpus of events described
-above. Instead, a series of test VOEvent packets of the form shown in
-Listing~\ref{lst:testmessage} was generated.  Each packet was compliant with
-the VOEvent schema, but carried a relatively small payload amounting to little
-more than a timestamp reflecting when the event was created.
+The contents of a particular VOEvent document are not relevant when working
+with the event database: the database operations only involve manipulating the
+arrival time of the VOEvent and it's SHA-1 hash. For this test, therefore, we
+do not make use of the corpus of events described above. Instead, a series of
+test VOEvent packets of the form shown in Listing~\ref{lst:testmessage} was
+generated. Each packet was compliant with the VOEvent 2.0 schema, but carried
+a relatively small payload amounting to little more than a timestamp
+reflecting when the event was created.
 
-A batch of 10000 test messages was generated and stored in memory. The total
-time taken to both verify that each VOEvent was not initially present in the
-event database and then record it in the event database was
+A batch of 10000 such test messages was generated and stored in memory. The
+total time taken to both verify that each VOEvent was not initially present in
+the event database and then record it in the event database was
 recorded\footnote{In version 1.1.0 of Comet, as tested, checking and recording
 an event are distinct operations. Later versions combine these to form an
 atomic check-and-record operation, which is both improves performance and
 avoids a race condition.}. Comet does not provide an interface to the event
 database which does not involve calculating a SHA-1 hash; the time measured
-includes hash calculation for each event.
+therefore includes hash calculation for each event.
 
 The experiment described was initially performed with the event database
 stored on magnetic disk. The mean time taken to check and record an event in
@@ -1092,7 +1092,6 @@ hash is more than twice that spent on the other operations combined, and is
 compounded by a further factor of over 25 when magnetic disks are used. Future
 performance-focused development of Comet should investigate ways to mitigate
 this issue.
-
 
 \subsection{Latency}
 \label{sec:perf:latency}
@@ -1365,8 +1364,8 @@ Without special tuning, a throughput of over 500 events per second is more
 than twice that required to service the average event rate predicted from
 LSST\@. Further, this test was limited by CPU performance on desktop-class
 hardware that will be substantially more than a decade old before LSST is
-commissioned. In these, terms, servicing an LSST-scale event stream with a VTP
-based broker seems plausible, although there are a number of caveats:
+commissioned. In these terms, then, servicing an LSST-scale event stream with
+a VTP based broker seems plausible, although there are a number of caveats:
 
 \begin{itemize}
 
@@ -1394,13 +1393,13 @@ facilities often results in their having poor internet connections. Even if
 high-bandwidth networking is arranged specifically to service the observatory,
 network latencies are likely to be high.
 
-One might imagine that some t preliminary data analysis for such an
-observatory would be performed on-site, rather than attempting to ship large
-volumes of raw data out of a remote location. Further, it would not be
-practical for large numbers of external clients to connect inwards to a VTP
-broker running at the observatory. Therefore, for the purposes of this
-discussion, we we assume that the events are generated by a VOEvent author on
-site, then shipped using VTP to a remote broker for public distribution.
+One might imagine that some preliminary data analysis for such an observatory
+would be performed on-site, rather than attempting to ship large volumes of
+raw data out of a remote location. Further, it would not be practical for
+large numbers of external clients to connect inwards to a VTP broker running
+at the observatory. Therefore, for the purposes of this discussion, we we
+assume that the events are generated by a VOEvent author on site, then shipped
+using VTP to a remote broker for public distribution.
 
 Assuming 10 million alerts are issued by the observatory per night and each
 event has a size of around 10\,kiB, a total of 100\,GiB of event data might be
@@ -1530,12 +1529,12 @@ with event networks cannot be ignored.
 
 Two approaches may be taken to securing an event distribution system. The
 first is to authenticate the transport layer using a technology such as TLS
-\citep{Dierks:2008}. In this way, the each entity involved would be able to
-verify both the integrity of a VTP connection and the identity of their remote
-peer. In this way, a subscriber can be certain of the identity of the broker
-from which it receives a particular event. However, that broker was not itself
-the originator of the event, but rather it received it either from the author
-directly or from another broker; it is now incumbent upon that broker to not
+\citep{Dierks:2008}. In this way, each entity involved would be able to verify
+both the integrity of a VTP connection and the identity of their remote peer.
+A subscriber could therefore be certain of the identity of the broker from
+which it receives a particular event. However, that broker was not itself the
+originator of the event, but rather it received it either from the author
+directly or from another broker: it is now incumbent upon that broker to not
 only to verify the identity of the sender but also to satisfy the subscriber
 that this has been done with sufficient diligence. If the event has traversed
 a length path through multiple brokers before reaching the subscriber, this
