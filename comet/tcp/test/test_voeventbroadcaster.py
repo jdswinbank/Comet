@@ -158,13 +158,13 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
         d.addCallback(check_ack_increment)
         return d
 
-    def test_receive_unparseable(self):
-        # An unparseable message should generate no response, but the
+    def test_receive_unparsable(self):
+        # An unparsable message should generate no response, but the
         # transport should not disconnect.
         self.tr.clear()
-        unparseable = "This is not parseable"
-        self.assertRaises(etree.ParseError, etree.fromstring, unparseable)
-        self.proto.stringReceived(unparseable)
+        unparsable = "This is not parsable"
+        self.assertRaises(etree.ParseError, etree.fromstring, unparsable)
+        self.proto.stringReceived(unparsable)
         self.assertEqual(self.tr.value(), "")
         self.assertEqual(self.tr.connected, True)
 

@@ -32,13 +32,13 @@ class VOEventReceiverTestCase(unittest.TestCase):
         self.proto.makeConnection(self.tr)
         self.tr.protocol = self.proto
 
-    def test_receive_unparseable(self):
-        # An unparseable message should generate no response, but the
+    def test_receive_unparsable(self):
+        # An unparsable message should generate no response, but the
         # transport should disconnect.
         self.tr.clear()
-        unparseable = "This is not parseable"
-        self.assertRaises(etree.ParseError, etree.fromstring, unparseable)
-        self.proto.stringReceived(unparseable)
+        unparsable = "This is not parsable"
+        self.assertRaises(etree.ParseError, etree.fromstring, unparsable)
+        self.proto.stringReceived(unparsable)
         self.assertEqual(self.tr.value(), "")
         self.assertEqual(self.tr.connected, False)
 
