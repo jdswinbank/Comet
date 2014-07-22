@@ -1388,23 +1388,6 @@ based broker seems plausible, although there are a number of caveats:
 \subsection{High-latency connections}
 \label{sec:perf:highlatency}
 
-\begin{figure}
-  \begin{center}
-  \includegraphics[width=0.7\columnwidth]{@FIGURE_OUTPUT_DIR@/tcp.pdf}
-  \end{center}
-
-  \caption{The complete network packet exchange as an author uploads a VOEvent
-  to a broker. Packets with specific TCP flags set have those flags indicated
-  in upper case. Payload data (a VOEvent or Transport packet) are indicated
-  by the word ``Payload''. Time increases down the diagram. The network round
-  trip time is denoted by $t_\mathrm{RT}$. A dashed time axis indicates
-  packets being sent with no interval between them. For example, at time
-  $t_\mathrm{RT}$ the author sends \textsc{ack} immediately followed by
-  VOEvent data.}
-
-  \label{fig:tcp}
-\end{figure}
-
 Astronomical observatories are frequently located in remote locations: in
 deserts, on mountain tops, and so on. The geographic isolation of these
 facilities often results in their having poor internet connections. Even if
@@ -1454,6 +1437,23 @@ opening more than one TCP connection to the broker. Here, we investigate to
 what extent this can mitigate the issue.
 
 \subsubsection{Test setup}
+
+\begin{figure}
+  \begin{center}
+  \includegraphics[width=0.7\columnwidth]{@FIGURE_OUTPUT_DIR@/tcp.pdf}
+  \end{center}
+
+  \caption{The complete network packet exchange as an author uploads a VOEvent
+  to a broker. Packets with specific TCP flags set have those flags indicated
+  in upper case. Payload data (a VOEvent or Transport packet) are indicated
+  by the word ``Payload''. Time increases down the diagram. The network round
+  trip time is denoted by $t_\mathrm{RT}$. A dashed time axis indicates
+  packets being sent with no interval between them. For example, at time
+  $t_\mathrm{RT}$ the author sends \textsc{ack} immediately followed by
+  VOEvent data.}
+
+  \label{fig:tcp}
+\end{figure}
 
 Events were generated, sent the the broker, and thence onward to a single
 subscriber as per \S\ref{sec:perf:total:setup}, and was carried out as
