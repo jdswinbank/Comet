@@ -1225,11 +1225,12 @@ which could be tested.
 
 \subsubsection{Results}
 
-Figure~\ref{fig:subscribers} shows the event latency as a function of
-subscriber count. The latency increases gradually with increasing subscriber
-count, from a mean of 0.0063\,s for a single subscriber to 0.0931\,s for 256
-subscribers, the highest number tested: even at this level, the mean latency
-was less than 0.1\,s. The maximum latency rose to a peak of 0.49\,s.
+The latency increases gradually with increasing subscriber count, from a mean
+of 0.0063\,s for a single subscriber to 0.0931\,s for 256 subscribers, the
+highest number tested: even at this level, the mean latency was less than
+0.1\,s. The maximum latency rose to a peak of 0.49\,s.  The scaling of latency
+with subscriber count is shown in Fig.~\ref{fig:subscribers}; this scaling was
+better than linear across the range of connection counts tested.
 
 A latency of around 0.1\,s is comparable to a long range (e.g.\ transatlantic)
 network round trip times and is at a level where it may start to impact on
@@ -1254,10 +1255,12 @@ subscribers with 0.1\,s latency.
   \includegraphics[width=\columnwidth]{@FIGURE_OUTPUT_DIR@/subscribers.pdf}
   \end{center}
 
-  \caption{Event latency as a function of subscriber count. The solid line
-  shows the mean latency across all events and all subscribers; error bars
-  indicate the standard deviation. The dashed lines indicate the maximum and
-  minimum event latency recorded.}
+  \caption{Scaling of event latency as a function of subscriber count. The
+  solid line shows the latency as a function of subscriber count, normalized
+  to the latency at 256 subscribers; error bars indicate the standard
+  deviation.  The dotted lines indicate the maximum and minimum latencies
+  recorded. The dashed line shows the normalized latency which might be
+  expected given a linear dependence on subscriber count.}
 
   \label{fig:subscribers}
 \end{figure}
