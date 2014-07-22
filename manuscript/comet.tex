@@ -118,7 +118,7 @@ of the protocol to large numbers of events and to high latency connections. In
 \S\ref{sec:security} we consider the security implications of VOEvents, how
 they can be addressed at the transport level, and describe a system being
 prototyped in Comet.  Implications for future revisions of the VTP standard
-are summarized in \S\ref{sec:future}. Section \ref{sec:avail} describes the
+are summarized in \S\ref{sec:future}. Section~\ref{sec:avail} describes the
 terms under which Comet is available and how to obtain it, while a summary of
 the results are presented and some more general conclusions drawn for future
 of VOEvent transport in \S\ref{sec:conclusions}.
@@ -163,8 +163,8 @@ by means of the network. To wit, VTP defines the following network roles:
   \item[Broker]{A broker receives VOEvents from other network entities
   re-distributes them to one or more subscribers. In addition, a broker may
   perform ``added value'' services. These could be at the request of
-  particular subscribers (e.g. to apply some filter to the event stream sent
-  to that subscriber), or applied more generally to the event stream (e.g. to
+  particular subscribers (e.g.\ to apply some filter to the event stream sent
+  to that subscriber), or applied more generally to the event stream (e.g.\ to
   apply some annotation to all events processed).}
 
 \end{description}
@@ -175,7 +175,7 @@ VTP standard defines three types of connection:
 \begin{description}
 
   \item[Author to Broker]{The author makes a TCP connection to the broker and
-  transmits a VOEvent packet. On receipt of a synatically valid message, the
+  transmits a VOEvent packet. On receipt of a syntactically valid message, the
   broker sends an acknowledgement.  The connection is then closed; submitting
   a further VOEvent packet would require initiating a new connection.}
 
@@ -424,14 +424,14 @@ operation.
 
 It is worth emphasizing that the techniques described in this section are not
 unique to Twisted. Other frameworks such as
-\texttt{gevent}\footnote{\url{http://www.gevent.org/}} and
-\texttt{asyncio}\footnote{Recently added to the Python standard
-library; \url{https://docs.python.org/3.4/library/asyncio.html}} provide
-implementations of similar capabilities in Python, and similar libraries are
-available for many other languages. However, the rich software ecosystem
+gevent\footnote{\url{http://www.gevent.org/}} and asyncio\footnote{Recently
+added to the Python standard library;
+\url{https://docs.python.org/3.4/library/asyncio.html}} provide
+implementations of similar capabilities in Python, and equivalent libraries
+are available for many other languages. However, the rich software ecosystem
 supported by Twisted, combined with its demonstrated ability to deliver
-acceptable performance (\S\ref{sec:perf}), have provided an excellent
-platform upon which to develop Comet.
+acceptable performance (\S\ref{sec:perf}), have provided an excellent platform
+upon which to develop Comet.
 
 \subsection{Comet architecture}
 \label{sec:design:architecture}
@@ -501,7 +501,7 @@ correct and resubmit the event.
 
 When receiving events from an upstream broker (either as a broker itself or as
 a subscriber) Comet does not attempt to validate the event against the schema
-(although it is still required that the event must be parseable). This is
+(although it is still required that the event must be parsable). This is
 because there is no way to indicate the failure to the author: any
 \texttt{nak} sent to the upstream broker will not be propagated further. The
 author cannot know that their event has been rejected, will not correct and
@@ -636,8 +636,8 @@ by passing events to another process. Comet therefore makes it possible to
 write \textit{plugins}, which can be loaded into the daemon at run time.
 Users write plugins in Python, implementing a standard interface. Plugins
 provide a \texttt{\_\_call\_\_()} method which is invoked with the contents of
-an event whenever one is received. An example is shown in Listing
-\ref{lst:plugin}.
+an event whenever one is received. An example is shown in
+Listing~\ref{lst:plugin}.
 
 \begin{listing}
 \begin{minted}[frame=lines]{python}
@@ -1062,10 +1062,10 @@ SHA-1 calculation & 0.152024 & 0.000009 \\
 \hspace{4mm} \texttt{tmpfs} & - & 0.000499 \\
 Schema validation & 1.385420 & 0.000084 \\
 \multicolumn{3}{l}{XPath evaluation:\footnote{Expressions as defined in \S\ref{sec:filter:xpath}.}} \\
-\hspace{4mm}  Expression \ref{xpath:exp1} & 0.218424 & 0.000013 \\
-\hspace{4mm}  Expression \ref{xpath:exp2} & 0.221899 & 0.000014 \\
-\hspace{4mm}  Expression \ref{xpath:exp3} & 0.579474 & 0.000035 \\
-\hspace{4mm}  Expression \ref{xpath:exp4} & 0.283376 & 0.000017 \\
+\hspace{4mm}  Expression~\ref{xpath:exp1} & 0.218424 & 0.000013 \\
+\hspace{4mm}  Expression~\ref{xpath:exp2} & 0.221899 & 0.000014 \\
+\hspace{4mm}  Expression~\ref{xpath:exp3} & 0.579474 & 0.000035 \\
+\hspace{4mm}  Expression~\ref{xpath:exp4} & 0.283376 & 0.000017 \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -1074,7 +1074,7 @@ Schema validation & 1.385420 & 0.000084 \\
 
 The total time for operating on all messages being tested (where applicable),
 as well as the mean time per event, for each of the tests above is recorded in
-Table \ref{tab:perf:individual}.
+Table~\ref{tab:perf:individual}.
 
 Note that the results recorded for XPath filtering are not directly comparable
 to those for the other tests described. All the other operations are performed
@@ -1170,7 +1170,7 @@ Fig.~\ref{fig:latency}. This provided a somewhat improved mean latency of
 0.019\,s with a standard deviation of 0.011\,s, and a reduced maximum latency
 of 0.130\,s.
 
-Section \ref{sec:perf:individual:eventdb} established that the event database
+Section~\ref{sec:perf:individual:eventdb} established that the event database
 operations take an average of 0.013\,s when the database is stored on magnetic
 disk, as it was in this default configuration: this is some 70\,\% of the
 measured event latency. The same section demonstrated a 25-fold improvement
@@ -1395,7 +1395,7 @@ based broker seems plausible, although there are a number of caveats:
 
   \caption{The complete network packet exchange as an author uploads a VOEvent
   to a broker. Packets with specific TCP flags set have those flags indicated
-  in upper case. Payload data (a VOEvent or Transport packet) are indidcated
+  in upper case. Payload data (a VOEvent or Transport packet) are indicated
   by the word ``Payload''. Time increases down the diagram. The network round
   trip time is denoted by $t_\mathrm{RT}$. A dashed time axis indicates
   packets being sent with no interval between them. For example, at time
@@ -1455,7 +1455,7 @@ what extent this can mitigate the issue.
 
 \subsubsection{Test setup}
 
-Events were generated, sent the the broker, and thence onwards to a single
+Events were generated, sent the the broker, and thence onward to a single
 subscriber as per \S\ref{sec:perf:total:setup}, and was carried out as
 described in that section. Connection counts were again increased
 logarithmically.  Given the relative stability of the throughput (at least for
@@ -1535,7 +1535,7 @@ verify both the integrity of a VTP connection and the identity of their remote
 peer. In this way, a subscriber can be certain of the identity of the broker
 from which it receives a particular event. However, that broker was not itself
 the originator of the event, but rather it received it either from the author
-directly or from another broker; it is now incubment upon that broker tonot
+directly or from another broker; it is now incumbent upon that broker to not
 only to verify the identity of the sender but also to satisfy the subscriber
 that this has been done with sufficient diligence. If the event has traversed
 a length path through multiple brokers before reaching the subscriber, this
@@ -1572,7 +1572,7 @@ can be directly used in the context of VOEvents and VTP.
 
 \subsubsection{Bitstream immutability}
 
-Section \ref{sec:design:dedup} discussed whether two VOEvent packets can be
+Section~\ref{sec:design:dedup} discussed whether two VOEvent packets can be
 regarded as ``the same'' and the motivated the requirement that entities
 participating in a VTP network should transmit events unchanged. When
 considering cryptographic signatures, this requirement becomes absolutely
@@ -1777,8 +1777,8 @@ submission by an author take place over a new TCP connection.
 Two approaches should be considered to this flaw in the protocol. The first is
 simply to drop the requirement that the connection should be closed between
 each submission. Not only would this reduce the total transaction time per
-event by removing the need to repeat the TCP handshake (see Fig.
-\ref{fig:tcp}), it would also be possible to interleave transactions: the
+event by removing the need to repeat the TCP handshake (see
+Fig.~\ref{fig:tcp}), it would also be possible to interleave transactions: the
 author could begin the submission of further events before having received an
 acknowledgement of the first.
 
