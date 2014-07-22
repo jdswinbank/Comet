@@ -55,17 +55,13 @@ def generate_plot(data, figure_width, output_file):
             'figure.subplot.right': 0.97
         }
     )
-    normalization = 1.0 / max(data["latency"])
-    print [x /256.0  for x in data["n_subscribers"]]
-    pyplot.errorbar(data["n_subscribers"], [x * normalization for x in data["latency"]], yerr=[x * normalization for x in data["std"]], fmt='b-')
-    pyplot.plot(data["n_subscribers"], [x / 256.0 for x in data["n_subscribers"]], 'g--')
-
-    pyplot.plot(data["n_subscribers"], [x * normalization for x in data["min"]], 'r:')
-    pyplot.plot(data["n_subscribers"], [x * normalization for x in data["max"]], 'r:')
+    pyplot.plot(data["n_subscribers"], [x/y for x, y in zip(data["latency"], data["n_subscribers"])])
+    pyplot.plot(data["n_subscribers"], [x/y for x, y in zip(data["min"], data["n_subscribers"])], 'g--')
+    pyplot.plot(data["n_subscribers"], [x/y for x, y in zip(data["max"], data["n_subscribers"])], 'g--')
     pyplot.xscale("log")
     pyplot.yscale("log")
     pyplot.xlabel("Number of subscribers")
-    pyplot.ylabel("Normalized latency")
+    pyplot.ylabel("Latency per subscriber (s)")
     write_figure(output_file)
 
 if __name__ == "__main__":
