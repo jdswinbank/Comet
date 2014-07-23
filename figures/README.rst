@@ -99,4 +99,4 @@ and subscriber were using the EPoll reactor, and once with both the EPoll
 reactor and storing the event database on tmpfs (ie, a RAM disk). The
 latencies are in the three appropriately named log files.
 
-The pythons script plots histograms showing how the latencies compare.
+The Python script plots histograms showing how the latencies compare.
