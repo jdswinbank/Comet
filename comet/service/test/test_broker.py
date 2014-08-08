@@ -1,4 +1,5 @@
 from ipaddr import IPNetwork
+from lxml.etree import XPath
 
 from twisted.trial import unittest
 from twisted.python import usage
@@ -95,6 +96,10 @@ class DefaultOptionsTestCase(unittest.TestCase):
         cmd_line = ["--filter", "foo", "--filter", "bar"]
         self.config.parseOptions(cmd_line)
         self.assertEqual(len(self.config['filters']), 2)
+
+    def test_invalid_filter(self):
+        cmd_line = ["--filter", "not(starts-with("]
+        self.assertRaises(usage.UsageError, self.config.parseOptions, cmd_line)
 
     def test_cmd(self):
         cmd_line = ["--cmd", "foo", "--cmd", "bar"]

@@ -7,6 +7,9 @@ import os
 # Used for building IP whitelist
 from ipaddr import IPNetwork
 
+# lxml XML handling
+from lxml.etree import XPath, XPathSyntaxError
+
 # Twisted
 from twisted.internet import reactor
 from twisted.python import usage
@@ -81,6 +84,11 @@ class Options(BaseOptions):
         self["handlers"].append(SpawnCommand(cmd))
 
     def opt_filter(self, my_filter):
+        try:
+            # Weed out invalid filters
+            XPath(my_filter)
+        except XPathSyntaxError:
+            raise usage.UsageError("Invalid XPath expression: %s" % my_filter)
         self['filters'].append(my_filter)
 
     def opt_remote(self, remote):
