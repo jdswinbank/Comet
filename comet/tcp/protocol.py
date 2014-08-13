@@ -1,6 +1,8 @@
 # VOEvent TCP transport protocol using Twisted.
 # John Swinbank, <swinbank@transientskp.org>, 2011-12.
 
+from itertools import chain
+
 # XML parsing using lxml
 import lxml.etree as ElementTree
 
@@ -318,15 +320,20 @@ class VOEventBroadcaster(ElementSender):
         elif incoming.get('role') == "authenticate":
             log.debug("Authentication received from %s" % str(self.transport.getPeer()))
             self.filters = []
-            for xpath in incoming.findall("Meta/filter[@type=\"xpath\"]"):
+            # Accept both "new-style" (<Param type="xpath-filter" />) and
+            # old-style (<filter type="xpath" />) filters.
+            for xpath in chain(
+                [elem.get('value') for elem in incoming.findall("Meta/Param[@name=\"xpath-filter\"]")],
+                [elem.text for elem in incoming.findall("Meta/filter[@type=\"xpath\"]")]
+            ):
                 log.msg(
                     "Installing filter %s for %s" %
-                    (xpath.text, str(self.transport.getPeer()))
+                    (xpath, str(self.transport.getPeer()))
                 )
                 try:
-                    self.filters.append(ElementTree.XPath(xpath.text))
+                    self.filters.append(ElementTree.XPath(xpath))
                 except ElementTree.XPathSyntaxError:
-                    log.msg("Filter %s is not valid XPath" % (xpath.text,))
+                    log.msg("Filter %s is not valid XPath" % (xpath,))
         else:
             log.warning(
                 "Incomprehensible data received from %s (role=%s)" %

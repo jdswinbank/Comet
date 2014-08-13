@@ -18,10 +18,14 @@ Version 2.0.x
 
     Timestamps in ``iamalive`` messages are marked as being in UTC.
 
+    ``authenticate`` messages which specify XPath filters are schema
+    compliant (`GitHub #31`_).
+
     Subscriber refuses to start if an XPath ``--filter`` is specified with
     invalid syntax (`GitHub #33`_).
 
 .. _GitHub #29: https://github.com/jdswinbank/Comet/issues/29
+.. _GitHub #31: https://github.com/jdswinbank/Comet/issues/31
 .. _GitHub #33: https://github.com/jdswinbank/Comet/issues/33
 
 

@@ -50,6 +50,9 @@ class TransportTestCase(unittest.TestCase):
         self.assertTrue(self.schema.validate(message.element))
 
     def test_authenticateresponse_valid_filter(self):
-        filters = ["//Param[@name=\"Sun_Distance\" and @value<40]"]
+        filters = ["test1<>?!", "test2<>?!"]
         message = authenticateresponse(DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN, filters)
-        self.assertEqual(message.findall("Meta/filter[@type=\"xpath\"]")[0].text, filters[0])
+        filter_elems = message.findall("Meta/Param[@name=\"xpath-filter\"]")
+        for inp, outp in zip(filters, filter_elems):
+            self.assertEqual(inp, outp.get('value'))
+        self.assertTrue(self.schema.validate(message.element))

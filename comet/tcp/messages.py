@@ -76,6 +76,7 @@ def authenticateresponse(local_ivo, remote_ivo, filters):
     root_element.set("role", "authenticate")
     meta = ElementTree.SubElement(root_element, "Meta")
     for my_filter in filters:
-        xslt = ElementTree.SubElement(meta, "filter", attrib={"type": "xpath"})
-        xslt.text = my_filter
+        xslt = ElementTree.SubElement(
+            meta, "Param", attrib={"name": "xpath-filter", "value": my_filter}
+        )
     return xml_document(root_element)

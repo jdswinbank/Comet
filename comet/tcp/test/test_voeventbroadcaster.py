@@ -9,6 +9,8 @@ from ...test.support import DUMMY_IAMALIVE
 from ...test.support import DUMMY_ACK
 from ...test.support import DUMMY_NAK
 from ...test.support import DUMMY_AUTHENTICATE
+from ...test.support import DUMMY_AUTHENTICATE_RESPONSE
+from ...test.support import DUMMY_AUTHENTICATE_RESPONSE_LEGACY
 from ...test.support import DUMMY_VOEVENT
 from ...test.support import DUMMY_EVENT_IVORN
 from ...test.support import DUMMY_SERVICE_IVORN
@@ -198,28 +200,37 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
         self.assertEqual(self.tr.value(), "")
         self.assertEqual(self.tr.connected, False)
 
-    def _test_sets_filter(self, filter_string):
+    def _test_sets_filter(self, filter_list):
         self.tr.clear()
         self.assertEqual(len(self.proto.filters), 0)
-        self.proto.stringReceived(DUMMY_AUTHENTICATE % filter_string)
+        self.proto.stringReceived(DUMMY_AUTHENTICATE_RESPONSE(filter_list).text)
+        self.assertEqual(self.tr.value(), "")
+        self.assertEqual(self.tr.connected, True)
+        self.assertEqual(len(self.proto.filters), len(filter_list))
+
+    def test_receive_authenticateresponse_with_filters(self):
+        self._test_sets_filter([
+            "/*[local-name()=\"VOEvent\" and @role=\"test\"]",
+            "//Param[@name=\"SC_Lat\" and @value<600]"
+        ])
+
+    def test_receive_authenticateresponse_legacy(self):
+        # The legacy forma is in violation of the Transport schema. We no
+        # longer generate packets that look like this, but the broker still
+        # recognizes them.
+        demo_filter =  "//Param[@name=\"SC_Lat\" and @value&lt;600]"
+        self.tr.clear()
+        self.assertEqual(len(self.proto.filters), 0)
+        self.proto.stringReceived(DUMMY_AUTHENTICATE_RESPONSE_LEGACY % demo_filter)
         self.assertEqual(self.tr.value(), "")
         self.assertEqual(self.tr.connected, True)
         self.assertEqual(len(self.proto.filters), 1)
 
-    def test_receive_authenticate(self):
-        self._test_sets_filter("/*[local-name()=\"VOEvent\" and @role=\"test\"]")
-
-    def test_receive_authenticate_cdata(self):
-        self._test_sets_filter("<![CDATA[//Param[@name=\"SC_Lat\" and @value<600]]]>")
-
-    def test_receive_authenticate_entity(self):
-        self._test_sets_filter("//Param[@name=\"SC_Lat\" and @value&lt;600]")
-
-    def test_receive_authenticate_with_bad_filter(self):
+    def test_receive_authenticateresponse_with_bad_filter(self):
         self.tr.clear()
         self.assertEqual(len(self.proto.filters), 0)
         self.proto.stringReceived(
-            DUMMY_AUTHENTICATE % "Not a valid XPath expression"
+            DUMMY_AUTHENTICATE_RESPONSE(["Not a valid XPath expression"]).text
         )
         self.assertEqual(self.tr.value(), "")
         self.assertEqual(self.tr.connected, True)

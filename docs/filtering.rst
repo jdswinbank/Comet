@@ -12,9 +12,9 @@ At any time, the subscriber may send the broker an authentication response
 message. (Note that in the current implementation no authentication is
 actually requred, and the processing of digital signatures is not supported).
 Within the ``<Meta />`` section of the authentication packet, one or more
-XPath expressions may be supplied in filter elements with a ``type`` attribute
-equal to ``xpath``. For example, the following will select all VOEvent packets
-which are not marked as a test::
+XPath expressions may be supplied in ``<Param />`` elements with a ``name``
+attribute equal to ``xpath-filter``. For example, the following will select
+all VOEvent packets which are not marked as a test::
 
   <trn:Transport version="1.0" role="authenticate"
     xmlns:trn="http://www.telescope-networks.org/xml/Transport/v1.1"
@@ -25,7 +25,7 @@ which are not marked as a test::
     <Response>ivo://response</Response>
     <TimeStamp>2012-02-08T21:13:53Z</TimeStamp>
     <Meta>
-      <filter type="xpath">/*[local-name()="VOEvent" and @role!="test"]</filter>
+      <Param name"xpath-filter" value="/*[local-name()=&quot;VOEvent&quot; and @role!=&quot;test&quot;]" />
     </Meta>
   </trn:Transport>
 

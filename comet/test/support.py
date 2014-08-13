@@ -1,5 +1,7 @@
 import textwrap
+from functools import partial
 import lxml.etree as etree
+from comet.tcp.messages import authenticateresponse
 
 DUMMY_EVENT_IVORN = "ivo://comet.broker/test#1234567890"
 DUMMY_SERVICE_IVORN = "ivo://comet.broker/test"
@@ -73,7 +75,7 @@ DUMMY_NAK = """
 """ % (DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN)
 DUMMY_NAK = textwrap.dedent(DUMMY_NAK).strip()
 
-DUMMY_AUTHENTICATE = """
+DUMMY_AUTHENTICATE_RESPONSE_LEGACY = """
     <?xml version='1.0' encoding='UTF-8'?>
     <trn:Transport xmlns:trn="http://www.telescope-networks.org/xml/Transport/v1.1"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -88,7 +90,11 @@ DUMMY_AUTHENTICATE = """
         </Meta>
     </trn:Transport>
 """ % (DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN, "%s")
-DUMMY_AUTHENTICATE = textwrap.dedent(DUMMY_AUTHENTICATE).strip()
+DUMMY_AUTHENTICATE_RESPONSE_LEGACY = textwrap.dedent(DUMMY_AUTHENTICATE_RESPONSE_LEGACY).strip()
+
+DUMMY_AUTHENTICATE_RESPONSE = partial(
+    authenticateresponse, DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN
+)
 
 class DummyEvent(object):
     attrib = {'ivorn': DUMMY_EVENT_IVORN}
