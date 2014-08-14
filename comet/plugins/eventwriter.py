@@ -35,11 +35,13 @@ def event_file(ivorn, dirname=None):
     fname = os.path.join(dirname, string_to_filename(ivorn))
     lock = lockfile.FilesystemLock(string_to_filename(ivorn) + "-lock")
     lock.lock()
-    while os.path.exists(fname):
-        fname += "."
-    with open(fname, 'w') as f:
-        yield f
-    lock.unlock()
+    try:
+        while os.path.exists(fname):
+            fname += "."
+        with open(fname, 'w') as f:
+            yield f
+    finally:
+        lock.unlock()
 
 # Event handlers must implement IPlugin and IHandler.
 # Implementing IHasOptions enables us to use command line options.
