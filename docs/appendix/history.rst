@@ -24,7 +24,7 @@ Version 2.0.x
     Subscriber refuses to start if an XPath ``--filter`` is specified with
     invalid syntax (`GitHub #33`_).
 
-    Require that a valid IVOA identifier (IVORN) be supplied for this system,
+    Require that a valid IVOA identifier (IVORN) be supplied by the end user
     rather than relying on a default.
 
 .. _GitHub #29: https://github.com/jdswinbank/Comet/issues/29

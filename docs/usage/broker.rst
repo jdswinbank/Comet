@@ -41,9 +41,9 @@ provide a brief usage message::
     -b, --broadcast                 Re-broadcast VOEvents received.
     -v, --verbose                   Increase verbosity.
     -q, --quiet                     Decrease verbosity.
-        --print-event               Enable the print-event plugin
-        --save-event                Enable the save-event plugin
-        --local-ivo=                [default: ivo://comet.broker/default_ivo]
+        --print-event               Enable the print-event plugin.
+        --save-event                Enable the save-event plugin.
+        --local-ivo=                IVOA identifier for this system (required).
         --eventdb=                  Event database root. [default: /tmp]
         --receive-port=             TCP port for receiving events. [default: 8098]
         --broadcast-port=           TCP port for broadcasting events. [default:
@@ -58,7 +58,7 @@ provide a brief usage message::
                                     remote.
         --cmd=                      Spawn external command on event receipt.
         --save-event-directory=     Target directory [default:
-                                    /Users/jds/Projects/tdig/comet]
+                                    current working directory]
         --help                      Display this help and exit.
         --version                   Display Twisted version and exit.
 
@@ -97,7 +97,8 @@ Whatever the mode of operation, Comet identifies itself by means of an
 *International Virtual Observatory Resource Name* or *IVORN*: see the `VOEvent
 standard <http://www.ivoa.net/Documents/VOEvent/index.html>`_ for details. You
 should specify some appropriate IVORN for your site using the ``--local-ivo``
-option.
+option. This should be of the format ``ivo://${organization}/${name}``; for
+example, ``ivo://org.transientskp/comet_broker``.
 
 VOEvent Network Maintenance
 +++++++++++++++++++++++++++
