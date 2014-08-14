@@ -11,11 +11,12 @@ from ..broker import BCAST_TEST_INTERVAL
 from ..broker import DEFAULT_REMOTE_PORT
 from ..broker import Options
 from ..broker import makeService
+from comet.test.support import DUMMY_SERVICE_IVORN
 
 class DefaultOptionsTestCase(unittest.TestCase):
     def setUp(self):
         self.config = Options()
-        self.cmd_line = ["--local-ivo", "ivo://comet/test"]
+        self.cmd_line = ["--local-ivo", DUMMY_SERVICE_IVORN]
 
     def test_faulty_cmd_line(self):
         self.cmd_line.append("--not-a-real-option")
@@ -125,6 +126,10 @@ class DefaultOptionsTestCase(unittest.TestCase):
         self.cmd_line.extend(['-q', '-v'])
         self.config.parseOptions(self.cmd_line)
         self.assertEqual(log.LEVEL, log.DEFAULT_LEVEL)
+
+    def test_valid_ivorn(self):
+        self.config.parseOptions(self.cmd_line)
+        self.assertEqual(self.config['local-ivo'], DUMMY_SERVICE_IVORN)
 
     def test_invalid_ivorn(self):
         self.cmd_line.extend(["--local-ivo", "ivo://"])

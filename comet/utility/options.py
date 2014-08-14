@@ -11,8 +11,8 @@ class BaseOptions(usage.Options):
             parse_ivorn(local_ivo)
         except:
             raise usage.UsageError("Invalid IVOA identifier: %s" % local_ivo)
-        self['local_ivo'] = local_ivo
+        self['local-ivo'] = local_ivo
 
     def postOptions(self):
-        if not 'local_ivo' in self:
+        if not 'local-ivo' in self:
             raise usage.UsageError("IVOA identifier required (--local-ivo)")
