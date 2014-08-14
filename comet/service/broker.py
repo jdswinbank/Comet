@@ -107,6 +107,7 @@ class Options(BaseOptions):
         self['running_whitelist'].append(IPNetwork(network))
 
     def postOptions(self):
+        BaseOptions.postOptions(self)
         if self['running_whitelist']:
             self['whitelist'] = self['running_whitelist']
         else:
