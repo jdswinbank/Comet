@@ -25,7 +25,10 @@ class parse_ivornTestCase(unittest.TestCase):
     def test_simple(self):
         for auth, rsrc, local_ID in [
             ("authorityID", "resourceKey", "local_ID"),
-            ("authorityID", "rsrc/with/slashes", "local/ID/with/slashes")
+            ("authorityID", "rsrc/with/slashes", "local/ID/with/slashes"),
+            ("authorityID", "resourceKey", ""),
+            ("authorityID", "", "local_ID"),
+            ("authorityID", "", "")
         ]:
             ivorn = "ivo://%s/%s#%s" % (auth, rsrc, local_ID)
             self.assertEqual((auth, rsrc, local_ID), parse_ivorn(ivorn))
@@ -38,7 +41,6 @@ class parse_ivornTestCase(unittest.TestCase):
     def test_partial_ivorn(self):
         for ivorn in [
             "ivo://#localID",
-            "ivo://authorityID/",
             "ivo:///resourceKey#",
             "ivo://"
         ]:

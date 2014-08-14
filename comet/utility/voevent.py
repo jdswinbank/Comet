@@ -16,8 +16,8 @@ ElementTree.register_namespace("voe", "http://www.ivoa.net/xml/VOEvent/v2.0")
 
 IVORN_RE = re.compile("""ivo://
                          (?P<auth>[a-zA-Z0-9][\w\-.~*'()]{2,}) / # Authority
-                         (?P<rsrc>[\w\-.~*'()/]+) \#?            # Resource name
-                         (?P<localID>[\w\-.~*'()/]*)             # Fragment
+                         (?P<rsrc>[\w\-.~*'()/]*) \#?            # Resource name
+                         (?P<localID>[\w\-.~*'()/]*) $           # Fragment
                       """, re.VERBOSE)
 def parse_ivorn(ivorn):
     """
