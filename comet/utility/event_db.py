@@ -12,7 +12,8 @@ from collections import defaultdict
 from twisted.internet.threads import deferToThread
 from twisted.internet.defer import DeferredList
 
-from ..utility import log
+from comet.utility import log
+from comet.utility.voevent import parse_ivorn
 
 class Event_DB(object):
     def __init__(self, root):
@@ -21,7 +22,8 @@ class Event_DB(object):
 
     @staticmethod
     def _get_event_details(event):
-        db_path = event.attrib['ivorn'].split('//')[1].split('#')[0].replace(os.path.sep, "_")
+        auth, rsrc, local = parse_ivorn(event.attrib['ivorn'])
+        db_path = os.path.join(auth, rsrc).replace(os.path.sep, "_")
         key = sha1(event.text).hexdigest()
         return db_path, key
 
