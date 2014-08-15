@@ -21,21 +21,22 @@ from twisted.application.internet import TCPServer
 
 # Comet broker routines
 import comet
-from ..utility import log
-from ..utility.options import BaseOptions
-from ..tcp.protocol import VOEventBroadcasterFactory
-from ..tcp.protocol import VOEventReceiverFactory
-from ..tcp.protocol import VOEventSubscriberFactory
-from ..utility.whitelist import WhitelistingFactory
-from ..utility.event_db import Event_DB
-from ..validator.schema import CheckSchema
-from ..validator.previously_seen import CheckPreviouslySeen
+from comet.utility import log
+from comet.utility.options import BaseOptions
+from comet.tcp.protocol import VOEventBroadcasterFactory
+from comet.tcp.protocol import VOEventReceiverFactory
+from comet.tcp.protocol import VOEventSubscriberFactory
+from comet.utility.whitelist import WhitelistingFactory
+from comet.utility.event_db import Event_DB
+from comet.validator.ivorn import CheckIVORN
+from comet.validator.schema import CheckSchema
+from comet.validator.previously_seen import CheckPreviouslySeen
 
 # Handlers and plugins
 import comet.plugins
-from ..icomet import IHandler, IHasOptions
-from ..handler.spawn import SpawnCommand
-from ..handler.relay import EventRelay
+from comet.icomet import IHandler, IHasOptions
+from comet.handler.spawn import SpawnCommand
+from comet.handler.relay import EventRelay
 
 # Constants
 MAX_AGE = 30.0 * 24 * 60 * 60 # Forget events after 30 days
@@ -171,7 +172,8 @@ def makeService(config):
                 CheckPreviouslySeen(event_db),
                 CheckSchema(
                     os.path.join(comet.__path__[0], "schema/VOEvent-v2.0.xsd")
-                )
+                ),
+                CheckIVORN()
             ],
             handlers=config['handlers']
         )

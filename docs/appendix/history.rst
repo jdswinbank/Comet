@@ -6,10 +6,10 @@ Release History
 See the :ref:`release procedure <sec-release>` section for more details on
 version numbering and how releases are made.
 
-Version 2.0.x
--------------
+Future releases
+---------------
 
-2.0.0 (In progress)
+In progress
     When subscribing to a remote broker, we wait for a short period after the
     initial connection is made before marking it as successful. This means
     that if the broker rapidly drops the connection (e.g. due to an
@@ -25,7 +25,9 @@ Version 2.0.x
     invalid syntax (`GitHub #33`_).
 
     Require that a valid IVOA identifier (IVORN) be supplied by the end user
-    rather than relying on a default.
+    when starting Comet rather than relying on a default.
+
+    Require that events submitted to the broker by authors have valid IVORNs.
 
 .. _GitHub #29: https://github.com/jdswinbank/Comet/issues/29
 .. _GitHub #31: https://github.com/jdswinbank/Comet/issues/31
