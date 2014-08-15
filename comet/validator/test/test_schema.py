@@ -28,10 +28,11 @@ class CheckSchemaTestCase(unittest.TestCase):
         )
 
     def test_valid(self):
-        self.assertTrue(self.validator(xml_document(GOOD_EVENT_TEXT)))
+        return self.validator(xml_document(GOOD_EVENT_TEXT))
 
     def test_invalid(self):
-        self.assertTrue(self.validator(xml_document(BAD_EVENT_TEXT)))
+        d = self.validator(xml_document(BAD_EVENT_TEXT))
+        return self.assertFailure(d, Exception)
 
     def test_interface(self):
         self.assertTrue(IValidator.providedBy(self.validator))
