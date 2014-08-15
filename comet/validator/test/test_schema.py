@@ -3,21 +3,10 @@ import os
 from twisted.trial import unittest
 
 import comet
-from ...icomet import IValidator
-from ...utility.xml import xml_document
-from ..schema import CheckSchema
-
-GOOD_EVENT_TEXT = """
-<voe:VOEvent xmlns:voe="http://www.ivoa.net/xml/VOEvent/v2.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.ivoa.net/xml/VOEvent/v2.0
-  http://www.ivoa.net/xml/VOEvent/VOEvent-v2.0.xsd" version="2.0" role="test"
-  ivorn="ivo://comet.broker/test#1234567890">
-  <Who>
-    <AuthorIVORN>ivo://comet.broker/test</AuthorIVORN>
-  </Who>
-</voe:VOEvent>
-"""
+from comet.icomet import IValidator
+from comet.utility.xml import xml_document
+from comet.validator.schema import CheckSchema
+from comet.test.support import DUMMY_VOEVENT
 
 BAD_EVENT_TEXT = """<xml></xml>"""
 
@@ -28,7 +17,7 @@ class CheckSchemaTestCase(unittest.TestCase):
         )
 
     def test_valid(self):
-        return self.validator(xml_document(GOOD_EVENT_TEXT))
+        return self.validator(xml_document(DUMMY_VOEVENT))
 
     def test_invalid(self):
         d = self.validator(xml_document(BAD_EVENT_TEXT))
