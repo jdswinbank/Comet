@@ -58,7 +58,7 @@ Testing
 -------
 
 After installation, you should check that Comet is working properly. The
-Twisted framework Comet used by Comet makes this easy with its ``trial`` tool.
+Twisted framework used by Comet makes this easy with its ``trial`` tool.
 Simply run::
 
   $ trial comet
