@@ -97,6 +97,7 @@ DUMMY_AUTHENTICATE_RESPONSE = partial(
 )
 
 class DummyEvent(object):
-    attrib = {'ivorn': DUMMY_EVENT_IVORN}
-    text = DUMMY_VOEVENT
-    element = etree.fromstring(DUMMY_VOEVENT)
+    def __init__(self, ivorn=DUMMY_EVENT_IVORN):
+        self.attrib = {'ivorn': ivorn}
+        self.text = DUMMY_VOEVENT.replace(DUMMY_EVENT_IVORN, ivorn)
+        self.element = etree.fromstring(self.text)

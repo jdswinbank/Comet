@@ -39,5 +39,9 @@ class Event_DB_TestCase(unittest.TestCase):
         d.addCallback(done_prune)
         return d
 
+    def test_bad_ivorn(self):
+        bad_event = DummyEvent("ivo://#")
+        self.assertFalse(self.event_db.check_event(bad_event))
+
     def tearDown(self):
         shutil.rmtree(self.event_db_dir)

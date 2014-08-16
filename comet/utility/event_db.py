@@ -8,6 +8,7 @@ import time
 from hashlib import sha1
 from threading import Lock
 from collections import defaultdict
+from contextlib import closing
 
 from twisted.internet.threads import deferToThread
 from twisted.internet.defer import DeferredList
@@ -32,17 +33,17 @@ class Event_DB(object):
         Returns True if event is unseen (and hence good to forward), False
         otherwise.
         """
-        db_path, key = self._get_event_details(event)
-        with self.databases[db_path]: # Acquire lock
-            db = anydbm.open(os.path.join(self.root, db_path), 'c')
-            try:
-                if db.has_key(key):
-                    return False # Should not forward
-                else:
-                    db[key] = str(time.time())
-                    return True # Ok to forward
-            finally:
-                db.close()
+        try:
+            db_path, key = self._get_event_details(event)
+        except:
+            log.warn("Unparseable IVORN; failing eventdb lookup");
+        else:
+            with self.databases[db_path]: # Acquire lock
+                with closing(anydbm.open(os.path.join(self.root, db_path), 'c')) as db:
+                    if not db.has_key(key):
+                        db[key] = str(time.time())
+                        return True
+        return False
 
     def prune(self, expiry_time):
         """

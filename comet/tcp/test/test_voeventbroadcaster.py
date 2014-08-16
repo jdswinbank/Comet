@@ -127,7 +127,7 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
         self.tr.clear()
         init_outstanding_ack = self.proto.outstanding_ack
         self.proto.send_event(DummyEvent())
-        self.assertEqual(self.tr.value()[4:], DummyEvent.text)
+        self.assertEqual(self.tr.value()[4:], DummyEvent().text)
         self.assertEqual(self.proto.outstanding_ack - init_outstanding_ack, 1)
 
     def test_send_event_with_filter_reject(self):
