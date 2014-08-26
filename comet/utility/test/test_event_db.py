@@ -39,5 +39,24 @@ class Event_DB_TestCase(unittest.TestCase):
         d.addCallback(done_prune)
         return d
 
+    def test_prune_bad_event(self):
+        bad_event = DummyEvent(ivorn="ivo://")
+        self.assertNotIn("", self.event_db.databases)
+        # This throws because we don't have a hostname after which to name
+        # the database file.
+        self.assertRaises(Exception, self.event_db.check_event, bad_event)
+        # But the blank hostname is now stored in our list of databases.
+        self.assertIn("", self.event_db.databases)
+        d = self.event_db.prune(0)
+
+        def done_prune(result):
+            # After pruning, everything in the database should be unlocked.
+            for lock in self.event_db.databases.itervalues():
+                self.assertFalse(lock.locked())
+            self.assertRaises(Exception, self.event_db.check_event, bad_event)
+            self.assertTrue(self.event_db.check_event(self.event))
+        d.addCallback(done_prune)
+        return d
+
     def tearDown(self):
         shutil.rmtree(self.event_db_dir)

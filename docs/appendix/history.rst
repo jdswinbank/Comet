@@ -6,6 +6,11 @@ Release History
 Version 1.1.x
 -------------
 
+1.1.2 (2014-08-26) [`Download <//github.com/jdswinbank/Comet/tarball/1.1.2>`__]
+    Fix a bug which could result in malformed event IVORNs exhausting the
+    available resources and ultimately rendering Comet unable to process more
+    events (`GitHub #34`_).
+
 1.1.1 (2014-07-08) [`Download <https://github.com/jdswinbank/Comet/tarball/1.1.1>`__]
     Fix a bug which could result in the same VOEvent message being processed
     multiple times (`GitHub #30`_).
@@ -30,6 +35,7 @@ Version 1.1.x
     Plugin which writes events received to file (``--save-event``).
 
 .. _GitHub #30: https://github.com/jdswinbank/Comet/issues/30
+.. _GitHub #34: https://github.com/jdswinbank/Comet/issues/34
 
 
 Version 1.0.x
