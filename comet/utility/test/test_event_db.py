@@ -43,5 +43,23 @@ class Event_DB_TestCase(unittest.TestCase):
         bad_event = DummyEvent("ivo://#")
         self.assertFalse(self.event_db.check_event(bad_event))
 
+    def test_prune_bad_event(self):
+        bad_event = DummyEvent(ivorn="ivo://")
+        self.assertNotIn("", self.event_db.databases)
+        # This event doesn't validate and is rejected.
+        self.assertFalse(self.event_db.check_event(bad_event))
+        # The hostname shouldn't event be stored in our list of databases.
+        self.assertNotIn("", self.event_db.databases)
+        d = self.event_db.prune(0)
+
+        def done_prune(result):
+            # After pruning, everything in the database should be unlocked.
+            for lock in self.event_db.databases.itervalues():
+                self.assertFalse(lock.locked())
+            self.assertFalse(self.event_db.check_event(bad_event))
+            self.assertTrue(self.event_db.check_event(self.event))
+        d.addCallback(done_prune)
+        return d
+
     def tearDown(self):
         shutil.rmtree(self.event_db_dir)
