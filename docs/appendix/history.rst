@@ -6,10 +6,10 @@ Release History
 See the :ref:`release procedure <sec-release>` section for more details on
 version numbering and how releases are made.
 
-Future releases
----------------
+Version 1.2.x
+-------------
 
-In progress
+1.20 (2014-08-26) [`Download <//github.com/jdswinbank/Comet/tarball/1.2.0>`__]
     When subscribing to a remote broker, we wait for a short period after the
     initial connection is made before marking it as successful. This means
     that if the broker rapidly drops the connection (e.g. due to an
