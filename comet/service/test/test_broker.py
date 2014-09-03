@@ -135,6 +135,9 @@ class DefaultOptionsTestCase(unittest.TestCase):
         self.cmd_line.extend(["--local-ivo", "ivo://"])
         self.assertRaises(usage.UsageError, self.config.parseOptions, self.cmd_line)
 
+    def test_ivorn_missing(self):
+        self.assertRaises(usage.UsageError, self.config.parseOptions, "")
+
 
 class ServiceTestCase(unittest.TestCase):
     def setUp(self):
