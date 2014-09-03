@@ -9,7 +9,11 @@ version numbering and how releases are made.
 Version 1.2.x
 -------------
 
-1.20 (2014-08-26) [`Download <//github.com/jdswinbank/Comet/tarball/1.2.0>`__]
+1.2.1 (2014-09-02) [`Download <//github.com/jdswinbank/Comet/tarball/1.2.1>`__]
+    Correctly check that the (required) ``--local-ivo`` command line option
+    was provided (`GitHub #35`_).
+
+1.2.0 (2014-08-26) [`Download <//github.com/jdswinbank/Comet/tarball/1.2.0>`__]
     When subscribing to a remote broker, we wait for a short period after the
     initial connection is made before marking it as successful. This means
     that if the broker rapidly drops the connection (e.g. due to an
@@ -32,6 +36,7 @@ Version 1.2.x
 .. _GitHub #29: https://github.com/jdswinbank/Comet/issues/29
 .. _GitHub #31: https://github.com/jdswinbank/Comet/issues/31
 .. _GitHub #33: https://github.com/jdswinbank/Comet/issues/33
+.. _GitHub #35: https://github.com/jdswinbank/Comet/issues/33
 
 
 Version 1.1.x
