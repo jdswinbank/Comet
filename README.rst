@@ -32,7 +32,7 @@ This repository contains the following branches:
     Work-in-progress test version of Comet incorporating OpenPGP support.
 
 ``paper``
-    A manuscript describing Comet, submitted for publication in `Astronomy and
+    A manuscript describing Comet, accepted for publication in `Astronomy and
     Computing <http://www.journals.elsevier.com/astronomy-and-computing/>`_.
 
 Comet is developed by `John Swinbank <http://swinbank.org/>`_ as part of the
