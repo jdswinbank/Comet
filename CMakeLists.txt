@@ -7,6 +7,12 @@ set (FIGURE_OUTPUT_DIR ${PROJECT_BINARY_DIR}/figures)
 find_package (LATEX REQUIRED)
 find_package (LatexMk REQUIRED)
 find_package (PythonInterp REQUIRED)
+find_package (Pygments REQUIRED)
+
+execute_process(
+    COMMAND ${PYTHON_EXECUTABLE} -c "from pygments.formatters import LatexFormatter; f = LatexFormatter(); print f.get_style_defs()"
+    OUTPUT_VARIABLE PYGMENTS_PREAMBLE
+)
 
 configure_file (
     ${PROJECT_SOURCE_DIR}/manuscript/comet.tex
@@ -124,6 +130,30 @@ add_custom_command (
     DEPENDS ${FIGURE_OUTPUT_DIR}/throughput.json
 )
 
+foreach (pythonfile event deferred deferToThread plugin)
+    add_custom_command (
+        OUTPUT ${PROJECT_BINARY_DIR}/${pythonfile}.tex
+        COMMAND ${PYGMENTIZE_EXECUTABLE}
+        ARGS -f latex -l python
+             -o ${PROJECT_BINARY_DIR}/${pythonfile}.tex
+             ${PROJECT_SOURCE_DIR}/manuscript/${pythonfile}.py
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+        DEPENDS ${PROJECT_SOURCE_DIR}/manuscript/${pythonfile}.py
+    )
+endforeach (pythonfile)
+
+foreach (xmlfile testmessage xpath1 xpath2 xpath3 xpath4)
+    add_custom_command (
+        OUTPUT ${PROJECT_BINARY_DIR}/${xmlfile}.tex
+        COMMAND ${PYGMENTIZE_EXECUTABLE}
+        ARGS -f latex -l xml
+             -o ${PROJECT_BINARY_DIR}/${xmlfile}.tex
+             ${PROJECT_SOURCE_DIR}/manuscript/${xmlfile}.xml
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+        DEPENDS ${PROJECT_SOURCE_DIR}/manuscript/${xmlfile}.xml
+    )
+endforeach (xmlfile)
+
 add_custom_command (
     OUTPUT ${PROJECT_BINARY_DIR}/comet.pdf
     COMMAND ${LATEXMK_EXECUTABLE}
@@ -136,6 +166,15 @@ add_custom_command (
         ${FIGURE_OUTPUT_DIR}/throughput.pdf
         ${FIGURE_OUTPUT_DIR}/rtt.pdf
         ${PROJECT_BINARY_DIR}/comet.tex
+        ${PROJECT_BINARY_DIR}/event.tex
+        ${PROJECT_BINARY_DIR}/deferred.tex
+        ${PROJECT_BINARY_DIR}/deferToThread.tex
+        ${PROJECT_BINARY_DIR}/plugin.tex
+        ${PROJECT_BINARY_DIR}/testmessage.tex
+        ${PROJECT_BINARY_DIR}/xpath1.tex
+        ${PROJECT_BINARY_DIR}/xpath2.tex
+        ${PROJECT_BINARY_DIR}/xpath3.tex
+        ${PROJECT_BINARY_DIR}/xpath4.tex
 )
 
 add_custom_target (paper ALL echo

@@ -6,9 +6,19 @@
 \usepackage{subcaption}
 \usepackage{graphicx}
 \usepackage{color}
-\usepackage{minted}
+\usepackage{fancyvrb}
 \usepackage{microtype}
 \usepackage{booktabs}
+\usepackage{float}
+
+\newfloat{listing}{ht}{lst}
+\floatname{listing}{Listing}
+
+\newfloat{xpath}{ht}{xpt}
+\floatname{xpath}{XPath expression}
+
+% Set up the colours for Pygments-based syntax highlighting
+@PYGMENTS_PREAMBLE@
 
 \journal{Astronomy and Computing}
 
@@ -279,40 +289,15 @@ to possible events. Twisted provides an ``event loop'' which waits for events
 and calls the appropriate actions when they occur.
 
 \begin{listing}[t]
-\begin{minted}[frame=lines]{python}
-class VOEventReceiver(Protocol):
-  TIMEOUT = 20 # seconds
-
-  def connectionMade(self):
-    setTimeout(self.TIMEOUT)
-
-  def connectionLost(self):
-    setTimeout(None)
-    close_connection()
-
-  def timeoutConnection(self):
-    log.msg("Connection timed out")
-    close_connection()
-
-  def stringReceived(self, data):
-    try:
-        message = parse(data)
-        if is_valid(message):
-            log.info("Good message received")
-            acknowledge(message)
-            process_event(message)
-        else:
-            log.warning("Bad message received")
-    except ParseError:
-        log.warning("Message unparsable")
-    finally:
-        close_connection()
-\end{minted}
+\hrulefill
+\vspace{-10pt}
+\input{@PROJECT_BINARY_DIR@/event}
+\vspace{-15pt}
+\hrulefill
 \caption{An example of an event-driven Twisted protocol, based on Comet's
 \texttt{VOEventReceiver}.}
 \label{lst:event}
 \end{listing}
-
 
 When talking to the network, Twisted provides the \textit{Protocol} as an
 abstraction for managing events. A protocol defines the interaction that a
@@ -381,17 +366,12 @@ queue up a number of callbacks to be run when parsing is complete and also add
 an ``errback'' which handles logging a message if any of the callbacks fail to
 run successfully.
 
-\begin{listing}
-\begin{minted}[frame=lines]{python}
-def stringReceived(self, data):
-  d = deferred_parse(data)
-  d.addCallback(is_valid)
-  d.addCallback(check_role)
-  d.addCallback(acknowledge)
-  d.addCallback(process_event)
-  d.addErrback(log_failure)
-  d.addCallback(close_connection)
-\end{minted}
+\begin{listing}[H]
+\hrulefill
+\vspace{-10pt}
+\input{@PROJECT_BINARY_DIR@/deferred}
+\vspace{-15pt}
+\hrulefill
 \caption{A version of \texttt{VOEventReceiver.stringReceived()} (shown in
 Listing~\ref{lst:event}) based on deferred processing.}
 \label{lst:deferred}
@@ -405,15 +385,14 @@ the deferred fires with its result. Conveniently, Twisted makes it easy to
 apply this pattern to a blocking function such as our \texttt{parse()}: see
 Listing~\ref{lst:deferToThread}.
 
-\begin{listing}
-\begin{minted}[frame=lines]{python}
-from twisted.internet.threads import \
-     deferToThread
-
-def deferred_parse(data):
-    return deferToThread(parse, data)
-\end{minted}
-\caption{The implementation of the non-blocking \texttt{deferred\_parse()} function.}
+\begin{listing}[H]
+\hrulefill
+\vspace{-10pt}
+\input{@PROJECT_BINARY_DIR@/deferToThread}
+\vspace{-15pt}
+\hrulefill
+\caption{The implementation of the non-blocking \texttt{deferred\_parse()}
+function.}
 \label{lst:deferToThread}
 \end{listing}
 
@@ -639,28 +618,12 @@ provide a \texttt{\_\_call\_\_()} method which is invoked with the contents of
 an event whenever one is received. An example is shown in
 Listing~\ref{lst:plugin}.
 
-\begin{listing}
-\begin{minted}[frame=lines]{python}
-from zope.interface import implementer
-from twisted.plugin import IPlugin
-from comet.icomet import IHandler, IHasOptions
-
-# A plugin implements the IPlugin
-# and IHandler interfaces
-@implementer(IPlugin, IHandler)
-class ExamplePlugin(object):
-    # The "name" attribute is used to refer
-    # to the plugin on the command line.
-    name = "example"
-
-    # The "__call__()" method is invoked
-    # when a new event is received.
-    def __call__(self, event):
-        print "Event received"
-
-# The plugin must be instantiated before use.
-example_plugin = ExamplePlugin()
-\end{minted}
+\begin{listing}[t]
+\hrulefill
+\vspace{-10pt}
+\input{@PROJECT_BINARY_DIR@/plugin}
+\vspace{-15pt}
+\hrulefill
 \caption{A simple example of a Comet event handling plugin. This plugin prints
 a message whenever a new event is received.}
 \label{lst:plugin}
@@ -694,13 +657,6 @@ powerful XPath \citep{Clark:1999} based filtering system.
 \subsection{XPath queries}
 \label{sec:filter:xpath}
 
-% In this section we'll number XPath queries distinct from regular listings
-\begingroup
-\newcounter{savelisting}
-\setcounter{savelisting}{\value{listing}}% Store listings counter
-\setcounter{listing}{0}
-\renewcommand\listingscaption{XPath expression}
-
 XPath is a language for selecting parts of and computing values over an XML
 document. XPath expressions may return one of four different result types:
 
@@ -719,65 +675,61 @@ possibilities.
 
 Starting with string matching,
 
-\begin{listing}[H]
-\begin{minted}[frame=bottomline]{xml}
-//Who/Author[shortName="VO-GCN"]
-\end{minted}
-\vspace{-19pt}
+\begin{xpath}[H]
+\input{@PROJECT_BINARY_DIR@/xpath1}
+\vspace{-15pt}
+\hrulefill
+\vspace{-9pt}
 \captionsetup{labelsep=none,textformat=empty,justification=raggedleft,singlelinecheck=false}
 \caption{Not shown}
 \label{xpath:exp1}
-\end{listing}
+\end{xpath}
 
 returns a set of all nodes in the document which list the author's ``short
 name'' as \texttt{VO-GCN}. More complex matches can use functions, such as
 
-\begin{listing}[H]
-\begin{minted}[frame=bottomline]{xml}
-//How[contains(Description, "Swift")]
-\end{minted}
-\vspace{-19pt}
+\begin{xpath}[H]
+\input{@PROJECT_BINARY_DIR@/xpath2}
+\vspace{-15pt}
+\hrulefill
+\vspace{-9pt}
 \captionsetup{labelsep=none,textformat=empty,justification=raggedleft,singlelinecheck=false}
 \caption{Not shown}
 \label{xpath:exp2}
-\end{listing}
+\end{xpath}
 
 which returns the set of all nodes which mention ``Swift'' in the context of a
 describing how the data was obtained. Numerical comparisons are also possible:
 
-\begin{listing}[H]
-\begin{minted}[frame=bottomline]{xml}
-//Param[@name="Sun_Distance" and @value>40]
-\end{minted}
-\vspace{-19pt}
+\begin{xpath}[H]
+\input{@PROJECT_BINARY_DIR@/xpath3}
+\vspace{-15pt}
+\hrulefill
+\vspace{-9pt}
 \captionsetup{labelsep=none,textformat=empty,justification=raggedleft,singlelinecheck=false}
 \caption{Not shown}
 \label{xpath:exp3}
-\end{listing}
+\end{xpath}
 
 provides the set of all parameters called \texttt{Sun\_Distance} with a
 numerical value greater than 40.
 
 These expression can be combined, so that for example
 
-\begin{listing}[H]
-\begin{minted}[frame=bottomline]{xml}
-//How[contains(Description, "Swift")] or
-  ( //Param[@name="Sun_Distance" and @value>40]
-    and //Who/Author[shortName="VO-GCN"]) )
-\end{minted}
-\vspace{-19pt}
+\begin{xpath}[H]
+\input{@PROJECT_BINARY_DIR@/xpath4}
+\vspace{-15pt}
+\hrulefill
+\vspace{-9pt}
 \captionsetup{labelsep=none,textformat=empty,justification=raggedleft,singlelinecheck=false}
 \caption{Not shown}
 \label{xpath:exp4}
-\end{listing}
+\end{xpath}
 
 returns a Boolean value which is true if the event either mentions ``Swift''
 or both has a \texttt{Sun\_Distance} parameter greater than 40 and originates
 from GCN, and false otherwise.
 
-\setcounter{listing}{\value{savelisting}}% Restore listings counter
-\endgroup
 \subsection{Integration with Comet}
 
 Comet makes it possible for a subscriber to supply one or more XPath
@@ -951,25 +903,11 @@ measured.
 \label{sec:perf:individual:eventdb}
 
 \begin{listing*}
-\begin{minted}[frame=lines]{xml}
-<?xml version='1.0' encoding='UTF-8'?>
-<voe:VOEvent
-  xmlns:voe="http://www.ivoa.net/xml/VOEvent/v2.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  ivorn="ivo://comet.broker/test#TestEvent-2014-03-31T16:16:37" role="test" version="2.0"
-  xsi:schemaLocation="http://www.ivoa.net/xml/VOEvent/v2.0
-    http://www.ivoa.net/xml/VOEvent/VOEvent-v2.0.xsd"
-  >
-<Who>
-  <AuthorIVORN>ivo://comet.broker/test</AuthorIVORN>
-  <Date>2014-03-31T16:16:37.040340</Date>
-</Who>
-  <What>
-    <Description>Broker test event generated by Comet 1.1.0.</Description>
-    <Reference uri="http://comet.transientskp.org/"/>
-  </What>
-</voe:VOEvent>
-\end{minted}
+\hrulefill
+\vspace{-10pt}
+\input{@PROJECT_BINARY_DIR@/testmessage}
+\vspace{-15pt}
+\hrulefill
 \caption{An example of the form of VOEvent used for benchmark testing. The
 \texttt{ivorn} attribute of the \texttt{VOEvent} element and the \texttt{Date}
 element were automatically generated and reflect the time at which the packet
@@ -1466,9 +1404,9 @@ the network emulation functionality available as part of the Linux kernel.
 Given a (virtual, in this case) network device named \texttt{vethXXX}, a
 delay of \texttt{YYY}\,ms may be added to each packet sent through it by
 running:
-\begin{minted}{sh}
-tc qdisc add dev vethXXX root netem delay YYYms
-\end{minted}
+%\begin{minted}{sh}
+%tc qdisc add dev vethXXX root netem delay YYYms
+%\end{minted}
 Note that this delay applies only to packets sent through the interface: no
 delay is applied to packets received by the interface. To simulate a symmetric
 network delay using this approach, it would therefore be necessary to add a

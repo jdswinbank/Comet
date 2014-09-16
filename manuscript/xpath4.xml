@@ -1,0 +1,3 @@
+//How[contains(Description, "Swift")] or
+  ( //Param[@name="Sun_Distance" and @value>40]
+    and //Who/Author[shortName="VO-GCN"]) )
