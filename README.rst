@@ -2,7 +2,7 @@
 Comet: A VOEvent Broker
 =======================
 
-Manuscript for submission to Astronomy and Computing.
+Manuscript accepted for publication in Astronomy and Computing.
 
 Requirements to build a PDF:
 
