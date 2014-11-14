@@ -41,4 +41,7 @@ Comet is developed by `John Swinbank <http://swinbank.org/>`_ as part of the
 Code Library <http://asterisk.apod.com/wp/>`_ as `ascl:1404.008
 <http://ascl.net/1404.008>`_.
 
+If you make use of Comet in published research, please cite `Swinbank (2014)
+<http://dx.doi.org/10.1016/j.ascom.2014.09.001>`_.
+
 Comments and corrections welcome.
