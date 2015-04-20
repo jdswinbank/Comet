@@ -9,7 +9,7 @@ version numbering and how releases are made.
 Version 1.2.x
 -------------
 
-1.2.2 (in progress)
+1.2.2 (2015-04-20) [`Download <//github.com/jdswinbank/Comet/tarball/1.2.2>`__]
     Disable XML entity expansion for documents received from the network.
     This eliminates a class of potential resource exhaustion attacks.
 
