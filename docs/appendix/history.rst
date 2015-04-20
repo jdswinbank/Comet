@@ -13,6 +13,9 @@ Version 1.2.x
     Disable XML entity expansion for documents received from the network.
     This eliminates a class of potential resource exhaustion attacks.
 
+    Update documentation to request citation of the `paper`_ in published work
+    which makes use of Comet.
+
 1.2.1 (2014-09-02) [`Download <//github.com/jdswinbank/Comet/tarball/1.2.1>`__]
     Correctly check that the (required) ``--local-ivo`` command line option
     was provided (`GitHub #35`_).
@@ -37,6 +40,7 @@ Version 1.2.x
 
     Require that events submitted to the broker by authors have valid IVORNs.
 
+.. _paper: http://adsabs.harvard.edu/abs/2014A%26C.....7...12S
 .. _GitHub #29: https://github.com/jdswinbank/Comet/issues/29
 .. _GitHub #31: https://github.com/jdswinbank/Comet/issues/31
 .. _GitHub #33: https://github.com/jdswinbank/Comet/issues/33
