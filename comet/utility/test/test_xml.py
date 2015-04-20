@@ -1,7 +1,8 @@
-import lxml.etree as ElementTree
+import textwrap
+import lxml.etree as etree
 
 from twisted.trial import unittest
-from comet.utility.xml import xml_document
+from comet.utility.xml import xml_document, ParseError
 
 EXAMPLE_XML = """<xml></xml>"""
 
@@ -16,7 +17,7 @@ class mutable_element_tests(unittest.TestCase):
 
     def test_transform_element(self):
         self.assertEqual(self.doc.text.find("<foo>baz</foo>"), -1)
-        self.doc.element = ElementTree.fromstring("<foo>baz</foo>")
+        self.doc.element = etree.fromstring("<foo>baz</foo>")
         self.assertNotEqual(self.doc.text.find("<foo>baz</foo>"), -1)
 
 
@@ -25,7 +26,7 @@ class xml_document_tests(object):
         self.assertFalse(self.doc.valid_signature)
 
     def test_element(self):
-        self.assertIsInstance(self.doc.element, ElementTree._Element)
+        self.assertIsInstance(self.doc.element, etree._Element)
 
     def test_text(self):
         self.assertIsInstance(self.doc.text, str)
@@ -36,4 +37,52 @@ class xml_document_from_string_TestCase(unittest.TestCase, xml_document_tests):
 
 class xml_document_from_element_TestCase(unittest.TestCase, xml_document_tests):
     def setUp(self):
-        self.doc = xml_document(ElementTree.fromstring(EXAMPLE_XML))
+        self.doc = xml_document(etree.fromstring(EXAMPLE_XML))
+
+class xml_security_TestCase(unittest.TestCase):
+    """
+    Refuse to parse any dangerous XML.
+
+    Since we are accepting XML from the network, we are, in theory, vulnerable
+    to a range of exploits: see https://bitbucket.org/tiran/defusedxml for
+    details.
+    """
+    def test_billion_laughs(self):
+        """
+        Exponential entity expansion.
+
+        http://en.wikipedia.org/wiki/Billion_laughs
+        """
+        xml_str = textwrap.dedent("""
+        <?xml version="1.0"?>
+        <!DOCTYPE lolz [
+         <!ENTITY lol "lol">
+         <!ELEMENT lolz (#PCDATA)>
+         <!ENTITY lol1 "&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;">
+         <!ENTITY lol2 "&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;">
+         <!ENTITY lol3 "&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;">
+         <!ENTITY lol4 "&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;">
+         <!ENTITY lol5 "&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;">
+         <!ENTITY lol6 "&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;">
+         <!ENTITY lol7 "&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;">
+         <!ENTITY lol8 "&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;">
+         <!ENTITY lol9 "&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;">
+        ]>
+        <lolz>&lol9;</lolz>
+        """).strip()
+        self.assertRaises(ParseError, xml_document, xml_str)
+
+    def test_quadratic_blowup(self):
+        """
+        Quadratic entitty expansion.
+
+        To avoid this, we'll have to disable entity expansion altogether.
+        """
+        xml_str = textwrap.dedent("""
+        <?xml version="1.0"?>
+        <!DOCTYPE bomb [
+        <!ENTITY a "xxxxxxx">
+        ]>
+        <bomb>&a;&a;&a;&a;&a;</bomb>
+        """).strip()
+        self.assertRaises(ParseError, xml_document, xml_str)

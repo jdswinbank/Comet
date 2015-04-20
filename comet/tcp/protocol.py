@@ -26,7 +26,7 @@ from .messages import authenticate, authenticateresponse
 from ..utility.voevent import broker_test_message
 
 from ..utility import log
-from ..utility.xml import xml_document
+from ..utility.xml import xml_document, ParseError
 
 # Constants
 VOEVENT_ROLES = ('observation', 'prediction', 'utility', 'test')
@@ -184,7 +184,7 @@ class VOEventSubscriber(EventHandler, TimeoutMixin):
         """
         try:
             incoming = xml_document(data)
-        except ElementTree.ParseError:
+        except ParseError:
             log.warning("Unparsable message received")
             return
 
@@ -304,7 +304,7 @@ class VOEventBroadcaster(ElementSender):
     def stringReceived(self, data):
         try:
             incoming = xml_document(data)
-        except ElementTree.ParseError:
+        except ParseError:
             log.warning("Unparsable message received")
             return
 
@@ -439,7 +439,7 @@ class VOEventSender(ElementSender):
                     (self.transport.getPeer(), incoming.get("role"))
                 )
 
-        except ElementTree.ParseError:
+        except ParseError:
             log.warning("Unparsable message received from %s" % str(self.transport.getPeer()))
 
         finally:
@@ -487,7 +487,7 @@ class VOEventReceiver(EventHandler, TimeoutMixin):
         """
         try:
             incoming = xml_document(data)
-        except ElementTree.ParseError:
+        except ParseError:
             d = log.warning("Unparsable message received from %s" % str(self.transport.getPeer()))
         else:
             # The root element of both VOEvent and Transport packets has a
