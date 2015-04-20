@@ -9,6 +9,10 @@ version numbering and how releases are made.
 Version 1.2.x
 -------------
 
+1.2.2 (in progress)
+    Disable XML entity expansion for documents received from the network.
+    This eliminates a class of potential resource exhaustion attacks.
+
 1.2.1 (2014-09-02) [`Download <//github.com/jdswinbank/Comet/tarball/1.2.1>`__]
     Correctly check that the (required) ``--local-ivo`` command line option
     was provided (`GitHub #35`_).
