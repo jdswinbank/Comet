@@ -14,6 +14,9 @@ Current development version
     backport of the Python 3 functionality, so this helps clear the way for an
     eventual Python 3 version of Comet.
 
+    Use the ``$TMPDIR`` environment variable, if set, to store the event
+    database. Otherwise, fall back to ``tmp``.
+
 .. _ipaddr-py: https://code.google.com/p/ipaddr-py/
 .. _py2-ipaddress: https://bitbucket.org/kwi/py2-ipaddress/
 

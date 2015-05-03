@@ -55,7 +55,7 @@ class Options(BaseOptions):
     ]
 
     optParameters = [
-        ["eventdb", None, "/tmp", "Event database root."],
+        ["eventdb", None, os.environ.get("TMPDIR", "/tmp"), "Event database root."],
         ["receive-port", None, 8098, "TCP port for receiving events.", int],
         ["broadcast-port", None, DEFAULT_REMOTE_PORT, "TCP port for broadcasting events.", int],
         ["broadcast-test-interval", None, BCAST_TEST_INTERVAL, "Interval between test event brodcasts (in seconds; 0 to disable).", int],
