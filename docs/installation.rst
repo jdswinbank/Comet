@@ -24,7 +24,7 @@ Comet is developed targeting Python 2.6 and 2.7. It depends upon:
 * `Twisted <http://twistedmatrix.com/>`_ (version 11.1.0 or later)
 * `lxml <http://lxml.de/>`_ (version 2.3 or later)
 * `zope.interface <http://docs.zope.org/zope.interface/>`_ (versions 3.6.0 or later)
-* `ipaddr-py <https://code.google.com/p/ipaddr-py/>`_.
+* `py2-ipaddress <https://bitbucket.org/kwi/py2-ipaddress/>`_.
 
 How you make these dependencies available on your system is up to your (or,
 perhaps, to your system administrator). However, the author strongly suggests

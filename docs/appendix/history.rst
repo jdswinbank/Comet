@@ -6,6 +6,17 @@ Release History
 See the :ref:`release procedure <sec-release>` section for more details on
 version numbering and how releases are made.
 
+In progress
+-----------
+
+Current development version
+    Switch dependency from `ipaddr-py`_ to `py2-ipaddress`_. The latter is a
+    backport of the Python 3 functionality, so this helps clear the way for an
+    eventual Python 3 version of Comet.
+
+.. _ipaddr-py: https://code.google.com/p/ipaddr-py/
+.. _py2-ipaddress: https://bitbucket.org/kwi/py2-ipaddress/
+
 Version 1.2.x
 -------------
 

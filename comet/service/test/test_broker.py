@@ -1,4 +1,4 @@
-from ipaddr import IPNetwork
+from ipaddress import ip_network
 from lxml.etree import XPath
 
 from twisted.trial import unittest
@@ -55,7 +55,7 @@ class DefaultOptionsTestCase(unittest.TestCase):
 
     def test_default_whitelist(self):
         self.config.parseOptions(self.cmd_line)
-        self.assertEqual(self.config['whitelist'], [IPNetwork("0.0.0.0/0")])
+        self.assertEqual(self.config['whitelist'], [ip_network("0.0.0.0/0")])
 
     def test_specified_whitelist(self):
         net1, net2 = "1.2.3.4/32", "4.3.2.1/255.255.0.0"
@@ -63,7 +63,9 @@ class DefaultOptionsTestCase(unittest.TestCase):
         self.config.parseOptions(self.cmd_line)
         self.assertEqual(len(self.config['whitelist']), 2)
         for net in [net1, net2]:
-            self.assertTrue(IPNetwork(net) in self.config['whitelist'])
+            self.assertTrue(
+                ip_network(net, strict=False) in self.config['whitelist']
+            )
 
     def test_has_print_event_plugin(self):
         self.cmd_line.append("--print-event")

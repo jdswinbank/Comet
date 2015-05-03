@@ -5,7 +5,7 @@
 import os
 
 # Used for building IP whitelist
-from ipaddr import IPNetwork
+from ipaddress import ip_network
 
 # lxml XML handling
 from lxml.etree import XPath, XPathSyntaxError
@@ -105,14 +105,14 @@ class Options(BaseOptions):
 
     def opt_whitelist(self, network):
         reactor.callWhenRunning(log.msg, "Whitelisting %s" % network)
-        self['running_whitelist'].append(IPNetwork(network))
+        self['running_whitelist'].append(ip_network(network, strict=False))
 
     def postOptions(self):
         BaseOptions.postOptions(self)
         if self['running_whitelist']:
             self['whitelist'] = self['running_whitelist']
         else:
-            self['whitelist'] = [IPNetwork(self['whitelist'])]
+            self['whitelist'] = [ip_network(self['whitelist'], strict=False)]
 
         if self['verbosity'] >= 2:
             log.LEVEL = log.Levels.DEBUG

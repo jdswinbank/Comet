@@ -16,8 +16,8 @@ for publishing VOEvents to a remote broker.  See the `website
 <http://comet.transientskp.org>`_ for further details and documentation.
 
 Comet is developed targeting Python 2.6 and 2.7. It depends upon `Twisted
-<http://twistedmatrix.com/>`_, `lxml <http://lxml.de/>`_ and `ipaddr-py
-<https://code.google.com/p/ipaddr-py/>`_.
+<http://twistedmatrix.com/>`_, `lxml <http://lxml.de/>`_ and `py2-ipaddress
+<https://bitbucket.org/kwi/py2-ipaddress/>`_.
 
 This repository contains the following branches:
 
