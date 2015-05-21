@@ -7,17 +7,16 @@ from ...test.support import DummyEvent
 from ...test.support import DUMMY_ACK
 from ...test.support import DUMMY_NAK
 
-from ..sender import SingleSender as VOEventSender
-from ..sender import SingleSenderFactory as VOEventSenderFactory
+from ..sender import SingleSender, SingleSenderFactory
 
-class VOEventSenderFactoryTestCase(unittest.TestCase):
+class SingleSenderFactoryTestCase(unittest.TestCase):
     def setUp(self):
         self.event = DummyEvent()
-        self.factory = VOEventSenderFactory(self.event)
+        self.factory = SingleSenderFactory(self.event)
         self.proto = self.factory.buildProtocol(('127.0.0.1', 0))
 
     def test_protocol(self):
-        self.assertIsInstance(self.proto, VOEventSender)
+        self.assertIsInstance(self.proto, SingleSender)
 
     def test_no_ack(self):
         self.assertEqual(self.factory.acked, 0)
@@ -26,10 +25,10 @@ class VOEventSenderFactoryTestCase(unittest.TestCase):
     def test_stored_event(self):
         self.assertEqual(self.factory.event, self.event)
 
-class VOEventSenderTestCase(unittest.TestCase):
+class SingleSenderTestCase(unittest.TestCase):
     def setUp(self):
         self.event = DummyEvent()
-        self.factory = VOEventSenderFactory(self.event)
+        self.factory = SingleSenderFactory(self.event)
         self.proto = self.factory.buildProtocol(('127.0.0.1', 0))
         self.tr = proto_helpers.StringTransportWithDisconnection()
         self.proto.makeConnection(self.tr)

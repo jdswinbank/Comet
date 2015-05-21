@@ -7,24 +7,23 @@ from twisted.test import proto_helpers
 from ...test.support import DUMMY_VOEVENT
 from ...test.support import DUMMY_SERVICE_IVORN
 
-from ..receiver import SingleReceiver as VOEventReceiver
-from ..receiver import SingleReceiverFactory as VOEventReceiverFactory
+from ..receiver import SingleReceiver, SingleReceiverFactory
 
-class VOEventReceiverFactoryTestCase(unittest.TestCase):
+class SingleReceiverFactoryTestCase(unittest.TestCase):
     def setUp(self):
-        self.factory = VOEventReceiverFactory(DUMMY_SERVICE_IVORN)
+        self.factory = SingleReceiverFactory(DUMMY_SERVICE_IVORN)
 
     def test_protocol(self):
-        self.assertEqual(self.factory.protocol, VOEventReceiver)
+        self.assertEqual(self.factory.protocol, SingleReceiver)
 
     def test_contents(self):
         self.assertEqual(self.factory.local_ivo, DUMMY_SERVICE_IVORN)
         self.assertFalse(self.factory.validators) # Should be empty
         self.assertFalse(self.factory.handlers)   # Should be empty
 
-class VOEventReceiverTestCase(unittest.TestCase):
+class SingleReceiverTestCase(unittest.TestCase):
     def setUp(self):
-        self.factory = VOEventReceiverFactory(DUMMY_SERVICE_IVORN)
+        self.factory = SingleReceiverFactory(DUMMY_SERVICE_IVORN)
         self.proto = self.factory.buildProtocol(('127.0.0.1', 0))
         self.clock = task.Clock()
         self.proto.callLater = self.clock.callLater
