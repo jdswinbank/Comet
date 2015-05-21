@@ -1,7 +1,7 @@
 import textwrap
 from functools import partial
 import lxml.etree as etree
-from comet.tcp.messages import authenticateresponse
+from comet.protocol.messages import authenticateresponse
 
 DUMMY_EVENT_IVORN = "ivo://comet.broker/test#1234567890"
 DUMMY_SERVICE_IVORN = "ivo://comet.broker/test"

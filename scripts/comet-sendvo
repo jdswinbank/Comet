@@ -12,7 +12,7 @@ from twisted.python import usage
 from twisted.internet import reactor
 
 # VOEvent transport protocol
-from comet.tcp.protocol import VOEventSenderFactory
+from comet.protocol.protocol import VOEventSenderFactory
 
 # Encapsulation of event
 from comet.utility.xml import xml_document
