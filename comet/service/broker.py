@@ -23,9 +23,9 @@ from twisted.application.internet import TCPServer
 import comet
 from comet.utility import log
 from comet.utility.options import BaseOptions
-from comet.protocol.protocol import VOEventBroadcasterFactory
-from comet.protocol.protocol import VOEventReceiverFactory
-from comet.protocol.protocol import VOEventSubscriberFactory
+from comet.protocol import VOEventBroadcasterFactory
+from comet.protocol import VOEventReceiverFactory
+from comet.protocol import VOEventSubscriberFactory
 from comet.utility.whitelist import WhitelistingFactory
 from comet.utility.event_db import Event_DB
 from comet.validator.ivorn import CheckIVORN

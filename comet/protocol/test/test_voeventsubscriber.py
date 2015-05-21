@@ -10,8 +10,7 @@ from ...test.support import DUMMY_IAMALIVE
 from ...test.support import DUMMY_AUTHENTICATE
 from ...test.support import DUMMY_VOEVENT
 
-from ..protocol import VOEventSubscriber
-from ..protocol import VOEventSubscriberFactory
+from ..subscriber import VOEventSubscriber, VOEventSubscriberFactory
 
 class VOEventSubscriberFactoryTestCase(unittest.TestCase):
     def setUp(self):

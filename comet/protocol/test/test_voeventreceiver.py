@@ -7,8 +7,8 @@ from twisted.test import proto_helpers
 from ...test.support import DUMMY_VOEVENT
 from ...test.support import DUMMY_SERVICE_IVORN
 
-from ..protocol import VOEventReceiver
-from ..protocol import VOEventReceiverFactory
+from ..receiver import VOEventReceiver
+from ..receiver import VOEventReceiverFactory
 
 class VOEventReceiverFactoryTestCase(unittest.TestCase):
     def setUp(self):

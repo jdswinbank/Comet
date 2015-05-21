@@ -7,10 +7,10 @@ from ...test.support import DummyEvent
 from ...test.support import DUMMY_ACK
 from ...test.support import DUMMY_NAK
 
-from ..protocol import VOEventSender
-from ..protocol import VOEventSenderFactory
+from ..sender import VOEventSender
+from ..sender import VOEventSenderFactory
 
-class VOEventSubscriberFactoryTestCase(unittest.TestCase):
+class VOEventSenderFactoryTestCase(unittest.TestCase):
     def setUp(self):
         self.event = DummyEvent()
         self.factory = VOEventSenderFactory(self.event)

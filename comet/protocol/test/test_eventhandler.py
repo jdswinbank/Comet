@@ -8,7 +8,7 @@ from twisted.internet.protocol import ServerFactory
 from ...test.support import DUMMY_EVENT_IVORN as DUMMY_IVORN
 from ...test.support import DummyEvent
 
-from ..protocol import EventHandler
+from ..base import EventHandler
 
 class EventHandlerFactory(ServerFactory):
     protocol = EventHandler

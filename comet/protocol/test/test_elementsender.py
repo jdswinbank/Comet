@@ -6,7 +6,7 @@ from twisted.internet.protocol import ServerFactory
 
 from ...test.support import DummyEvent
 
-from ..protocol import ElementSender
+from ..base import ElementSender
 
 class ElementSenderFactory(ServerFactory):
     protocol = ElementSender

@@ -16,8 +16,7 @@ from ...test.support import DUMMY_EVENT_IVORN
 from ...test.support import DUMMY_SERVICE_IVORN
 from ...test.support import DummyEvent
 
-from ..protocol import VOEventBroadcaster
-from ..protocol import VOEventBroadcasterFactory
+from ..broadcaster import VOEventBroadcaster, VOEventBroadcasterFactory
 from ...service.broker import BCAST_TEST_INTERVAL
 
 class DummyBroadcaster(object):
