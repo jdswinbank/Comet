@@ -7,8 +7,8 @@ from ...test.support import DummyEvent
 from ...test.support import DUMMY_ACK
 from ...test.support import DUMMY_NAK
 
-from ..sender import VOEventSender
-from ..sender import VOEventSenderFactory
+from ..sender import SingleSender as VOEventSender
+from ..sender import SingleSenderFactory as VOEventSenderFactory
 
 class VOEventSenderFactoryTestCase(unittest.TestCase):
     def setUp(self):
@@ -20,7 +20,8 @@ class VOEventSenderFactoryTestCase(unittest.TestCase):
         self.assertIsInstance(self.proto, VOEventSender)
 
     def test_no_ack(self):
-        self.assertEqual(self.factory.ack, False)
+        self.assertEqual(self.factory.acked, 0)
+        self.assertEqual(self.factory.naked, 0)
 
     def test_stored_event(self):
         self.assertEqual(self.factory.event, self.event)
@@ -43,8 +44,9 @@ class VOEventSenderTestCase(unittest.TestCase):
         unparsable = "This is not parsable"
         self.assertRaises(etree.ParseError, etree.fromstring, unparsable)
         self.proto.stringReceived(unparsable)
-        self.assertEqual(self.tr.connected, False)
-        self.assertEqual(self.factory.ack, False)
+        self.assertEqual(self.tr.connected, True)
+        self.assertEqual(self.factory.acked, 0)
+        self.assertEqual(self.factory.naked, 0)
 
     def test_receive_incomprehensible(self):
         # An incomprehensible message should generate no response, but the
@@ -52,19 +54,22 @@ class VOEventSenderTestCase(unittest.TestCase):
         incomprehensible = "<xml/>"
         etree.fromstring(incomprehensible) # Should not raise an error
         self.proto.stringReceived(incomprehensible)
-        self.assertEqual(self.tr.connected, False)
-        self.assertEqual(self.factory.ack, False)
+        self.assertEqual(self.tr.connected, True)
+        self.assertEqual(self.factory.acked, 0)
+        self.assertEqual(self.factory.naked, 0)
 
     def test_receive_ack(self):
         # An incomprehensible message should generate no response, but the
         # transport should not disconnect.
         self.proto.stringReceived(DUMMY_ACK)
         self.assertEqual(self.tr.connected, False)
-        self.assertEqual(self.factory.ack, True)
+        self.assertEqual(self.factory.acked, 1)
+        self.assertEqual(self.factory.naked, 0)
 
     def test_receive_nak(self):
         # An incomprehensible message should generate no response, but the
         # transport should not disconnect.
         self.proto.stringReceived(DUMMY_NAK)
         self.assertEqual(self.tr.connected, False)
-        self.assertEqual(self.factory.ack, False)
+        self.assertEqual(self.factory.acked, 0)
+        self.assertEqual(self.factory.naked, 1)

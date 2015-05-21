@@ -20,7 +20,7 @@ class VOEventReceiver(EventHandler, TimeoutMixin):
     """
     A receiver waits for a one-shot submission from a connecting client.
     """
-    TIMEOUT = 20
+    TIMEOUT = 20 # Drop the connection if we hear nothing in TIMEOUT seconds.
 
     def connectionMade(self):
         log.msg("New connection from %s" % str(self.transport.getPeer()))
@@ -39,6 +39,9 @@ class VOEventReceiver(EventHandler, TimeoutMixin):
         return TimeoutMixin.timeoutConnection(self)
 
     def stringReceived(self, data):
+        raise NotImplementedError
+
+    def eventTextReceived(self, data):
         """
         Called when a complete new message is received.
         """
@@ -64,15 +67,46 @@ class VOEventReceiver(EventHandler, TimeoutMixin):
                     (self.transport.getPeer(), incoming.get("role"))
                 )
         finally:
-            return d.addCallback(
-                lambda x: self.transport.loseConnection()
-            )
-
+            return d
 
 class VOEventReceiverFactory(ServerFactory):
-    protocol = VOEventReceiver
-
     def __init__(self, local_ivo, validators=None, handlers=None):
         self.local_ivo = local_ivo
         self.validators = validators or []
         self.handlers = handlers or []
+
+class SingleReceiver(VOEventReceiver):
+    def stringReceived(self, data):
+        log.debug("Single submission received from %s" % str(self.transport.getPeer()))
+        return self.eventTextReceived(data).addCallback(
+            lambda x: self.transport.loseConnection()
+        )
+
+class SingleReceiverFactory(VOEventReceiverFactory):
+    protocol = SingleReceiver
+
+class BulkReceiver(VOEventReceiver):
+    """
+    We expect a (possibly compressed) tarball of VOEvents. Iterate over the
+    contents and dispatch each event to our subscribers.
+    """
+    MAX_LENGTH = 1000000000
+    TIMEOUT = 200 # Drop the connection if we hear nothing in TIMEOUT seconds.
+
+    def stringReceived(self, data):
+        log.debug("Bulk submission received from %s" % str(self.transport.getPeer()))
+        # Warning: blocks until we've processed this tarball
+        return self.process_events(data)
+
+    def process_events(self, data):
+        tar = tarfile.open(fileobj=StringIO(data))
+        return defer.gatherResults(
+            self.eventTextReceived(tar.extractfile(member).read())
+            for member in tar.getmembers()
+            if member.isfile()
+        ).addCallback(
+            lambda x: self.transport.loseConnection()
+        )
+
+class BulkReceiverFactory(VOEventReceiverFactory):
+    protocol = BulkReceiver

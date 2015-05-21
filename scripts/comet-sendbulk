@@ -1,0 +1,48 @@
+#!/usr/bin/env python
+
+# VOEvent sender.
+# John Swinbank, <swinbank@transientskp.org>.
+
+# Python standard library
+import sys
+
+# Twisted
+from twisted.python.log import startLogging
+from twisted.python import usage
+from twisted.internet import reactor
+
+# VOEvent transport protocol
+from comet.protocol import BulkSenderFactory
+
+from comet.utility import log
+
+class Options(usage.Options):
+    optParameters = [
+        ["host", "h", "localhost", "Host to send to."],
+        ["port", "p", 8097, "Port to send to.", int],
+        ["file", "f", None, "Path to tarball"],
+    ]
+
+class OneShotSender(BulkSenderFactory):
+    """
+    A factory that shuts down the reactor when we lose the connection to the
+    remote host. That either means that our event has been sent or that we
+    failed.
+    """
+    def clientConnectionLost(self, connector, reason):
+        log.warning("Connection lost")
+        reactor.stop()
+
+    def clientConnectionFailed(self, connector, reason):
+        log.warning("Connection failed")
+        reactor.stop()
+
+if __name__ == "__main__":
+    config = Options()
+    config.parseOptions()
+
+    startLogging(sys.stdout)
+
+    factory = OneShotSender(config["file"])
+    reactor.connectTCP(config['host'], config['port'], factory)
+    reactor.run()

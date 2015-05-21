@@ -12,7 +12,7 @@ from twisted.python import usage
 from twisted.internet import reactor
 
 # VOEvent transport protocol
-from comet.protocol import VOEventSenderFactory
+from comet.protocol import SingleSenderFactory
 
 # Encapsulation of event
 from comet.utility.xml import xml_document
@@ -27,7 +27,7 @@ class Options(usage.Options):
         ["file", "f", "-", "Where to read XML text to send (- is stdin)."]
     ]
 
-class OneShotSender(VOEventSenderFactory):
+class OneShotSender(SingleSenderFactory):
     """
     A factory that shuts down the reactor when we lose the connection to the
     remote host. That either means that our event has been sent or that we
@@ -68,7 +68,7 @@ if __name__ == "__main__":
 
     # If our factory didn't get an acknowledgement of receipt, we'll exit with
     # status 1.
-    if locals().has_key("factory") and factory.ack:
+    if locals().has_key("factory") and factory.acked == factory.responses_expected:
         sys.exit(0)
     else:
         sys.exit(1)

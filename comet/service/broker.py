@@ -24,7 +24,8 @@ import comet
 from comet.utility import log
 from comet.utility.options import BaseOptions
 from comet.protocol import VOEventBroadcasterFactory
-from comet.protocol import VOEventReceiverFactory
+from comet.protocol import SingleReceiverFactory
+from comet.protocol import BulkReceiverFactory
 from comet.protocol import VOEventSubscriberFactory
 from comet.utility.whitelist import WhitelistingFactory
 from comet.utility.event_db import Event_DB
@@ -49,6 +50,7 @@ BCAST_TEST_INTERVAL = 3600
 class Options(BaseOptions):
     optFlags = [
         ["receive", "r", "Listen for TCP connections from authors."],
+        ["bulk-receive", None, "Listen for bulk event deliveries."],
         ["broadcast", "b", "Re-broadcast VOEvents received."],
         ["verbose", "v", "Increase verbosity."],
         ["quiet", "q", "Decrease verbosity."]
@@ -57,6 +59,7 @@ class Options(BaseOptions):
     optParameters = [
         ["eventdb", None, os.environ.get("TMPDIR", "/tmp"), "Event database root."],
         ["receive-port", None, 8098, "TCP port for receiving events.", int],
+        ["bulk-receive-port", None, 8097, "TCP port for bulk receiving events.", int],
         ["broadcast-port", None, DEFAULT_REMOTE_PORT, "TCP port for broadcasting events.", int],
         ["broadcast-test-interval", None, BCAST_TEST_INTERVAL, "Interval between test event brodcasts (in seconds; 0 to disable).", int],
         ["whitelist", None, "0.0.0.0/0", "Network to be included in submission whitelist."],
@@ -144,6 +147,27 @@ for plugin in getPlugins(IHandler, comet.plugins):
             )
 
 
+def configure_receiver(factory_class, config, port, name, event_db, parent):
+        receiver_factory = factory_class(
+            local_ivo=config['local-ivo'],
+            validators=[
+                CheckPreviouslySeen(event_db),
+                CheckSchema(
+                    os.path.join(comet.__path__[0], "schema/VOEvent-v2.0.xsd")
+                ),
+                CheckIVORN()
+            ],
+            handlers=config['handlers']
+        )
+        if log.LEVEL >= log.Levels.INFO: receiver_factory.noisy = False
+        whitelisting_factory = WhitelistingFactory(receiver_factory, config['whitelist'])
+        if log.LEVEL >= log.Levels.INFO: whitelisting_factory.noisy = False
+        receiver_service = TCPServer(port, whitelisting_factory)
+        receiver_service.setName(name)
+        receiver_service.setServiceParent(parent)
+
+
+
 def makeService(config):
     event_db = Event_DB(config['eventdb'])
     LoopingCall(event_db.prune, MAX_AGE).start(PRUNE_INTERVAL)
@@ -166,23 +190,16 @@ def makeService(config):
         config['handlers'].append(EventRelay(broadcaster_factory))
 
     if config['receive']:
-        receiver_factory = VOEventReceiverFactory(
-            local_ivo=config['local-ivo'],
-            validators=[
-                CheckPreviouslySeen(event_db),
-                CheckSchema(
-                    os.path.join(comet.__path__[0], "schema/VOEvent-v2.0.xsd")
-                ),
-                CheckIVORN()
-            ],
-            handlers=config['handlers']
+        configure_receiver(
+            SingleReceiverFactory, config, config['receive-port'],
+            "Receiver", event_db, broker_service
         )
-        if log.LEVEL >= log.Levels.INFO: receiver_factory.noisy = False
-        whitelisting_factory = WhitelistingFactory(receiver_factory, config['whitelist'])
-        if log.LEVEL >= log.Levels.INFO: whitelisting_factory.noisy = False
-        receiver_service = TCPServer(config['receive-port'], whitelisting_factory)
-        receiver_service.setName("Receiver")
-        receiver_service.setServiceParent(broker_service)
+
+    if config['bulk-receive']:
+        configure_receiver(
+            BulkReceiverFactory, config, config['bulk-receive-port'],
+            "BulkReceiver", event_db, broker_service
+        )
 
     for host, port in config["remotes"]:
         subscriber_factory = VOEventSubscriberFactory(

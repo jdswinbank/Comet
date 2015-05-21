@@ -30,6 +30,8 @@ To implement the broker, we need the Subscriber, Broadcaster & Receiver, but not
 the Sender. All four are provided here for completeness.
 """
 from broadcaster import VOEventBroadcaster, VOEventBroadcasterFactory
-from receiver import VOEventReceiver, VOEventReceiverFactory
-from sender import VOEventSender, VOEventSenderFactory
+from receiver import SingleReceiver, SingleReceiverFactory
+from receiver import BulkReceiver, BulkReceiverFactory
+from sender import SingleSender, SingleSenderFactory
+from sender import BulkSender, BulkSenderFactory
 from subscriber import VOEventSubscriber, VOEventSubscriberFactory
