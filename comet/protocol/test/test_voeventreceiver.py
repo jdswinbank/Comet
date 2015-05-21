@@ -1,16 +1,13 @@
-import os
-import shutil
-import tarfile
-import tempfile
 from StringIO import StringIO
+import tarfile
 import lxml.etree as etree
 
 from twisted.internet import task
 from twisted.trial import unittest
 from twisted.test import proto_helpers
 
-from ...test.support import DUMMY_VOEVENT
-from ...test.support import DUMMY_SERVICE_IVORN
+from ...test.support import DUMMY_VOEVENT, DUMMY_SERVICE_IVORN
+from ...test.support import create_tar_string
 
 from ..receiver import SingleReceiver, SingleReceiverFactory
 from ..receiver import BulkReceiver, BulkReceiverFactory
@@ -95,27 +92,6 @@ class SingleReceiverTestCase(unittest.TestCase):
     def test_timeout(self):
         self.clock.advance(self.proto.TIMEOUT)
         self.assertEqual(self.tr.connected, False)
-
-
-def create_tar_string(content=[]):
-    """
-    Create a string representaton of a tarball containing one file for each
-    element in the iterable ``content``.
-    """
-    buf = StringIO()
-    tf = tarfile.open(fileobj=buf, mode='w')
-    tempdir = tempfile.mkdtemp()
-    try:
-        for i, data in enumerate(content):
-            filename = os.path.join(tempdir, str(i))
-            with open(filename, 'w') as f:
-                f.write(DUMMY_VOEVENT)
-            tf.add(filename)
-    finally:
-        shutil.rmtree(tempdir, ignore_errors=True)
-    tf.close()
-    buf.seek(0)
-    return buf.read()
 
 
 class BulkReceiverTestCase(unittest.TestCase):
