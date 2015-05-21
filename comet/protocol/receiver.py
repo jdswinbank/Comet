@@ -95,18 +95,17 @@ class BulkReceiver(VOEventReceiver):
 
     def stringReceived(self, data):
         log.debug("Bulk submission received from %s" % str(self.transport.getPeer()))
-        # Warning: blocks until we've processed this tarball
-        return self.process_events(data)
-
-    def process_events(self, data):
-        tar = tarfile.open(fileobj=StringIO(data))
-        return defer.gatherResults(
-            self.eventTextReceived(tar.extractfile(member).read())
-            for member in tar.getmembers()
-            if member.isfile()
-        ).addCallback(
-            lambda x: self.transport.loseConnection()
-        )
+        try:
+            tar = tarfile.open(fileobj=StringIO(data))
+            return defer.gatherResults(
+                self.eventTextReceived(tar.extractfile(member).read())
+                for member in tar.getmembers()
+                if member.isfile()
+            ).addCallback(
+                lambda x: self.transport.loseConnection()
+            )
+        except tarfile.ReadError:
+            return self.transport.loseConnection()
 
 class BulkReceiverFactory(VOEventReceiverFactory):
     protocol = BulkReceiver
