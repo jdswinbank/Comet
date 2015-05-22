@@ -3,9 +3,10 @@ import shutil
 import tarfile
 import tempfile
 import textwrap
+from contextlib import contextmanager
 from functools import partial
-import lxml.etree as etree
 from StringIO import StringIO
+import lxml.etree as etree
 from comet.protocol.messages import authenticateresponse
 
 DUMMY_EVENT_IVORN = "ivo://comet.broker/test#1234567890"
@@ -107,22 +108,32 @@ class DummyEvent(object):
         self.text = DUMMY_VOEVENT.replace(DUMMY_EVENT_IVORN, ivorn)
         self.element = etree.fromstring(self.text)
 
-def create_tar_string(content=[]):
+@contextmanager
+def temporary_tar(content):
+    """
+    Context manager which yields a string containing the path to a tarball
+    containing one file for each element in the iterable ``content``.
+    """
+    tempdir = tempfile.mkdtemp()
+    try:
+        tarname = os.path.join(tempdir, "tarball.tar")
+        tar = tarfile.open(tarname, "w")
+        for i, data in enumerate(content):
+            filename = os.path.join(tempdir, str(i))
+            with open(filename, 'w') as f:
+                f.write(data)
+            tar.add(filename)
+        tar.close()
+        yield tarname
+    finally:
+        shutil.rmtree(tempdir, ignore_errors=True)
+
+def create_tar_string(content):
     """
     Create a string representaton of a tarball containing one file for each
     element in the iterable ``content``.
     """
-    buf = StringIO()
-    tf = tarfile.open(fileobj=buf, mode='w')
-    tempdir = tempfile.mkdtemp()
-    try:
-        for i, data in enumerate(content):
-            filename = os.path.join(tempdir, str(i))
-            with open(filename, 'w') as f:
-                f.write(DUMMY_VOEVENT)
-            tf.add(filename)
-    finally:
-        shutil.rmtree(tempdir, ignore_errors=True)
-    tf.close()
-    buf.seek(0)
-    return buf.read()
+    with temporary_tar(content) as tf:
+        with open(tf, 'rb') as f:
+            data = f.read()
+    return data
