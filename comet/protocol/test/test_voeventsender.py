@@ -26,9 +26,9 @@ class GenericSenderFactoryTestCase(object):
 
 class SingleSenderFactoryTestCase(GenericSenderFactoryTestCase, unittest.TestCase):
     def setUp(self):
-        self.event = DummyEvent()
-        self.factory = SingleSenderFactory(self.event)
-        self.expected_data = self.event.text
+        event = DummyEvent()
+        self.factory = SingleSenderFactory(event)
+        self.expected_data = event.text
         GenericSenderFactoryTestCase.setUp(self)
 
 
@@ -41,17 +41,15 @@ class BulkSenderFactoryTestCase(GenericSenderFactoryTestCase, unittest.TestCase)
         GenericSenderFactoryTestCase.setUp(self)
 
 
-class SingleSenderTestCase(unittest.TestCase):
+class VOEventSenderTestCase(object):
     def setUp(self):
-        self.event = DummyEvent()
-        self.factory = SingleSenderFactory(self.event)
         self.proto = self.factory.buildProtocol(('127.0.0.1', 0))
         self.tr = proto_helpers.StringTransportWithDisconnection()
         self.proto.makeConnection(self.tr)
         self.tr.protocol = self.proto
 
     def test_connectionMade(self):
-        self.assertEqual(self.tr.value()[4:], self.event.text)
+        self.assertEqual(self.tr.value()[4:], self.expected_outgoing)
 
     def test_receive_unparsable(self):
         # An unparsable message should generate no response, but the
@@ -88,3 +86,20 @@ class SingleSenderTestCase(unittest.TestCase):
         self.assertEqual(self.tr.connected, False)
         self.assertEqual(self.factory.acked, 0)
         self.assertEqual(self.factory.naked, 1)
+
+
+class SingleSenderTestCase(VOEventSenderTestCase, unittest.TestCase):
+    def setUp(self):
+        event = DummyEvent()
+        self.expected_outgoing = event.text
+        self.factory = SingleSenderFactory(event)
+        VOEventSenderTestCase.setUp(self)
+
+
+class BulkSenderTestCase(VOEventSenderTestCase, unittest.TestCase):
+    def setUp(self):
+        with temporary_tar([DummyEvent().text]) as tf:
+            self.factory = BulkSenderFactory(tf)
+            with open(tf, 'r') as f:
+                self.expected_outgoing = f.read()
+        VOEventSenderTestCase.setUp(self)
