@@ -2,6 +2,7 @@
 # John Swinbank, <swinbank@princeton.edu>, 2011-15.
 
 import tarfile
+from StringIO import StringIO
 
 # Twisted protocol definition
 from twisted.protocols.basic import Int32StringReceiver
@@ -91,7 +92,11 @@ class BulkSenderFactory(VOEventSenderFactory):
         with open(tarball_path, 'rb') as f:
             self.outgoing_data = f.read()
         self.responses_expected = len(
-            [x for x in tarfile.open(fileobj=StringIO(tarball)).getmembers() if x.isfile()]
+            [
+                x for x in
+                tarfile.open(fileobj=StringIO(self.outgoing_data)).getmembers()
+                if x.isfile()
+            ]
         )
 
     def stopFactory(self):
