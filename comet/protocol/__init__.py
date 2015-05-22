@@ -32,6 +32,5 @@ the Sender. All four are provided here for completeness.
 from broadcaster import VOEventBroadcaster, VOEventBroadcasterFactory
 from receiver import SingleReceiver, SingleReceiverFactory
 from receiver import BulkReceiver, BulkReceiverFactory
-from sender import SingleSender, SingleSenderFactory
-from sender import BulkSender, BulkSenderFactory
+from sender import VOEventSender, SingleSenderFactory, BulkSenderFactory
 from subscriber import VOEventSubscriber, VOEventSubscriberFactory

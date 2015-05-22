@@ -13,22 +13,16 @@ from ..utility.xml import xml_document, ParseError
 
 class VOEventSender(Int32StringReceiver):
     """
-    An abstract base for sending VOEvents.
-
     The VOEventSender will send some data to the remote host when a connection
     is made, then listen for one or more ack or nak packets. Once the total
     number of acks and naks has reached that defined in the factory, the
     connection is terminated.
 
-    The data to be sent should be specified by subclassing and defining the
-    outgoing_data property.
+    The data to be sent is read from the outgoing_data attribute of the
+    factory.
     """
-    @property
-    def outgoing_data(self):
-        raise NotImplementedError
-
     def connectionMade(self):
-        self.sendString(self.outgoing_data)
+        self.sendString(self.factory.outgoing_data)
 
     def stringReceived(self, data):
         log.debug("Got response from %s" % str(self.transport.getPeer()))
@@ -67,26 +61,15 @@ class VOEventSenderFactory(ClientFactory):
         self.acked = 0
         self.naked = 0
 
-
-class SingleSender(VOEventSender):
-    """
-    Specialization of VOEventSender to send a single event, specified in the
-    factory.
-    """
-    @property
-    def outgoing_data(self):
-        return self.factory.event.text
-
-
 class SingleSenderFactory(VOEventSenderFactory):
     """
     Specialization of VOEventSenderFactory to send a single event. We always
     expect a single ack (or nak) in response.
     """
-    protocol = SingleSender
+    protocol = VOEventSender
     def __init__(self, event):
         VOEventSenderFactory.__init__(self)
-        self.event = event
+        self.outgoing_data = event.text
         self.responses_expected = 1
 
     def stopFactory(self):
@@ -95,19 +78,6 @@ class SingleSenderFactory(VOEventSenderFactory):
         else:
             log.warning("Event was NOT sent successfully")
 
-
-class BulkSender(VOEventSender):
-    """
-    Specialization of VOEventSender to send a tarball containing multiple
-    events. The tarball is read from the filesystem using a path stored in the
-    factory.
-    """
-    @property
-    def outgoing_data(self):
-        with open(self.factory.tarball_path, 'rb') as f:
-            return f.read()
-
-
 class BulkSenderFactory(VOEventSenderFactory):
     """
     Specialization of VOEventSenderFactory to send a tarball of events. We
@@ -115,12 +85,13 @@ class BulkSenderFactory(VOEventSenderFactory):
     in the tarball (but we don't check that they are actually VOEvents before
     sending, so this might not really be the number of responses received).
     """
-    protocol = BulkSender
+    protocol = VOEventSender
     def __init__(self, tarball_path):
         VOEventSenderFactory.__init__(self)
-        self.tarball_path = tarball_path
+        with open(tarball_path, 'rb') as f:
+            self.outgoing_data = f.read()
         self.responses_expected = len(
-            [x for x in tarfile.open(tarball_path).getmembers() if x.isfile()]
+            [x for x in tarfile.open(fileobj=StringIO(tarball)).getmembers() if x.isfile()]
         )
 
     def stopFactory(self):

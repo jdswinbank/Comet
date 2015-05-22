@@ -6,18 +6,17 @@ from twisted.test import proto_helpers
 from ...test.support import DummyEvent, create_tar_string
 from ...test.support import DUMMY_ACK, DUMMY_NAK
 
-from ..sender import SingleSender, SingleSenderFactory
-from ..sender import BulkSender, BulkSenderFactory
+from ..sender import VOEventSender
+from ..sender import SingleSenderFactory, BulkSenderFactory
 
 class GenericSenderFactoryTestCase(object):
     factory_type = None
-    protocol_type = None
 
     def setUp(self):
         self.proto = self.factory.buildProtocol(('127.0.0.1', 0))
 
     def test_protocol(self):
-        self.assertIsInstance(self.proto, self.protocol_type)
+        self.assertIsInstance(self.proto, VOEventSender)
 
     def test_no_ack(self):
         self.assertEqual(self.factory.acked, 0)
@@ -26,7 +25,6 @@ class GenericSenderFactoryTestCase(object):
 
 class SingleSenderFactoryTestCase(GenericSenderFactoryTestCase, unittest.TestCase):
     factory_type = SingleSenderFactory
-    protocol_type = SingleSender
 
     def setUp(self):
         self.event = DummyEvent()
@@ -34,7 +32,7 @@ class SingleSenderFactoryTestCase(GenericSenderFactoryTestCase, unittest.TestCas
         GenericSenderFactoryTestCase.setUp(self)
 
     def test_stored_event(self):
-        self.assertEqual(self.factory.event, self.event)
+        self.assertEqual(self.factory.outgoing_data, self.event.text)
 
 
 #class BulkSenderFactoryTestCase(GenericSenderFactoryTestCase, unittest.TestCase):
