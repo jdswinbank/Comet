@@ -35,32 +35,37 @@ options. In this case, we run ``comet``, and pass it the ``--help`` option to
 provide a brief usage message::
 
   $ twistd comet --help
-  Usage: twistd [options] comet [options]
-  Options:
-    -r, --receive                   Listen for TCP connections from authors.
-    -b, --broadcast                 Re-broadcast VOEvents received.
-    -v, --verbose                   Increase verbosity.
-    -q, --quiet                     Decrease verbosity.
-        --print-event               Enable the print-event plugin.
-        --save-event                Enable the save-event plugin.
-        --local-ivo=                IVOA identifier for this system (required).
-        --eventdb=                  Event database root. [default: /tmp]
-        --receive-port=             TCP port for receiving events. [default: 8098]
-        --broadcast-port=           TCP port for broadcasting events. [default:
-                                    8099]
-        --broadcast-test-interval=  Interval between test event brodcasts (in
-                                    seconds; 0 to disable). [default: 3600]
-        --whitelist=                Network to be included in submission
-                                    whitelist. [default: 0.0.0.0/0]
-        --remote=                   Remote broadcaster to subscribe to
-                                    (host[:port]).
-        --filter=                   XPath filter applied to events broadcast by
-                                    remote.
-        --cmd=                      Spawn external command on event receipt.
-        --save-event-directory=     Target directory [default:
-                                    current working directory]
-        --help                      Display this help and exit.
-        --version                   Display Twisted version and exit.
+
+Usage: twistd [options] comet [options]
+Options:
+  -r, --receive                   Listen for TCP connections from authors.
+      --bulk-receive              Listen for bulk event deliveries.
+  -b, --broadcast                 Re-broadcast VOEvents received.
+  -v, --verbose                   Increase verbosity.
+  -q, --quiet                     Decrease verbosity.
+      --print-event               Enable the print-event plugin.
+      --save-event                Enable the save-event plugin.
+      --local-ivo=                IVOA identifier for this system (required)
+      --eventdb=                  Event database root. [default: /var/folders/jp
+                                  /lqz3n0m17nqft7bwtw3b8n380000gp/T/]
+      --receive-port=             TCP port for receiving events. [default: 8098]
+      --bulk-receive-port=        TCP port for bulk receiving events. [default:
+                                  8097]
+      --broadcast-port=           TCP port for broadcasting events. [default:
+                                  8099]
+      --broadcast-test-interval=  Interval between test event brodcasts (in
+                                  seconds; 0 to disable). [default: 3600]
+      --whitelist=                Network to be included in submission
+                                  whitelist. [default: 0.0.0.0/0]
+      --remote=                   Remote broadcaster to subscribe to
+                                  (host[:port]).
+      --filter=                   XPath filter applied to events broadcast by
+                                  remote.
+      --cmd=                      Spawn external command on event receipt.
+      --save-event-directory=     Target directory [default:
+                                  /Users/jds/Projects/Astronomy/TDIG/comet]
+      --version                   Display Twisted version and exit.
+      --help                      Display this help and exit.
 
 Basic Modes of Operation
 ++++++++++++++++++++++++
@@ -69,7 +74,16 @@ If the ``--receive`` option is supplied, Comet will fulfil the Broker role in
 an Author to Broker connection. In other words, it will listen for TCP
 connections from remote authors and accept events for distribution. The TCP
 port on which Comet will listen may be specified with the ``--receive-port``
-option.
+option; it defaults to 8098.
+
+If the ``--bulk-receive`` option is supplied, Comet will use a non-standard
+extension of the protocol which makes it possible for authors to submit
+multiple events packaged in a single ``tar`` format archive (which may
+optionally be compressed with ``gzip`` or ``bzip2``). Comet will automatically
+decompress the archive and process each event contained within it
+individually. The TCP port on which Comet will listen for bulk submissions of
+this form may be specified with the ``--bulk-receive-port`` option; it
+defaults to 8097.
 
 If the ``--broadcast`` option is supplied, Comet will listen for Subscribers
 to connect and then it will fulfil the Broker role in a Broker to Subscriber

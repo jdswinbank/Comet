@@ -9,6 +9,13 @@ version numbering and how releases are made.
 In progress
 -----------
 
+Testing
+    Provide a means for authors to bulk-submit large numbers of events in a
+    single VTP transaction. This cuts down on network round trips, which may
+    be useful in high-volume or high-network-latency scenarios.
+
+    ``comet-sendvo`` no longer reads event text from standard input.
+
 Current development version
     Switch dependency from `ipaddr-py`_ to `py2-ipaddress`_. The latter is a
     backport of the Python 3 functionality, so this helps clear the way for an
