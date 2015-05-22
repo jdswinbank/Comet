@@ -5,6 +5,7 @@
 
 # Python standard library
 import sys
+import tarfile
 
 # Twisted
 from twisted.python.log import startLogging
@@ -12,7 +13,7 @@ from twisted.python import usage
 from twisted.internet import reactor
 
 # VOEvent transport protocol
-from comet.protocol import SingleSenderFactory
+from comet.protocol import SingleSenderFactory, BulkSenderFactory
 
 # Encapsulation of event
 from comet.utility.xml import xml_document
@@ -24,21 +25,25 @@ class Options(usage.Options):
     optParameters = [
         ["host", "h", "localhost", "Host to send to."],
         ["port", "p", 8098, "Port to send to.", int],
-        ["file", "f", "-", "Where to read XML text to send (- is stdin)."]
     ]
 
-class OneShotSender(SingleSenderFactory):
-    """
-    A factory that shuts down the reactor when we lose the connection to the
-    remote host. That either means that our event has been sent or that we
-    failed.
-    """
-    def clientConnectionLost(self, connector, reason):
-        reactor.stop()
+    def parseArgs(self, filename):
+        self["file"] = filename
 
-    def clientConnectionFailed(self, connector, reason):
-        log.warning("Connection failed")
-        reactor.stop()
+def makeOneShotSender(base):
+    class OneShotSender(base):
+        """
+        A factory that shuts down the reactor when we lose the connection to the
+        remote host. That either means that our event has been sent or that we
+        failed.
+        """
+        def clientConnectionLost(self, connector, reason):
+            reactor.stop()
+
+        def clientConnectionFailed(self, connector, reason):
+            log.warning("Connection failed")
+            reactor.stop()
+    return OneShotSender
 
 if __name__ == "__main__":
     config = Options()
@@ -46,24 +51,21 @@ if __name__ == "__main__":
 
     startLogging(sys.stdout)
 
-    if config["file"] == "-":
-        f = sys.stdin
+    # Attempt to guess whether we are sending a tarball or a single event and
+    # act appropriately.
+    if tarfile.is_tarfile(config["file"]):
+        factory = makeOneShotSender(BulkSenderFactory)(config["file"])
     else:
-        f = open(config["file"])
+        if config["file"] == "-":
+            f = sys.stdin
+        else:
+            f = open(config["file"])
+        try:
+            factory = makeOneShotSender(SingleSenderFactory)(xml_document(f.read()))
+        finally:
+            f.close()
 
-    try:
-        factory = OneShotSender(xml_document(f.read()))
-    except IOError:
-        log.warning("Reading XML document failed")
-        reactor.callWhenRunning(reactor.stop)
-    except ElementTree.Error:
-        log.warning("Could not parse event text")
-        reactor.callWhenRunning(reactor.stop)
-    else:
-        reactor.connectTCP(config['host'], config['port'], factory)
-    finally:
-        f.close()
-
+    reactor.connectTCP(config['host'], config['port'], factory)
     reactor.run()
 
     # If our factory didn't get an acknowledgement of receipt, we'll exit with

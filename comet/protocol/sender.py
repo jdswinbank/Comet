@@ -62,6 +62,11 @@ class VOEventSenderFactory(ClientFactory):
         self.acked = 0
         self.naked = 0
 
+    def stopFactory(self):
+        log.msg("Received %d acks and %d naks" % (self.acked, self.naked))
+        if self.acked != self.responses_expected:
+            log.warning("Event sending unsuccessful")
+
 class SingleSenderFactory(VOEventSenderFactory):
     """
     Specialization of VOEventSenderFactory to send a single event. We always
@@ -72,12 +77,6 @@ class SingleSenderFactory(VOEventSenderFactory):
         VOEventSenderFactory.__init__(self)
         self.outgoing_data = event.text
         self.responses_expected = 1
-
-    def stopFactory(self):
-        if self.acked == 1:
-            log.msg("Event was sent successfully")
-        else:
-            log.warning("Event was NOT sent successfully")
 
 class BulkSenderFactory(VOEventSenderFactory):
     """
@@ -98,6 +97,3 @@ class BulkSenderFactory(VOEventSenderFactory):
                 if x.isfile()
             ]
         )
-
-    def stopFactory(self):
-        log.msg("Received %d acks and %d naks" % (self.acked, self.naked))
