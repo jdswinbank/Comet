@@ -17,6 +17,10 @@ Current development version
     Use the ``$TMPDIR`` environment variable, if set, to store the event
     database. Otherwise, fall back to ``tmp``.
 
+    Drop support for Python 2.6, following the same change made in Twisted.
+
+    Improve checking for valid IVORNs.
+
 .. _ipaddr-py: https://code.google.com/p/ipaddr-py/
 .. _py2-ipaddress: https://bitbucket.org/kwi/py2-ipaddress/
 
