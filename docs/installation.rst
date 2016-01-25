@@ -19,7 +19,7 @@ Manual installation
 Requirements
 ^^^^^^^^^^^^
 
-Comet is developed targeting Python 2.6 and 2.7. It depends upon:
+Comet is developed targeting Python 2.7. It depends upon:
 
 * `Twisted <http://twistedmatrix.com/>`_ (version 11.1.0 or later)
 * `lxml <http://lxml.de/>`_ (version 2.3 or later)
