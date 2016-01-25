@@ -15,10 +15,11 @@ from comet.utility import log
 ElementTree.register_namespace("voe", "http://www.ivoa.net/xml/VOEvent/v2.0")
 
 IVORN_RE = re.compile("""ivo://
-                         (?P<auth>[a-zA-Z0-9][\w\-.~*'()]{2,}) / # Authority
-                         (?P<rsrc>[\w\-.~*'()/]*) \#?            # Resource name
-                         (?P<localID>[\w\-.~*'()/:]*) $          # Fragment
+                         (?P<auth>[a-zA-Z0-9][\w\-.~*'()]{2,}) /     # Authority
+                         (?P<rsrc>[\w\-\.~\*'()/]*) \#?              # Resource name
+                         (?P<localID>[\w\-\.~\*'()\+=/%!$&,;:@?]*) $ # Fragment
                       """, re.VERBOSE)
+
 def parse_ivorn(ivorn):
     """
     Takes an IVORN of the form
@@ -27,6 +28,12 @@ def parse_ivorn(ivorn):
 
     and returns (authorityID, resourceKey, local_ID). Raise if that isn't
     possible.
+
+    Refer to the IVOA Identifiers Recommendation (1.12) for justification, but
+    note that document is not as clear as unambiguous as one might hope. We
+    have assumed that anything which is not explicitly permitted is forbitten
+    in the authority and the resource name, while anything which would be
+    permitted in an RFC-3986 URI is permitted in the fragment.
     """
     try:
         return IVORN_RE.match(ivorn).groups()
