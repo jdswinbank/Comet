@@ -1,5 +1,4 @@
 from ipaddress import ip_network
-from lxml.etree import XPath
 
 from twisted.trial import unittest
 from twisted.python import usage

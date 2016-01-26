@@ -1,10 +1,7 @@
 # VOEvent TCP transport protocol using Twisted.
 # John Swinbank, <swinbank@princeton.edu>, 2011-15.
 
-import tarfile
-
 # Twisted protocol definition
-from twisted.protocols.basic import Int32StringReceiver
 from twisted.internet.protocol import ClientFactory
 
 # Comet protocol definitions

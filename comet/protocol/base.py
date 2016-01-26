@@ -1,8 +1,5 @@
 # VOEvent TCP transport protocol using Twisted.
-# John Swinbank, <swinbank@princeton.edu>, 2011-15.
-
-# XML parsing using lxml
-import lxml.etree as ElementTree
+# John Swinbank, <swinbank@princeton.edu>, 2011-16.
 
 # Twisted protocol definition
 from twisted.internet import defer

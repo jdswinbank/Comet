@@ -1,8 +1,5 @@
-import os
-
 from twisted.trial import unittest
 
-import comet
 from comet.icomet import IValidator
 from comet.utility.xml import xml_document
 from comet.validator.ivorn import CheckIVORN

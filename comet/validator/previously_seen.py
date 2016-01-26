@@ -1,13 +1,12 @@
 # Comet VOEvent Broker.
 # Check for previously seen events.
-# John Swinbank, <swinbank@transientskp.org>.
+# John Swinbank, <swinbank@princeton.edu>
 
 from twisted.internet.threads import deferToThread
 from zope.interface import implementer
 
 from ..icomet import IValidator
 from ..utility import log
-from ..utility.event_db import Event_DB
 
 @implementer(IValidator)
 class CheckPreviouslySeen(object):

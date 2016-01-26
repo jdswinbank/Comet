@@ -1,12 +1,11 @@
 # Comet VOEvent Broker.
 # Example event handler: write an event to file.
-# John Swinbank, <swinbank@trtransientskp.org>.
+# John Swinbank, <swinbank@princeton.edu>.
 
 import os
 import string
 from contextlib import contextmanager
 
-import lxml.etree as ElementTree
 from zope.interface import implementer
 from twisted.plugin import IPlugin
 from twisted.python import lockfile

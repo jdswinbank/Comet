@@ -1,11 +1,7 @@
 # VOEvent TCP transport protocol using Twisted.
-# John Swinbank, <swinbank@princeton.edu>, 2011-15.
-
-import tarfile
-from StringIO import StringIO
+# John Swinbank, <swinbank@princeton.edu>, 2011-16.
 
 # Twisted protocol definition
-from twisted.internet import defer
 from twisted.protocols.policies import TimeoutMixin
 from twisted.internet.protocol import ServerFactory
 

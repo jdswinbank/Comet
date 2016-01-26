@@ -1,9 +1,6 @@
 # Comet VOEvent Broker.
 # Check for valid IVORN.
-# John Swinbank, <swinbank@transientskp.org>.
-
-from twisted.internet.threads import deferToThread
-
+# John Swinbank, <swinbank@princeton.edu>
 
 from zope.interface import implementer
 from comet.utility.voevent import parse_ivorn

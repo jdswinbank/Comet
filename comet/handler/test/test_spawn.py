@@ -3,7 +3,6 @@ import sys
 import tempfile
 
 from twisted.trial import unittest
-from twisted.python import failure
 from twisted.python import util
 
 from ...icomet import IHandler

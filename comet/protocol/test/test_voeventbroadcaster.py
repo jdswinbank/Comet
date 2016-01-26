@@ -8,11 +8,8 @@ from twisted.test import proto_helpers
 from ...test.support import DUMMY_IAMALIVE
 from ...test.support import DUMMY_ACK
 from ...test.support import DUMMY_NAK
-from ...test.support import DUMMY_AUTHENTICATE
 from ...test.support import DUMMY_AUTHENTICATE_RESPONSE
 from ...test.support import DUMMY_AUTHENTICATE_RESPONSE_LEGACY
-from ...test.support import DUMMY_VOEVENT
-from ...test.support import DUMMY_EVENT_IVORN
 from ...test.support import DUMMY_SERVICE_IVORN
 from ...test.support import DummyEvent
 

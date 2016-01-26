@@ -5,8 +5,6 @@ from twisted.internet.protocol import Protocol
 from twisted.internet.address import IPv4Address
 from twisted.trial import unittest
 
-from ...test.support import DummyEvent
-
 from ..whitelist import WhitelistingFactory
 
 class TestFactory(ServerFactory):
