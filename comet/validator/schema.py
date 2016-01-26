@@ -1,12 +1,13 @@
 # Comet VOEvent Broker.
 # Schema validator.
-# John Swinbank, <swinbank@transientskp.org>.
 
 from twisted.internet.threads import deferToThread
 import lxml.etree as etree
 
 from zope.interface import implementer
-from ..icomet import IValidator
+from comet.icomet import IValidator
+
+__all__ = ["CheckSchema"]
 
 @implementer(IValidator)
 class CheckSchema(object):

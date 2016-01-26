@@ -1,6 +1,5 @@
-# Comet VOEvent Broker
-# Interfaces.
-# John Swinbank, <swinbank@transientkp.org>.
+# Comet VOEvent Broker.
+# Standard interfaces definitions.
 
 from zope.interface import Interface, Attribute
 

@@ -1,3 +1,6 @@
+# Comet VOEvent Broker.
+# Tests for EventWriter plugin.
+
 import os
 import shutil
 import tempfile
@@ -5,12 +8,12 @@ import tempfile
 from twisted.trial import unittest
 from twisted.plugin import IPlugin
 
-from ...utility.xml import xml_document
-from ...icomet import IHandler, IHasOptions
-from ...test.support import DUMMY_VOEVENT
-from ..eventwriter import EventWriter
-from ..eventwriter import string_to_filename
-from ..eventwriter import event_file
+from comet.icomet import IHandler, IHasOptions
+from comet.utility import xml_document
+from comet.testutils import DUMMY_VOEVENT
+from comet.plugins.eventwriter import EventWriter
+from comet.plugins.eventwriter import string_to_filename
+from comet.plugins.eventwriter import event_file
 
 class StringToFilenameTestCase(unittest.TestCase):
     def test_characters(self):

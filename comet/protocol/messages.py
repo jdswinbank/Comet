@@ -1,5 +1,5 @@
+# Comet VOEvent Broker.
 # VOEvent transport protocol messages.
-# John Swinbank, <swinbank@transientskp.org>, 2011.
 
 # Python standard library
 from datetime import datetime
@@ -7,7 +7,7 @@ from datetime import datetime
 # XML parsing using lxml
 import lxml.etree as ElementTree
 
-from ..utility.xml import xml_document
+from comet.utility import xml_document
 
 ElementTree.register_namespace("trn", "http://www.telescope-networks.org/xml/Transport/v1.1")
 

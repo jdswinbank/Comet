@@ -1,6 +1,5 @@
 # Comet VOEvent Broker.
 # Logging system.
-# John Swinbank, <swinbank@transientskp.org>.
 
 # We define multiple log levels for use within Comet, and allow the user to
 # adjust the verbosity with command line options. We then gate messages
@@ -9,6 +8,9 @@
 from twisted.python import log as twisted_log
 from twisted.python import context
 from twisted.internet import defer
+
+__all__ = ["Levels", "DEFAULT_LEVEL", "LEVEL",
+           "warn", "info", "debug", "err"]
 
 class Levels(object):
     """
@@ -54,12 +56,8 @@ class LogWithDeferred(object):
         return defer.succeed(None)
 
 # Shortcuts to enable easy logging at the given level.
-warning = LogWithDeferred(Levels.WARNING)
-warn = warning
-
+warn = LogWithDeferred(Levels.WARNING)
 info = LogWithDeferred(Levels.INFO)
-msg = info
-
 debug = LogWithDeferred(Levels.DEBUG)
 
 # Errors override our logging mechanism and get dumped straight into Twisted's

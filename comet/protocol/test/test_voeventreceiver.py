@@ -1,14 +1,15 @@
+# Comet VOEvent Broker.
+# Tests for VOEvent receiver.
+
 import lxml.etree as etree
 
 from twisted.internet import task
 from twisted.trial import unittest
 from twisted.test import proto_helpers
 
-from ...test.support import DUMMY_VOEVENT
-from ...test.support import DUMMY_SERVICE_IVORN
+from comet.testutils import DUMMY_VOEVENT, DUMMY_SERVICE_IVORN
 
-from ..receiver import VOEventReceiver
-from ..receiver import VOEventReceiverFactory
+from comet.protocol.receiver import VOEventReceiver, VOEventReceiverFactory
 
 class VOEventReceiverFactoryTestCase(unittest.TestCase):
     def setUp(self):

@@ -1,21 +1,23 @@
+# Comet VOEvent Broker.
+# Tests for subscriber component.
+
 import lxml.etree as etree
 
 from twisted.internet import task
 from twisted.trial import unittest
 from twisted.test import proto_helpers
 
-from ...test.support import DUMMY_EVENT_IVORN as DUMMY_IVORN
-from ...test.support import DUMMY_SERVICE_IVORN
-from ...test.support import DUMMY_IAMALIVE
-from ...test.support import DUMMY_AUTHENTICATE
-from ...test.support import DUMMY_VOEVENT
+from comet.testutils import (DUMMY_EVENT_IVORN, DUMMY_SERVICE_IVORN,
+                             DUMMY_IAMALIVE, DUMMY_AUTHENTICATE,
+                             DUMMY_VOEVENT)
 
-from ..subscriber import VOEventSubscriber, VOEventSubscriberFactory
+from comet.protocol.subscriber import (VOEventSubscriber,
+                                         VOEventSubscriberFactory)
 
 class VOEventSubscriberFactoryTestCase(unittest.TestCase):
     def setUp(self):
         self.clock = task.Clock()
-        self.factory = VOEventSubscriberFactory(DUMMY_IVORN)
+        self.factory = VOEventSubscriberFactory(DUMMY_EVENT_IVORN)
         self.factory.callLater = self.clock.callLater
         self.transport = proto_helpers.StringTransportWithDisconnection()
         self.proto = self.factory.buildProtocol(('127.0.0.1', 0))
@@ -41,7 +43,7 @@ class VOEventSubscriberFactoryTestCase(unittest.TestCase):
 
 class VOEventSubscriberTimeoutTestCase(unittest.TestCase):
     def setUp(self):
-        factory = VOEventSubscriberFactory(DUMMY_IVORN)
+        factory = VOEventSubscriberFactory(DUMMY_EVENT_IVORN)
         self.clock = task.Clock()
         factory.callLater = self.clock.callLater
         self.proto = factory.buildProtocol(('127.0.0.1', 0))
@@ -101,7 +103,7 @@ class VOEventSubscriberTestCase(unittest.TestCase):
         received_element = etree.fromstring(self.tr.value()[4:])
         self.assertEqual("ack", received_element.attrib['role'])
         self.assertEqual(DUMMY_SERVICE_IVORN, received_element.find('Response').text)
-        self.assertEqual(DUMMY_IVORN, received_element.find('Origin').text)
+        self.assertEqual(DUMMY_EVENT_IVORN, received_element.find('Origin').text)
 
     def test_receive_invalid_voevent(self):
         # This should not be accepted, but *should not* generate a NAK.
@@ -111,4 +113,4 @@ class VOEventSubscriberTestCase(unittest.TestCase):
         received_element = etree.fromstring(self.tr.value()[4:])
         self.assertEqual("ack", received_element.attrib['role'])
         self.assertEqual(DUMMY_SERVICE_IVORN, received_element.find('Response').text)
-        self.assertEqual(DUMMY_IVORN, received_element.find('Origin').text)
+        self.assertEqual(DUMMY_EVENT_IVORN, received_element.find('Origin').text)

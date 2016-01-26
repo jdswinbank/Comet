@@ -1,9 +1,10 @@
 # Comet VOEvent Broker.
-# Event relaying tools.
-# John Swinbank, <swinbank@transientskp.org>.
+# Event relaying handler.
 
 from zope.interface import implementer
-from ..icomet import IHandler
+from comet.icomet import IHandler
+
+__all__ = ["EventRelay"]
 
 @implementer(IHandler)
 class EventRelay(object):

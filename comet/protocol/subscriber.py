@@ -1,5 +1,5 @@
-# VOEvent TCP transport protocol using Twisted.
-# John Swinbank, <swinbank@princeton.edu>, 2011-15.
+# Comet VOEvent Broker.
+# VOEventSubscriber: subscribe to a stream of events from a broker.
 
 # Twisted protocol definition
 from twisted.internet import reactor
@@ -7,14 +7,16 @@ from twisted.protocols.policies import TimeoutMixin
 from twisted.internet.protocol import ReconnectingClientFactory
 
 # Base protocol definitions
-from .base import EventHandler, VOEVENT_ROLES
+from comet.protocol.base import EventHandler, VOEVENT_ROLES
 
 # Constructors for transport protocol messages
-from .messages import iamaliveresponse, authenticateresponse
+from comet.protocol.messages import iamaliveresponse, authenticateresponse
 
 # Comet utility routines
-from ..utility import log
-from ..utility.xml import xml_document, ParseError
+import comet.log as log
+from comet.utility import xml_document, ParseError
+
+__all__ = ["VOEventSubscriberFactory"]
 
 class VOEventSubscriber(EventHandler, TimeoutMixin):
     ALIVE_INTERVAL = 120 # If we get no traffic for ALIVE_INTERVAL seconds,
@@ -32,7 +34,7 @@ class VOEventSubscriber(EventHandler, TimeoutMixin):
         return EventHandler.connectionLost(self, *args)
 
     def timeoutConnection(self):
-        log.msg(
+        log.info(
             "No iamalive received from %s for %d seconds; disconecting" %
             (self.transport.getPeer(), self.ALIVE_INTERVAL),
             system="VOEventSubscriber"
@@ -46,7 +48,7 @@ class VOEventSubscriber(EventHandler, TimeoutMixin):
         try:
             incoming = xml_document(data)
         except ParseError:
-            log.warning("Unparsable message received")
+            log.warn("Unparsable message received")
             return
 
         # Reset the timeout counter and wait another 120 seconds before
@@ -71,7 +73,7 @@ class VOEventSubscriber(EventHandler, TimeoutMixin):
                 )
             )
         elif incoming.get('role') in VOEVENT_ROLES:
-            log.msg(
+            log.info(
                 "VOEvent %s received from %s" % (
                     incoming.attrib['ivorn'],
                     str(self.transport.getPeer())
@@ -81,7 +83,7 @@ class VOEventSubscriber(EventHandler, TimeoutMixin):
             # want to be removed from upstream's distribution list.
             self.process_event(incoming, can_nak=False)
         else:
-            log.warning(
+            log.warn(
                 "Incomprehensible data received from %s (role=%s)" %
                 (self.transport.getPeer(), incoming.get("role"))
             )
@@ -113,7 +115,7 @@ class VOEventSubscriberFactory(ReconnectingClientFactory):
             self.reset_call.cancel()
 
     def clientConnectionFailed(self, connector, reason):
-        log.msg(
+        log.info(
             "Connection to %s failed; will retry in %d second%s" %
             (connector.getDestination(), self.delay, "" if self.delay == 1 else "s"),
             system="VOEventSubscriberFactory"
@@ -122,7 +124,7 @@ class VOEventSubscriberFactory(ReconnectingClientFactory):
         ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
 
     def clientConnectionLost(self, connector, reason):
-        log.msg(
+        log.info(
             "Connection to %s lost; will retry in %d second%s" %
             (connector.getDestination(), self.delay, "" if self.delay == 1 else "s"),
             system="VOEventSubscriberFactory"

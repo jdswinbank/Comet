@@ -1,12 +1,15 @@
+# Comet VOEvent Broker.
+# Tests for event schema validator.
+
 import os
 
 from twisted.trial import unittest
 
 import comet
 from comet.icomet import IValidator
-from comet.utility.xml import xml_document
-from comet.validator.schema import CheckSchema
-from comet.test.support import DUMMY_VOEVENT
+from comet.utility import xml_document
+from comet.validator import CheckSchema
+from comet.testutils import DUMMY_VOEVENT
 
 BAD_EVENT_TEXT = """<xml></xml>"""
 

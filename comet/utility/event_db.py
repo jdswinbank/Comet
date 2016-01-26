@@ -1,6 +1,5 @@
 # Comet VOEvent Broker.
 # Event database.
-# John Swinbank, <swinbank@transientskp.org>.
 
 import os
 import anydbm
@@ -13,8 +12,10 @@ from contextlib import closing
 from twisted.internet.threads import deferToThread
 from twisted.internet.defer import DeferredList
 
-from comet.utility import log
+import comet.log as log
 from comet.utility.voevent import parse_ivorn
+
+__all__ = ["Event_DB"]
 
 class Event_DB(object):
     def __init__(self, root):
@@ -61,7 +62,7 @@ class Event_DB(object):
                         # call prune(0) *immediately* after an insertion and might
                         # get hit by floating point weirdness.
                         remove.append(key)
-                log.msg("Expiring %d events from %s" % (len(remove), db_path))
+                log.info("Expiring %d events from %s" % (len(remove), db_path))
                 for key in remove: del db[key]
                 db.close()
 

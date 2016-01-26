@@ -1,16 +1,15 @@
+# Comet VOEvent Broker.
+# Tests for VTP messages.
+
 import os
 import lxml.etree as etree
 from twisted.trial import unittest
 
 import comet
-from ..messages import iamalive
-from ..messages import iamaliveresponse
-from ..messages import ack
-from ..messages import nak
-from ..messages import authenticate
-from ..messages import authenticateresponse
+from comet.testutils import DUMMY_SERVICE_IVORN
 
-from ...test.support import DUMMY_SERVICE_IVORN
+from comet.protocol.messages import (iamalive, iamaliveresponse, ack, nak,
+                                     authenticate, authenticateresponse)
 
 class TransportTestCase(unittest.TestCase):
 

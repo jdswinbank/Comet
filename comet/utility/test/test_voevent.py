@@ -1,18 +1,20 @@
+# Comet VOEvent Broker.
+# Tests for VOEvent messaage handling.
+
 import os
 import string
 import lxml.etree as etree
 
 from twisted.trial import unittest
 
-from ...test.support import DUMMY_SERVICE_IVORN as DUMMY_IVORN
-
 import comet
-from ..voevent import broker_test_message
-from ..voevent import parse_ivorn
+from comet.utility import broker_test_message
+from comet.utility import parse_ivorn
+from comet.testutils import DUMMY_SERVICE_IVORN
 
 class broker_test_messageTestCase(unittest.TestCase):
     def setUp(self):
-        self.message = broker_test_message(DUMMY_IVORN)
+        self.message = broker_test_message(DUMMY_SERVICE_IVORN)
 
     def test_valid(self):
         schema = etree.XMLSchema(

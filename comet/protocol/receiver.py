@@ -1,16 +1,18 @@
-# VOEvent TCP transport protocol using Twisted.
-# John Swinbank, <swinbank@princeton.edu>, 2011-16.
+# Comet VOEvent Broker.
+# VOEventReceiver: Receive messages from authors.
 
 # Twisted protocol definition
 from twisted.protocols.policies import TimeoutMixin
 from twisted.internet.protocol import ServerFactory
 
 # Base protocol definitions
-from .base import EventHandler, VOEVENT_ROLES
+from comet.protocol.base import EventHandler, VOEVENT_ROLES
 
 # Comet utility routines
-from ..utility import log
-from ..utility.xml import xml_document, ParseError
+import comet.log as log
+from comet.utility import xml_document, ParseError
+
+__all__ = ["VOEventReceiverFactory"]
 
 class VOEventReceiver(EventHandler, TimeoutMixin):
     """
@@ -19,7 +21,7 @@ class VOEventReceiver(EventHandler, TimeoutMixin):
     TIMEOUT = 20
 
     def connectionMade(self):
-        log.msg("New connection from %s" % str(self.transport.getPeer()))
+        log.info("New connection from %s" % str(self.transport.getPeer()))
         self.setTimeout(self.TIMEOUT)
 
     def connectionLost(self, *args):
@@ -28,7 +30,7 @@ class VOEventReceiver(EventHandler, TimeoutMixin):
         return EventHandler.connectionLost(self, *args)
 
     def timeoutConnection(self):
-        log.msg(
+        log.info(
             "%s timed out after %d seconds" %
             (str(self.transport.getPeer()), self.TIMEOUT)
         )
@@ -41,13 +43,13 @@ class VOEventReceiver(EventHandler, TimeoutMixin):
         try:
             incoming = xml_document(data)
         except ParseError:
-            d = log.warning("Unparsable message received from %s" % str(self.transport.getPeer()))
+            d = log.warn("Unparsable message received from %s" % str(self.transport.getPeer()))
         else:
             # The root element of both VOEvent and Transport packets has a
             # "role" element which we use to identify the type of message we
             # have received.
             if incoming.get('role') in VOEVENT_ROLES:
-                log.msg(
+                log.info(
                     "VOEvent %s received from %s" % (
                         incoming.attrib['ivorn'],
                         str(self.transport.getPeer())
@@ -55,7 +57,7 @@ class VOEventReceiver(EventHandler, TimeoutMixin):
                 )
                 d = self.process_event(incoming)
             else:
-                d = log.warning(
+                d = log.warn(
                     "Incomprehensible data received from %s (role=%s)" %
                     (self.transport.getPeer(), incoming.get("role"))
                 )

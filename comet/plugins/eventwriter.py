@@ -1,6 +1,5 @@
 # Comet VOEvent Broker.
 # Example event handler: write an event to file.
-# John Swinbank, <swinbank@princeton.edu>.
 
 import os
 import string
@@ -10,8 +9,8 @@ from zope.interface import implementer
 from twisted.plugin import IPlugin
 from twisted.python import lockfile
 
-from ..icomet import IHandler, IHasOptions
-from ..utility import log
+from comet.icomet import IHandler, IHasOptions
+import comet.log as log
 
 def string_to_filename(input_string):
     # Strip weird, confusing or special characters from input_string so that

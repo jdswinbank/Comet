@@ -2,7 +2,7 @@ from twisted.trial import unittest
 from twisted.python import log as twisted_log
 from twisted.internet import defer
 
-from ...utility import log
+import comet.log as log
 
 DUMMY_MESSAGE = "Dummy message"
 
@@ -72,21 +72,21 @@ class test_comet_logging(unittest.TestCase):
     def test_log_warning_level_debug(self):
         log.LEVEL = log.Levels.DEBUG
         self.assertFalse(self.observer.messages)
-        d = log.warning(DUMMY_MESSAGE)
+        d = log.warn(DUMMY_MESSAGE)
         self.assertTrue(self.observer.messages)
         return d.addCallback(self._check_log_full)
 
     def test_log_warning_level_info(self):
         log.LEVEL = log.Levels.INFO
         self.assertFalse(self.observer.messages)
-        d = log.warning(DUMMY_MESSAGE)
+        d = log.warn(DUMMY_MESSAGE)
         self.assertTrue(self.observer.messages)
         return d.addCallback(self._check_log_full)
 
     def test_log_warning_level_warning(self):
         log.LEVEL = log.Levels.WARNING
         self.assertFalse(self.observer.messages)
-        d =log.warning(DUMMY_MESSAGE)
+        d = log.warn(DUMMY_MESSAGE)
         self.assertTrue(self.observer.messages)
         return d.addCallback(self._check_log_full)
 

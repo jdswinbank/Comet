@@ -1,11 +1,10 @@
 # Comet VOEvent Broker.
 # Example event handler: print an event.
-# John Swinbank, <swinbank@trtransientskp.org>.
 
 import lxml.etree as ElementTree
 from zope.interface import implementer
 from twisted.plugin import IPlugin
-from ..icomet import IHandler
+from comet.icomet import IHandler
 
 # Event handlers must implement IPlugin and IHandler.
 @implementer(IPlugin, IHandler)

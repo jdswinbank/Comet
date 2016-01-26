@@ -1,4 +1,9 @@
+# Comet VOEvent Broker.
+# XML document parsing.
+
 import lxml.etree as ElementTree
+
+__all__ = ["ParseError", "xml_document"]
 
 class ParseError(Exception):
     pass

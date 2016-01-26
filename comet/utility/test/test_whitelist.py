@@ -1,3 +1,6 @@
+# Comet VOEvent Broker.
+# Test for IP whitelisting system.
+
 from ipaddress import ip_network
 
 from twisted.internet.protocol import ServerFactory
@@ -5,7 +8,7 @@ from twisted.internet.protocol import Protocol
 from twisted.internet.address import IPv4Address
 from twisted.trial import unittest
 
-from ..whitelist import WhitelistingFactory
+from comet.utility import WhitelistingFactory
 
 class TestFactory(ServerFactory):
     protocol = Protocol

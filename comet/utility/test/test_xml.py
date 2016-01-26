@@ -1,8 +1,11 @@
+# Comet VOEvent Broker.
+# Tests for XML parsing.
+
 import textwrap
 import lxml.etree as etree
 
 from twisted.trial import unittest
-from comet.utility.xml import xml_document, ParseError
+from comet.utility import xml_document, ParseError
 
 EXAMPLE_XML = """<xml></xml>"""
 

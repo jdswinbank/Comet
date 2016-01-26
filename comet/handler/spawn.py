@@ -1,6 +1,5 @@
 # Comet VOEvent Broker.
-# Event handler to send an event to an external tool.
-# John Swinbank, <swinbank@transientskp.org>, 2012.
+# Event handler to spawn an external command & supply a VOEvent on stdin.
 
 import os
 
@@ -9,8 +8,10 @@ from twisted.internet import defer
 from twisted.internet.protocol import ProcessProtocol
 
 from zope.interface import implementer
-from ..icomet import IHandler
-from ..utility import log
+from comet.icomet import IHandler
+import comet.log as log
+
+__all__ = ["SpawnCommand"]
 
 class SpawnCommandProtocol(ProcessProtocol):
     def __init__(self, deferred, text):
@@ -44,7 +45,7 @@ class SpawnCommand(object):
 
     def __call__(self, event):
         d = defer.Deferred()
-        log.msg("Running external command: %s" % (self.cmd,))
+        log.info("Running external command: %s" % (self.cmd,))
         reactor.spawnProcess(
             SpawnCommandProtocol(d, event.text),
             self.cmd,

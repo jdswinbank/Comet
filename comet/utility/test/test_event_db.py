@@ -1,3 +1,6 @@
+# Comet VOEvent Broker.
+# Event database tests.
+
 import tempfile
 import shutil
 from multiprocessing.pool import ThreadPool
@@ -5,8 +8,8 @@ from itertools import repeat
 
 from twisted.trial import unittest
 
-from ...test.support import DummyEvent
-from ..event_db import Event_DB
+from comet.testutils import DummyEvent
+from comet.utility.event_db import Event_DB
 
 class Event_DB_TestCase(unittest.TestCase):
     def setUp(self):

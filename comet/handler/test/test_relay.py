@@ -1,7 +1,10 @@
+# Comet VOEvent Broker.
+# Test routines: VOEvent relay.
+
 from twisted.trial import unittest
 
-from ...icomet import IHandler
-from ..relay import EventRelay
+from comet.icomet import IHandler
+from comet.handler import EventRelay
 
 DUMMY_EVENT = "Dummy Event Text"
 

@@ -1,12 +1,13 @@
 # Comet VOEvent Broker.
 # Check for previously seen events.
-# John Swinbank, <swinbank@princeton.edu>
 
 from twisted.internet.threads import deferToThread
 from zope.interface import implementer
 
-from ..icomet import IValidator
-from ..utility import log
+from comet.icomet import IValidator
+import comet.log as log
+
+__all__ = ["CheckPreviouslySeen"]
 
 @implementer(IValidator)
 class CheckPreviouslySeen(object):

@@ -1,13 +1,16 @@
+# Comet VOEvent Broker.
+# Tests for identifying prevously unseen events.
+
 import tempfile
 import shutil
 
 from twisted.trial import unittest
 
-from ...test.support import DummyEvent
+from comet.testutils import DummyEvent
 
-from ...icomet import IValidator
-from ...utility.event_db import Event_DB
-from ..previously_seen import CheckPreviouslySeen
+from comet.icomet import IValidator
+from comet.utility import Event_DB
+from comet.validator import CheckPreviouslySeen
 
 class CheckPreviouslySeenTestCase(unittest.TestCase):
     def setUp(self):

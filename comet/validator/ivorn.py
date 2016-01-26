@@ -1,10 +1,11 @@
 # Comet VOEvent Broker.
 # Check for valid IVORN.
-# John Swinbank, <swinbank@princeton.edu>
 
 from zope.interface import implementer
-from comet.utility.voevent import parse_ivorn
 from comet.icomet import IValidator
+from comet.utility import parse_ivorn
+
+__all__ = ["CheckIVORN"]
 
 @implementer(IValidator)
 class CheckIVORN(object):

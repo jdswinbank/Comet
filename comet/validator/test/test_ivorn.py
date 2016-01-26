@@ -1,9 +1,12 @@
+# Comet VOEvent Broker.
+# Test to wwed out bad IVORNs.
+
 from twisted.trial import unittest
 
 from comet.icomet import IValidator
-from comet.utility.xml import xml_document
-from comet.validator.ivorn import CheckIVORN
-from comet.test.support import DUMMY_VOEVENT, DUMMY_EVENT_IVORN
+from comet.utility import xml_document
+from comet.validator import CheckIVORN
+from comet.testutils import DUMMY_VOEVENT, DUMMY_EVENT_IVORN
 
 BAD_EVENT_TEXT = """
 <voe:VOEvent xmlns:voe="http://www.ivoa.net/xml/VOEvent/v2.0"

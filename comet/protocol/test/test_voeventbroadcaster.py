@@ -1,3 +1,6 @@
+# Comet VOEvent Broker.
+# Tests for event broadcaster.
+
 import lxml.etree as etree
 
 from twisted.internet import reactor
@@ -5,16 +8,13 @@ from twisted.internet import task
 from twisted.trial import unittest
 from twisted.test import proto_helpers
 
-from ...test.support import DUMMY_IAMALIVE
-from ...test.support import DUMMY_ACK
-from ...test.support import DUMMY_NAK
-from ...test.support import DUMMY_AUTHENTICATE_RESPONSE
-from ...test.support import DUMMY_AUTHENTICATE_RESPONSE_LEGACY
-from ...test.support import DUMMY_SERVICE_IVORN
-from ...test.support import DummyEvent
+from comet.testutils import (DUMMY_IAMALIVE, DUMMY_ACK, DUMMY_NAK,
+                             DUMMY_AUTHENTICATE_RESPONSE,
+                             DUMMY_AUTHENTICATE_RESPONSE_LEGACY,
+                             DUMMY_SERVICE_IVORN, DummyEvent)
+from comet.service.broker import BCAST_TEST_INTERVAL
 
-from ..broadcaster import VOEventBroadcaster, VOEventBroadcasterFactory
-from ...service.broker import BCAST_TEST_INTERVAL
+from comet.protocol.broadcaster import VOEventBroadcaster, VOEventBroadcasterFactory
 
 class DummyBroadcaster(object):
     def __init__(self):

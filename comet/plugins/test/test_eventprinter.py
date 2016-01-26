@@ -1,3 +1,6 @@
+# Comet VOEvent Broker.
+# Tests for EventPrinter plugin.
+
 import sys
 from cStringIO import StringIO
 
@@ -6,8 +9,8 @@ import lxml.etree as etree
 from twisted.trial import unittest
 from twisted.plugin import IPlugin
 
-from ...icomet import IHandler
-from ..eventprinter import EventPrinter
+from comet.icomet import IHandler
+from comet.plugins.eventprinter import EventPrinter
 
 DUMMY_XML = '<xml/>'
 

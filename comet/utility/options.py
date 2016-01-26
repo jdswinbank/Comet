@@ -1,5 +1,10 @@
+# Comet VOEvent Broker.
+# Base class for command line options.
+
 from twisted.python import usage
 from comet.utility.voevent import parse_ivorn
+
+__all__ = ["BaseOptions"]
 
 class BaseOptions(usage.Options):
     optParameters = [

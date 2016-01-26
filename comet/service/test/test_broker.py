@@ -1,16 +1,19 @@
+# Comet VOEvent Broker.
+# Tests for master broker service.
+
 from ipaddress import ip_network
 
 from twisted.trial import unittest
 from twisted.python import usage
 from twisted.internet import reactor
 
-from ...utility import log
+import comet.log as log
 
-from ..broker import BCAST_TEST_INTERVAL
-from ..broker import DEFAULT_REMOTE_PORT
-from ..broker import Options
-from ..broker import makeService
-from comet.test.support import DUMMY_SERVICE_IVORN
+from comet.service.broker import BCAST_TEST_INTERVAL
+from comet.service.broker import DEFAULT_REMOTE_PORT
+from comet.service.broker import Options
+from comet.service.broker import makeService
+from comet.testutils import DUMMY_SERVICE_IVORN
 
 class DefaultOptionsTestCase(unittest.TestCase):
     def setUp(self):

@@ -1,3 +1,6 @@
+# Comet VOEvent Broker.
+# Utilities in support of broker tests.
+
 import textwrap
 from functools import partial
 import lxml.etree as etree

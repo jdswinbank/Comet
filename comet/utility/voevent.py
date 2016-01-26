@@ -1,5 +1,5 @@
-# VOEvent messages.
-# John Swinbank, <swinbank@transientskp.org>.
+# Comet VOEvent Broker.
+# VOEvent message parsing & definition.
 
 # Python standard library
 import re
@@ -9,8 +9,10 @@ from datetime import datetime
 import lxml.etree as ElementTree
 
 from comet import __version__, __url__
+import comet.log as log
 from comet.utility.xml import xml_document
-from comet.utility import log
+
+__all__ = ["parse_ivorn", "broker_test_message"]
 
 ElementTree.register_namespace("voe", "http://www.ivoa.net/xml/VOEvent/v2.0")
 

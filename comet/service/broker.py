@@ -1,5 +1,5 @@
 # Comet VOEvent Broker.
-# John Swinbank, <swinbank@transientskp.org>.
+# Master broker service.
 
 # Python standard library
 import os
@@ -21,22 +21,20 @@ from twisted.application.internet import TCPServer
 
 # Comet broker routines
 import comet
-from comet.utility import log
-from comet.utility.options import BaseOptions
+import comet.log as log
 from comet.protocol import VOEventBroadcasterFactory
 from comet.protocol import VOEventReceiverFactory
 from comet.protocol import VOEventSubscriberFactory
-from comet.utility.whitelist import WhitelistingFactory
-from comet.utility.event_db import Event_DB
-from comet.validator.ivorn import CheckIVORN
-from comet.validator.schema import CheckSchema
-from comet.validator.previously_seen import CheckPreviouslySeen
+from comet.utility import Event_DB, BaseOptions, WhitelistingFactory
+from comet.validator import CheckIVORN, CheckPreviouslySeen, CheckSchema
 
 # Handlers and plugins
 import comet.plugins
 from comet.icomet import IHandler, IHasOptions
-from comet.handler.spawn import SpawnCommand
-from comet.handler.relay import EventRelay
+from comet.handler import SpawnCommand, EventRelay
+
+# We only need export the items twistd needs to construct a service.
+__all__ = ["makeService", "Options"]
 
 # Constants
 MAX_AGE = 30.0 * 24 * 60 * 60 # Forget events after 30 days
@@ -98,13 +96,13 @@ class Options(BaseOptions):
         except ValueError:
             host, port = remote, DEFAULT_REMOTE_PORT
         reactor.callWhenRunning(
-            log.msg,
+            log.info,
             "Subscribing to remote broker %s:%d" % (host, int(port))
         )
         self['remotes'].append((host, int(port)))
 
     def opt_whitelist(self, network):
-        reactor.callWhenRunning(log.msg, "Whitelisting %s" % network)
+        reactor.callWhenRunning(log.info, "Whitelisting %s" % network)
         self['running_whitelist'].append(ip_network(network, strict=False))
 
     def postOptions(self):

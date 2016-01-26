@@ -5,8 +5,8 @@ import tempfile
 from twisted.trial import unittest
 from twisted.python import util
 
-from ...icomet import IHandler
-from ..spawn import SpawnCommand
+from comet.icomet import IHandler
+from comet.handler import SpawnCommand
 
 SHELL = '/bin/sh'
 

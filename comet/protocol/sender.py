@@ -1,15 +1,17 @@
-# VOEvent TCP transport protocol using Twisted.
-# John Swinbank, <swinbank@princeton.edu>, 2011-15.
+# Comet VOEvent Broker.
+# VOEventSender: publish VOEvents to a broker.
 
 # Twisted protocol definition
 from twisted.internet.protocol import ClientFactory
 
 # Comet protocol definitions
-from .base import ElementSender
+from comet.protocol.base import ElementSender
 
 # Comet utility routines
-from ..utility import log
-from ..utility.xml import xml_document, ParseError
+import comet.log as log
+from comet.utility import xml_document, ParseError
+
+__all__ = ["VOEventSenderFactory"]
 
 class VOEventSender(ElementSender):
     """
@@ -38,23 +40,23 @@ class VOEventSender(ElementSender):
             incoming = xml_document(data)
 
             if incoming.get('role') == "ack":
-                log.msg("Acknowledgement received from %s" % str(self.transport.getPeer()))
+                log.info("Acknowledgement received from %s" % str(self.transport.getPeer()))
                 self.factory.ack = True
             elif incoming.get('role') == "nak":
-                log.warning("Nak received: %s refused to accept VOEvent (%s)" %
+                log.warn("Nak received: %s refused to accept VOEvent (%s)" %
                     (
                         str(self.transport.getPeer()),
                         incoming.findtext("Meta/Result", default="no reason given")
                     )
                 )
             else:
-                log.warning(
+                log.warn(
                     "Incomprehensible data received from %s (role=%s)" %
                     (self.transport.getPeer(), incoming.get("role"))
                 )
 
         except ParseError:
-            log.warning("Unparsable message received from %s" % str(self.transport.getPeer()))
+            log.warn("Unparsable message received from %s" % str(self.transport.getPeer()))
 
         finally:
             # After receiving a message, we shut down the connection.
@@ -68,6 +70,6 @@ class VOEventSenderFactory(ClientFactory):
 
     def stopFactory(self):
         if self.ack:
-            log.msg("Event was sent successfully")
+            log.info("Event was sent successfully")
         else:
-            log.warning("Event was NOT sent successfully")
+            log.warn("Event was NOT sent successfully")

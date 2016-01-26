@@ -1,6 +1,8 @@
-# VOEvent TCP transport protocol using Twisted.
-# John Swinbank, <swinbank@princeton.edu>, 2011-15.
+# Comet VOEvent Broker.
+# VOEventBroadcaster: Listens for connections from subscribers,
+# supplies them with VOEvent messages.
 
+# Python standard library
 from itertools import chain
 
 # XML parsing using lxml
@@ -13,17 +15,16 @@ from twisted.internet.threads import deferToThread
 from twisted.internet.protocol import ServerFactory
 
 # Base protocol definitions
-from .base import ElementSender
+from comet.protocol.base import ElementSender
 
 # Constructors for transport protocol messages
-from .messages import iamalive, authenticate
-
-# Constructor for our perodic test events
-from ..utility.voevent import broker_test_message
+from comet.protocol.messages import iamalive, authenticate
 
 # Comet utility routines
-from ..utility import log
-from ..utility.xml import xml_document, ParseError
+import comet.log as log
+from comet.utility import broker_test_message, xml_document, ParseError
+
+__all__ = ["VOEventBroadcasterFactory"]
 
 class VOEventBroadcaster(ElementSender):
     MAX_ALIVE_COUNT = 1      # Drop connection if peer misses too many iamalives
@@ -33,23 +34,23 @@ class VOEventBroadcaster(ElementSender):
         self.filters = []
 
     def connectionMade(self):
-        log.msg("New subscriber at %s" % str(self.transport.getPeer()))
+        log.info("New subscriber at %s" % str(self.transport.getPeer()))
         self.factory.broadcasters.append(self)
         self.alive_count = 0
         self.send_xml(authenticate(self.factory.local_ivo))
         self.outstanding_ack = 0
 
     def connectionLost(self, *args):
-        log.msg("Subscriber at %s disconnected" % str(self.transport.getPeer()))
+        log.info("Subscriber at %s disconnected" % str(self.transport.getPeer()))
         self.factory.broadcasters.remove(self)
         return ElementSender.connectionLost(self, *args)
 
     def sendIAmAlive(self):
         if self.alive_count >= self.MAX_ALIVE_COUNT:
-            log.msg("Peer appears to be dead; dropping connection")
+            log.info("Peer appears to be dead; dropping connection")
             self.transport.loseConnection()
         elif self.outstanding_ack >= self.MAX_OUTSTANDING_ACK:
-            log.msg("Peer is not acknowledging events; dropping connection")
+            log.info("Peer is not acknowledging events; dropping connection")
             self.transport.loseConnection()
         else:
             self.send_xml(iamalive(self.factory.local_ivo))
@@ -59,7 +60,7 @@ class VOEventBroadcaster(ElementSender):
         try:
             incoming = xml_document(data)
         except ParseError:
-            log.warning("Unparsable message received")
+            log.warn("Unparsable message received")
             return
 
         if incoming.get('role') == "iamalive":
@@ -69,7 +70,7 @@ class VOEventBroadcaster(ElementSender):
             log.debug("Ack received from %s" % str(self.transport.getPeer()))
             self.outstanding_ack -= 1
         elif incoming.get('role') == "nak":
-            log.msg("Nak received from %s; terminating" % str(self.transport.getPeer()))
+            log.info("Nak received from %s; terminating" % str(self.transport.getPeer()))
             self.transport.loseConnection()
         elif incoming.get('role') == "authenticate":
             log.debug("Authentication received from %s" % str(self.transport.getPeer()))
@@ -80,16 +81,16 @@ class VOEventBroadcaster(ElementSender):
                 [elem.get('value') for elem in incoming.findall("Meta/Param[@name=\"xpath-filter\"]")],
                 [elem.text for elem in incoming.findall("Meta/filter[@type=\"xpath\"]")]
             ):
-                log.msg(
+                log.info(
                     "Installing filter %s for %s" %
                     (xpath, str(self.transport.getPeer()))
                 )
                 try:
                     self.filters.append(ElementTree.XPath(xpath))
                 except ElementTree.XPathSyntaxError:
-                    log.msg("Filter %s is not valid XPath" % (xpath,))
+                    log.info("Filter %s is not valid XPath" % (xpath,))
         else:
-            log.warning(
+            log.warn(
                 "Incomprehensible data received from %s (role=%s)" %
                 (self.transport.getPeer(), incoming.get("role"))
             )
@@ -99,11 +100,11 @@ class VOEventBroadcaster(ElementSender):
         # we send the event to our subscriber.
         def check_filters(result):
             if not self.filters or any([value for success, value in result if success]):
-                log.msg("Event matches filter criteria: forwarding to %s" % (str(self.transport.getPeer()),))
+                log.info("Event matches filter criteria: forwarding to %s" % (str(self.transport.getPeer()),))
                 self.send_xml(event)
                 self.outstanding_ack += 1
             else:
-                log.msg("Event rejected by filter")
+                log.info("Event rejected by filter")
 
         return defer.DeferredList(
             [

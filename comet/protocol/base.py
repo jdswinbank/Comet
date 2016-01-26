@@ -1,15 +1,13 @@
-# VOEvent TCP transport protocol using Twisted.
-# John Swinbank, <swinbank@princeton.edu>, 2011-16.
+# Comet VOEvent Broker.
+# Basic protocol building-blocks.
 
 # Twisted protocol definition
 from twisted.internet import defer
 from twisted.protocols.basic import Int32StringReceiver
 
-# Constructors for transport protocol messages
-from .messages import ack, nak
-
-# Comet utility routines
-from ..utility import log
+# Comet
+import comet.log as log
+from comet.protocol.messages import ack, nak
 
 # Constants
 VOEVENT_ROLES = ('observation', 'prediction', 'utility', 'test')
@@ -32,7 +30,7 @@ class ElementSender(Int32StringReceiver):
         Quite likely that's because it sends the prefix in little endian
         (rather than network) byte order.
         """
-        log.msg("Length limit exceeded (%d bytes)." % (length,))
+        log.info("Length limit exceeded (%d bytes)." % (length,))
         Int32StringReceiver.lengthLimitExceeded(self, length)
 
 
@@ -88,11 +86,11 @@ class EventHandler(ElementSender):
             )
             self.handle_event(event).addCallbacks(
                 lambda x: log.debug("Event processed"),
-                lambda x: log.warning("Event handlers failed")
+                lambda x: log.warn("Event handlers failed")
             )
 
         def handle_invalid(failure):
-            log.msg("Event rejected (%s); discarding" % (failure.value.subFailure.getErrorMessage(),))
+            log.info("Event rejected (%s); discarding" % (failure.value.subFailure.getErrorMessage(),))
             if can_nak:
                 log.debug("Sending NAK to %s" % (self.transport.getPeer()))
                 self.send_xml(

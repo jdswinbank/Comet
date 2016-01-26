@@ -1,5 +1,5 @@
-# VOEvent TCP transport protocol using Twisted.
-# John Swinbank, <swinbank@princeton.edu>, 2011-15.
+# Comet VOEvent Broker.
+# VOEvent Transport Protocol definitions.
 
 """
 Implements the VOEvent Transport Protocol; see
@@ -29,7 +29,7 @@ There are four different VOEvent protocols to implement:
 To implement the broker, we need the Subscriber, Broadcaster & Receiver, but not
 the Sender. All four are provided here for completeness.
 """
-from broadcaster import VOEventBroadcaster, VOEventBroadcasterFactory
-from receiver import VOEventReceiver, VOEventReceiverFactory
-from sender import VOEventSender, VOEventSenderFactory
-from subscriber import VOEventSubscriber, VOEventSubscriberFactory
+from comet.protocol.broadcaster import *
+from comet.protocol.receiver import *
+from comet.protocol.sender import *
+from comet.protocol.subscriber import *
