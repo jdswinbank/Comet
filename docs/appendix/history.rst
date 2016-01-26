@@ -21,6 +21,13 @@ Current development version
 
     Improve checking for valid IVORNs.
 
+    Some extremely old versions of Comet (dating from before the 1.0.0
+    release) used a different format for the database of seen events. All
+    released versions through 1.2.2 automatically update old-style databases
+    to the new format when run. As of this release, this support for legacy
+    databases has been dropped. It is necessary to use a previous Comet
+    release to update the database format before upgrading to this version.
+
 .. _ipaddr-py: https://code.google.com/p/ipaddr-py/
 .. _py2-ipaddress: https://bitbucket.org/kwi/py2-ipaddress/
 

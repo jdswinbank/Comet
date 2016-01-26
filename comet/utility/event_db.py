@@ -56,20 +56,7 @@ class Event_DB(object):
                 # The database returned by anydbm is guaranteed to have a
                 # .keys() method, but not necessarily .(iter)items().
                 for key in db.keys():
-                    value = db[key]
-                    try:
-                        # New style databases store seconds since the epoch
-                        db_time = float(value)
-                    except ValueError:
-                        # Old style databases store %Y-%m-%d %H:%M:%S.ssss
-                        # Parse that...
-                        integral_part, fractional_part = value.split('.')
-                        db_time = time.mktime(
-                            time.strptime(integral_part, "%Y-%m-%d %H:%M:%S")
-                        ) + float('0.' + fractional_part)
-                        # ...and update db to new format.
-                        db[key] = str(db_time)
-                    if int(time.time() - db_time) >= expiry_time:
+                    if int(time.time() - float(db[key])) >= expiry_time:
                         # Rounding to nearest int avoids an issue when we call
                         # call prune(0) *immediately* after an insertion and might
                         # get hit by floating point weirdness.
