@@ -6,23 +6,20 @@ Release Procedure
 Version Numbering
 -----------------
 
-Releases have a ``<major>.<minor>.<patch>`` versioning scheme.
+Releases have a ``<major>.<minor>.<patch>`` versioning scheme, and broadly
+follow the `Semantic Versioning`_ conventions:
 
-Major version increments represent major new functionality. In some cases,
-this may involve rethinking or  removal of functionality that was previously
-available.
-
-Minor version increments represent modest functionality improvements. A minor
-version increment will not remove pre-existing functionality, although it may
-alter the details of the interface to that functionality (for example by
-renaming command line options).
-
-Patch version increments are used to fix bugs or correct minor defects in
-earlier releases.
+* Changes to the major version number indicate backwards-incompatible changes
+  to the feature set and/or interface;
+* Changes to the minor version indicate backwards-compatible feature
+  enhancements;
+* Changes to the patch version indicate backwards-compatible bug fixes.
 
 There is no formal end-of-life for Comet releases, but generally only critical
 bugs will be fixed in major or minor versions earlier than the most recent
 release.
+
+.. _Semantic Versioning: http://semver.org/
 
 Making a Release
 ----------------
