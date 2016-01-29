@@ -60,6 +60,10 @@ class EventFileTestCase(unittest.TestCase):
 
 
 class EventWriterTestCase(unittest.TestCase):
+    def setUp(self):
+        self.event = xml_document(DUMMY_VOEVENT)
+        self.event_writer = EventWriter()
+
     def test_interface(self):
         self.assertTrue(IHandler.implementedBy(EventWriter))
         self.assertTrue(IPlugin.implementedBy(EventWriter))
@@ -68,9 +72,13 @@ class EventWriterTestCase(unittest.TestCase):
     def test_name(self):
         self.assertEqual(EventWriter.name, "save-event")
 
-    def test_save_event(self):
-        event = xml_document(DUMMY_VOEVENT)
-        event_writer = EventWriter()
-        event_writer(event)
-        with open(string_to_filename(event.attrib['ivorn']), 'r') as f:
+    def test_save_event(self, root=''):
+        self.event_writer(self.event)
+        with open(os.path.join(root, string_to_filename(self.event.attrib['ivorn'])), 'r') as f:
             self.assertEqual(f.read(), DUMMY_VOEVENT)
+
+    def test_custom_directory(self):
+        self.assertEqual(self.event_writer.get_options()[0][1], os.getcwd())
+        with temp_dir() as tmpdir:
+            self.event_writer.set_option("directory", tmpdir)
+            self.test_save_event(tmpdir)
