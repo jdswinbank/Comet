@@ -1,7 +1,10 @@
 # Comet VOEvent Broker.
 # Utilities in support of broker tests.
 
+import shutil
+import tempfile
 import textwrap
+from contextlib import contextmanager
 from functools import partial
 import lxml.etree as etree
 from comet.protocol.messages import authenticateresponse
@@ -104,3 +107,14 @@ class DummyEvent(object):
         self.attrib = {'ivorn': ivorn}
         self.text = DUMMY_VOEVENT.replace(DUMMY_EVENT_IVORN, ivorn)
         self.element = etree.fromstring(self.text)
+
+@contextmanager
+def temp_dir():
+    """
+    Provide a context with a temporary directory. Clean it up when done.
+    """
+    tmpdir = tempfile.mkdtemp()
+    try:
+        yield tmpdir
+    finally:
+        shutil.rmtree(tmpdir)

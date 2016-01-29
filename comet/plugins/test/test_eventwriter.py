@@ -3,14 +3,13 @@
 
 import os
 import shutil
-import tempfile
 
 from twisted.trial import unittest
 from twisted.plugin import IPlugin
 
 from comet.icomet import IHandler, IHasOptions
 from comet.utility import xml_document
-from comet.testutils import DUMMY_VOEVENT
+from comet.testutils import DUMMY_VOEVENT, temp_dir
 from comet.plugins.eventwriter import EventWriter
 from comet.plugins.eventwriter import string_to_filename
 from comet.plugins.eventwriter import event_file
@@ -55,10 +54,10 @@ class EventFileTestCase(unittest.TestCase):
             self.assertEqual(f.name, self.filename + ".")
 
     def test_temp_dir(self):
-        tmpdir = tempfile.mkdtemp()
-        with event_file(self.ivorn, dirname=tmpdir) as f:
-            self.assertEqual(os.path.dirname(f.name), tmpdir)
-        shutil.rmtree(tmpdir)
+        with temp_dir() as tmpdir:
+            with event_file(self.ivorn, dirname=tmpdir) as f:
+                self.assertEqual(os.path.dirname(f.name), tmpdir)
+
 
 class EventWriterTestCase(unittest.TestCase):
     def test_interface(self):
