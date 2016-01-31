@@ -23,6 +23,12 @@ class mutable_element_tests(unittest.TestCase):
         self.doc.element = etree.fromstring("<foo>baz</foo>")
         self.assertNotEqual(self.doc.text.find("<foo>baz</foo>"), -1)
 
+    def test_getattr_forwarding(self):
+        """Attribute requests are forwarded from doc to doc.element."""
+        self.assertFalse("prefix" in self.doc.__slots__)
+        self.assertEqual(self.doc.prefix, self.doc.element.prefix)
+        self.assertFalse(hasattr(self.doc.element, "foo"))
+        self.assertRaises(AttributeError, getattr, self.doc, "foo")
 
 class xml_document_tests(object):
     def test_signature(self):
