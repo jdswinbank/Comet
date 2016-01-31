@@ -140,4 +140,5 @@ Version 1.0.x
 Future Plans
 ------------
 
-Cryptographic authentication of VOEvent messages and subscribers.
+* Cryptographic authentication of VOEvent messages and subscribers.
+* Port to Python 3.
