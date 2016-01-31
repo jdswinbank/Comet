@@ -6,10 +6,10 @@ Release History
 See the :ref:`release procedure <sec-release>` section for more details on
 version numbering and how releases are made.
 
-In progress
------------
+Version 2.0.0
+-------------
 
-Current development version
+2.0.0 (2016-01-31) [`Download <//github.com/jdswinbank/Comet/tarball/2.0.0>`__]
     Switch dependency from `ipaddr-py`_ to `py2-ipaddress`_. The latter is a
     backport of the Python 3 functionality, so this helps clear the way for an
     eventual Python 3 version of Comet.
