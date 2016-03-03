@@ -25,7 +25,7 @@ import comet.log as log
 from comet.protocol import VOEventBroadcasterFactory
 from comet.protocol import VOEventReceiverFactory
 from comet.protocol import VOEventSubscriberFactory
-from comet.utility import Event_DB, BaseOptions, WhitelistingFactory
+from comet.utility import Event_DB, BaseOptions, WhitelistingFactory, BroadcasterWhitelistingFactory
 from comet.validator import CheckIVORN, CheckPreviouslySeen, CheckSchema
 
 # Handlers and plugins
@@ -58,6 +58,7 @@ class Options(BaseOptions):
         ["broadcast-port", None, DEFAULT_REMOTE_PORT, "TCP port for broadcasting events.", int],
         ["broadcast-test-interval", None, BCAST_TEST_INTERVAL, "Interval between test event brodcasts (in seconds; 0 to disable).", int],
         ["whitelist", None, "0.0.0.0/0", "Network to be included in submission whitelist."],
+        ["broadcast-whitelist", None, "0.0.0.0/0", "Network to be included in broadcaster whitelist."],
         ["remote", None, None, "Remote broadcaster to subscribe to (host[:port])."],
         ["filter", None, None, "XPath filter applied to events broadcast by remote."],
         ["cmd", None, None, "Spawn external command on event receipt."]
@@ -67,6 +68,7 @@ class Options(BaseOptions):
         BaseOptions.__init__(self)
         self['remotes'] = []
         self['running_whitelist'] = []
+        self['running_broadcast-whitelist'] = []
         self['filters'] = []
         self['handlers'] = []
         self['verbosity'] = 1
@@ -105,12 +107,21 @@ class Options(BaseOptions):
         reactor.callWhenRunning(log.info, "Whitelisting %s" % network)
         self['running_whitelist'].append(ip_network(network, strict=False))
 
+    def opt_broadcast_whitelist(self, network):
+        reactor.callWhenRunning(log.info, "Whitelisting %s for broadcaster" % network)
+        self['running_broadcast-whitelist'].append(ip_network(network, strict=False))
+
     def postOptions(self):
         BaseOptions.postOptions(self)
         if self['running_whitelist']:
             self['whitelist'] = self['running_whitelist']
         else:
             self['whitelist'] = [ip_network(self['whitelist'], strict=False)]
+
+        if self['running_broadcast-whitelist']:
+            self['broadcast-whitelist'] = self['running_broadcast-whitelist']
+        else:
+            self['broadcast-whitelist'] = [ip_network(self['broadcast-whitelist'], strict=False)]
 
         if self['verbosity'] >= 2:
             log.LEVEL = log.Levels.DEBUG
@@ -152,9 +163,12 @@ def makeService(config):
             config["local-ivo"], config['broadcast-test-interval']
         )
         if log.LEVEL >= log.Levels.INFO: broadcaster_factory.noisy = False
+        broadcaster_whitelisting_factory = BroadcasterWhitelistingFactory(broadcaster_factory,
+                                                                          config['broadcast-whitelist'])
+        if log.LEVEL >= log.Levels.INFO: broadcaster_whitelisting_factory.noisy = False
         broadcaster_service = TCPServer(
             config['broadcast-port'],
-            broadcaster_factory
+            broadcaster_whitelisting_factory
         )
         broadcaster_service.setName("Broadcaster")
         broadcaster_service.setServiceParent(broker_service)
