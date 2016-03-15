@@ -195,6 +195,6 @@ def makeService(config):
         remote_service.setServiceParent(broker_service)
 
     if not broker_service.services:
-        reactor.callWhenRunning(log.warning, "No services requested; stopping.")
+        reactor.callWhenRunning(log.warn, "No services requested; stopping.")
         reactor.callWhenRunning(reactor.stop)
     return broker_service
