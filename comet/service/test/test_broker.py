@@ -60,10 +60,10 @@ class DefaultOptionsTestCase(unittest.TestCase):
         self.assertEqual(self.config[whitelist_name], [ip_network("0.0.0.0/0")])
 
     def test_default_broadcast_whitelist(self):
-        self._test_empty_whitelist('broadcast-whitelist')
+        self._test_empty_whitelist('subscriber-whitelist')
 
-    def test_default_whitelist(self):
-        self._test_empty_whitelist('whitelist')
+    def test_default_submission_whitelist(self):
+        self._test_empty_whitelist('author-whitelist')
 
     def _test_populated_whitelist(self, whitelist_name):
         net1, net2 = "1.2.3.4/32", "4.3.2.1/255.255.0.0"
@@ -76,11 +76,11 @@ class DefaultOptionsTestCase(unittest.TestCase):
                 ip_network(net, strict=False) in self.config[whitelist_name]
             )
 
-    def test_populated_whitelist(self):
-        self._test_populated_whitelist('whitelist')
+    def test_populated_broadcast_whitelist(self):
+        self._test_populated_whitelist('subscriber-whitelist')
 
-    def test_populated_broadcast(self):
-        self._test_populated_whitelist('broadcast-whitelist')
+    def test_populated_submission_whitelist(self):
+        self._test_populated_whitelist('author-whitelist')
 
     def test_has_print_event_plugin(self):
         self.cmd_line.append("--print-event")
