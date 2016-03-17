@@ -108,6 +108,13 @@ class DummyEvent(object):
         self.text = DUMMY_VOEVENT.replace(DUMMY_EVENT_IVORN, ivorn)
         self.element = etree.fromstring(self.text)
 
+class DummyLogObserver(object):
+    def __init__(self):
+        self.messages = []
+
+    def __call__(self, logentry):
+        self.messages.append(logentry['message'])
+
 @contextmanager
 def temp_dir():
     """
