@@ -25,7 +25,7 @@ import comet.log as log
 from comet.protocol import VOEventBroadcasterFactory
 from comet.protocol import VOEventReceiverFactory
 from comet.protocol import VOEventSubscriberFactory
-from comet.utility import Event_DB, BaseOptions, WhitelistingFactory, BroadcasterWhitelistingFactory
+from comet.utility import Event_DB, BaseOptions, WhitelistingFactory
 from comet.validator import CheckIVORN, CheckPreviouslySeen, CheckSchema
 
 # Handlers and plugins
@@ -104,11 +104,11 @@ class Options(BaseOptions):
         self['remotes'].append((host, int(port)))
 
     def opt_whitelist(self, network):
-        reactor.callWhenRunning(log.info, "Whitelisting %s" % network)
+        reactor.callWhenRunning(log.info, "Whitelisting %s for submission" % network)
         self['running_whitelist'].append(ip_network(network, strict=False))
 
     def opt_broadcast_whitelist(self, network):
-        reactor.callWhenRunning(log.info, "Whitelisting %s for broadcaster" % network)
+        reactor.callWhenRunning(log.info, "Whitelisting %s for subscription" % network)
         self['running_broadcast-whitelist'].append(ip_network(network, strict=False))
 
     def postOptions(self):
@@ -163,8 +163,9 @@ def makeService(config):
             config["local-ivo"], config['broadcast-test-interval']
         )
         if log.LEVEL >= log.Levels.INFO: broadcaster_factory.noisy = False
-        broadcaster_whitelisting_factory = BroadcasterWhitelistingFactory(broadcaster_factory,
-                                                                          config['broadcast-whitelist'])
+        broadcaster_whitelisting_factory = WhitelistingFactory(
+            broadcaster_factory, config['broadcast-whitelist'], "subscription"
+        )
         if log.LEVEL >= log.Levels.INFO: broadcaster_whitelisting_factory.noisy = False
         broadcaster_service = TCPServer(
             config['broadcast-port'],
@@ -190,7 +191,9 @@ def makeService(config):
             handlers=config['handlers']
         )
         if log.LEVEL >= log.Levels.INFO: receiver_factory.noisy = False
-        whitelisting_factory = WhitelistingFactory(receiver_factory, config['whitelist'])
+        whitelisting_factory = WhitelistingFactory(
+            receiver_factory, config['whitelist'], "submission"
+        )
         if log.LEVEL >= log.Levels.INFO: whitelisting_factory.noisy = False
         receiver_service = TCPServer(config['receive-port'], whitelisting_factory)
         receiver_service.setName("Receiver")
