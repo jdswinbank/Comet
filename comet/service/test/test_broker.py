@@ -145,16 +145,48 @@ class DefaultOptionsTestCase(unittest.TestCase):
 
 class ServiceTestCase(unittest.TestCase):
     def setUp(self):
-        config = Options()
-        config.parseOptions(['--local-ivo', 'ivo://comet/test', '-r', '-b', '--remote', 'dummy'])
-        self.service = makeService(config)
+        self.config = Options()
+
+    def _make_service(self, options):
+        self.config.parseOptions(options)
+        return makeService(self.config)
 
     def test_has_receiver(self):
-        for service in (
+        service = self._make_service(['--local-ivo', 'ivo://comet/test', '-r',
+                                      '-b', '--remote', 'dummy'])
+        for service_name in (
             "Receiver", "Broadcaster",
             "Remote %s:%d" % ('dummy', DEFAULT_REMOTE_PORT)
         ):
-            self.assertTrue(self.service.namedServices.has_key(service))
+            self.assertTrue(service.namedServices.has_key(service_name))
+
+    def test_no_service(self):
+        # When we ask for no services on the command line, nothing should be
+        # started -- but we also shouldn't raise.
+        # Note we need to stub out the reactor's callWhenRunning() method,
+        # because makeService schedules a reactor.stop() which will bring our
+        # test cases crashing down.
+        oldCallWhenRunning = reactor.callWhenRunning
+        class MockCallWhenRunning(object):
+            def __init__(self):
+                self.call_count = 0
+
+            def __call__(self, *args, **kwargs):
+                self.call_count += 1
+        mockCallWhenRunning = MockCallWhenRunning()
+        try:
+            reactor.callWhenRunning = mockCallWhenRunning
+            service = self._make_service(['--local-ivo', 'ivo://comet/test'])
+        finally:
+            # Be sure to return the reactor to its initial state when done.
+            reactor.callWhenRunning = oldCallWhenRunning
+
+        # No services created.
+        self.assertEqual(len(service.namedServices), 0)
+        # Should have been called twice: once for logging, once to stop the
+        # reactor. We are not actually checking the values of those calls
+        # here, though.
+        self.assertEqual(mockCallWhenRunning.call_count, 2)
 
     def tearDown(self):
         for call in reactor.getDelayedCalls():
