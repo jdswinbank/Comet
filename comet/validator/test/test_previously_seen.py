@@ -6,7 +6,6 @@ import shutil
 
 from twisted.trial import unittest
 
-import comet.log as log
 from comet.testutils import DummyEvent
 from comet.icomet import IValidator
 from comet.utility import Event_DB
