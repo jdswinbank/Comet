@@ -24,7 +24,7 @@ class CheckPreviouslySeen(object):
                 raise Exception("Previously seen by this broker")
 
         def db_failure(failure):
-            log.warning("Event DB lookup failed!")
+            log.warn("Event DB lookup failed!")
             log.warn(failure.getTraceback())
             return failure
 
