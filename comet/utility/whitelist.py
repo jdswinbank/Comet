@@ -8,8 +8,9 @@ import comet.log as log
 __all__ = ["WhitelistingFactory"]
 
 class WhitelistingFactory(WrappingFactory):
-    def __init__(self, wrappedFactory, whitelist):
+    def __init__(self, wrappedFactory, whitelist, connection_type="connection"):
         self.whitelist = whitelist
+        self.connection_type = connection_type
         WrappingFactory.__init__(self, wrappedFactory)
 
     def buildProtocol(self, addr):
@@ -17,5 +18,5 @@ class WhitelistingFactory(WrappingFactory):
         if any(remote_ip in network for network in self.whitelist):
             return WrappingFactory.buildProtocol(self, addr)
         else:
-            log.info("Attempted submission from non-whitelisted %s" % str(addr))
+            log.info("Attempted %s from non-whitelisted %s" % (self.connection_type, str(addr)))
             return None
