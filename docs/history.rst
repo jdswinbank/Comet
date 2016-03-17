@@ -6,6 +6,18 @@ Release History
 See the :ref:`release procedure <sec-release>` section for more details on
 version numbering and how releases are made.
 
+Version 2.1.x
+-------------
+
+2.1.0 (In progress)
+    Rename ``--whitelist`` command line option to ``--author-whitelist``. This
+    limits the IP addresses which are authorized to submit new events to the
+    broker.
+
+    Introduce the ``--subscriber-whitelist`` command line option. This limits
+    the IP addresses which are authorized to subscribe to event feeds from the
+    broker.
+
 Version 2.0.x
 -------------
 
