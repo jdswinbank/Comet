@@ -9,7 +9,7 @@ version numbering and how releases are made.
 Version 2.0.x
 -------------
 
-2.0.1 (2016-03-17) [In progress]
+2.0.1 (2016-03-17) [`Download <//github.com/jdswinbank/Comet/tarball/2.0.1>`__]
     Remove incorrect calls to old (pre-2.0.0) logging API. Thanks to
     Tim-Oliver Husser & Tim Staley.
 
