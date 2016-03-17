@@ -6,8 +6,14 @@ Release History
 See the :ref:`release procedure <sec-release>` section for more details on
 version numbering and how releases are made.
 
-Version 2.0.0
+Version 2.0.x
 -------------
+
+2.0.1 (2016-03-17) [In progress]
+    Remove incorrect calls to old (pre-2.0.0) logging API. Thanks to
+    Tim-Oliver Husser & Tim Staley.
+
+    Reformat documentation to add :ref:`credits`.
 
 2.0.0 (2016-01-31) [`Download <//github.com/jdswinbank/Comet/tarball/2.0.0>`__]
     Switch dependency from `ipaddr-py`_ to `py2-ipaddress`_. The latter is a
