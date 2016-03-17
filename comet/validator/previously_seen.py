@@ -25,7 +25,7 @@ class CheckPreviouslySeen(object):
 
         def db_failure(failure):
             log.warning("Event DB lookup failed!")
-            log.err(failure)
+            log.warn(failure.getTraceback())
             return failure
 
         return deferToThread(
