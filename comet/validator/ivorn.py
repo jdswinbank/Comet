@@ -17,6 +17,6 @@ class CheckIVORN(object):
     """
     def __call__(self, event):
         # parse_ivorn() raises if whatever it's being parsed
-        auth, rsrc, local_ID = parse_ivorn(event.attrib['ivorn'])
+        auth, rsrc, local_ID = parse_ivorn(event.element.attrib['ivorn'])
         if not local_ID:
             raise Exception("No per-event local ID")

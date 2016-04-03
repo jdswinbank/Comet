@@ -14,7 +14,7 @@ from comet.testutils import DUMMY_SERVICE_IVORN
 
 class broker_test_messageTestCase(unittest.TestCase):
     def setUp(self):
-        self.message = broker_test_message(DUMMY_SERVICE_IVORN)
+        self.message = broker_test_message(DUMMY_SERVICE_IVORN.decode())
 
     def test_valid(self):
         schema = etree.XMLSchema(
