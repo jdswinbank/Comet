@@ -29,7 +29,7 @@ class Event_DB(object):
     def _get_event_details(event):
         auth, rsrc, local = parse_ivorn(event.attrib['ivorn'])
         db_path = os.path.join(auth, rsrc).replace(os.path.sep, "_")
-        key = sha1(event.text).hexdigest()
+        key = sha1(event.raw_bytes).hexdigest()
         return db_path, key
 
     def check_event(self, event):
