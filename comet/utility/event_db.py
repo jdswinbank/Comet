@@ -27,7 +27,7 @@ class Event_DB(object):
 
     @staticmethod
     def _get_event_details(event):
-        auth, rsrc, local = parse_ivorn(event.attrib['ivorn'])
+        auth, rsrc, local = parse_ivorn(event.element.attrib['ivorn'])
         db_path = os.path.join(auth, rsrc).replace(os.path.sep, "_")
         key = sha1(event.raw_bytes).hexdigest()
         return db_path, key
@@ -44,7 +44,7 @@ class Event_DB(object):
         else:
             with self.databases[db_path]: # Acquire lock
                 with closing(anydbm.open(os.path.join(self.root, db_path), 'c')) as db:
-                    if not db.has_key(key):
+                    if not key in db:
                         db[key] = str(time.time())
                         return True
         return False
