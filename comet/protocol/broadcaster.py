@@ -63,23 +63,23 @@ class VOEventBroadcaster(ElementSender):
             log.warn("Unparsable message received")
             return
 
-        if incoming.get('role') == "iamalive":
+        if incoming.element.get('role') == "iamalive":
             log.debug("IAmAlive received from %s" % str(self.transport.getPeer()))
             self.alive_count -= 1
-        elif incoming.get('role') == "ack":
+        elif incoming.element.get('role') == "ack":
             log.debug("Ack received from %s" % str(self.transport.getPeer()))
             self.outstanding_ack -= 1
-        elif incoming.get('role') == "nak":
+        elif incoming.element.get('role') == "nak":
             log.info("Nak received from %s; terminating" % str(self.transport.getPeer()))
             self.transport.loseConnection()
-        elif incoming.get('role') == "authenticate":
+        elif incoming.element.get('role') == "authenticate":
             log.debug("Authentication received from %s" % str(self.transport.getPeer()))
             self.filters = []
             # Accept both "new-style" (<Param type="xpath-filter" />) and
             # old-style (<filter type="xpath" />) filters.
             for xpath in chain(
-                [elem.get('value') for elem in incoming.findall("Meta/Param[@name=\"xpath-filter\"]")],
-                [elem.text for elem in incoming.findall("Meta/filter[@type=\"xpath\"]")]
+                [elem.get('value') for elem in incoming.element.findall("Meta/Param[@name=\"xpath-filter\"]")],
+                [elem.text for elem in incoming.element.findall("Meta/filter[@type=\"xpath\"]")]
             ):
                 log.info(
                     "Installing filter %s for %s" %
@@ -92,7 +92,7 @@ class VOEventBroadcaster(ElementSender):
         else:
             log.warn(
                 "Incomprehensible data received from %s (role=%s)" %
-                (self.transport.getPeer(), incoming.get("role"))
+                (self.transport.getPeer(), incoming.element.get("role"))
             )
 
     def send_event(self, event):

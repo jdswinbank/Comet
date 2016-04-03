@@ -31,7 +31,7 @@ class DummyBroadcaster(object):
 class VOEventBroadcasterFactoryTestCaseBase(unittest.TestCase):
     def setUp(self, test_interval=BCAST_TEST_INTERVAL):
         self.factory = VOEventBroadcasterFactory(
-            DUMMY_SERVICE_IVORN, test_interval
+            DUMMY_SERVICE_IVORN.decode(), test_interval
         )
         self.factory.alive_loop.clock = task.Clock()
         self.factory.test_loop.clock = task.Clock()
@@ -75,7 +75,7 @@ class VOEventBroadcasterFactoryNoTestEventsTestCase(VOEventBroadcasterFactoryTes
 class VOEventBroadcasterTestCase(unittest.TestCase):
     def setUp(self):
         self.factory = VOEventBroadcasterFactory(
-            DUMMY_SERVICE_IVORN, BCAST_TEST_INTERVAL
+            DUMMY_SERVICE_IVORN.decode(), BCAST_TEST_INTERVAL
         )
         self.factory.alive_loop.clock = task.Clock()
         self.factory.test_loop.clock = task.Clock()
@@ -95,7 +95,7 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
     def test_sent_authenticate(self):
         received_element = etree.fromstring(self.tr.value()[4:])
         self.assertEqual("authenticate", received_element.attrib['role'])
-        self.assertEqual(DUMMY_SERVICE_IVORN, received_element.find('Origin').text)
+        self.assertEqual(DUMMY_SERVICE_IVORN.decode(), received_element.find('Origin').text)
 
     def test_sendIAmAlive(self):
         self.tr.clear()
@@ -103,7 +103,7 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
         self.factory.alive_loop.clock.advance(self.factory.IAMALIVE_INTERVAL)
         received_element = etree.fromstring(self.tr.value()[4:])
         self.assertEqual("iamalive", received_element.attrib['role'])
-        self.assertEqual(DUMMY_SERVICE_IVORN, received_element.find('Origin').text)
+        self.assertEqual(DUMMY_SERVICE_IVORN.decode(), received_element.find('Origin').text)
         self.assertEqual(self.proto.alive_count - init_alive_count, 1)
 
     def test_alive_timeout(self):
@@ -123,12 +123,12 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
         self.tr.clear()
         init_outstanding_ack = self.proto.outstanding_ack
         self.proto.send_event(DummyEvent())
-        self.assertEqual(self.tr.value()[4:], DummyEvent().text)
+        self.assertEqual(self.tr.value()[4:], DummyEvent().raw_bytes)
         self.assertEqual(self.proto.outstanding_ack - init_outstanding_ack, 1)
 
     def test_send_event_with_filter_reject(self):
         def check_output(result):
-            self.assertEqual(self.tr.value(), "")
+            self.assertEqual(self.tr.value(), b"")
         init_outstanding_ack = self.proto.outstanding_ack
         def check_ack_increment(result):
             self.assertEqual(self.proto.outstanding_ack - init_outstanding_ack, 0)
@@ -143,7 +143,7 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
 
     def test_send_event_with_filter_accept(self):
         def check_output(result):
-            self.assertEqual(self.tr.value()[4:], DummyEvent().text)
+            self.assertEqual(self.tr.value()[4:], DummyEvent().raw_bytes)
         init_outstanding_ack = self.proto.outstanding_ack
         def check_ack_increment(result):
             self.assertEqual(self.proto.outstanding_ack - init_outstanding_ack, 1)
@@ -163,44 +163,44 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
         unparsable = "This is not parsable"
         self.assertRaises(etree.ParseError, etree.fromstring, unparsable)
         self.proto.stringReceived(unparsable)
-        self.assertEqual(self.tr.value(), "")
+        self.assertEqual(self.tr.value(), b"")
         self.assertEqual(self.tr.connected, True)
 
     def test_receive_incomprehensible(self):
         # An incomprehensible message should generate no response, but the
         # transport should not disconnect.
         self.tr.clear()
-        incomprehensible = "<xml/>"
+        incomprehensible = b"<xml/>"
         etree.fromstring(incomprehensible) # Should not raise an error
         self.proto.stringReceived(incomprehensible)
-        self.assertEqual(self.tr.value(), "")
+        self.assertEqual(self.tr.value(), b"")
         self.assertEqual(self.tr.connected, True)
 
     def test_receive_iamalive(self):
         self.tr.clear()
         init_alive_count = self.proto.alive_count
         self.proto.stringReceived(DUMMY_IAMALIVE)
-        self.assertEqual(self.tr.value(), "")
+        self.assertEqual(self.tr.value(), b"")
         self.assertEqual(init_alive_count - self.proto.alive_count, 1)
 
     def test_receive_ack(self):
         self.tr.clear()
         init_outstanding_ack = self.proto.outstanding_ack
         self.proto.stringReceived(DUMMY_ACK)
-        self.assertEqual(self.tr.value(), "")
+        self.assertEqual(self.tr.value(), b"")
         self.assertEqual(init_outstanding_ack - self.proto.outstanding_ack, 1)
 
     def test_receive_nak(self):
         self.tr.clear()
         self.proto.stringReceived(DUMMY_NAK)
-        self.assertEqual(self.tr.value(), "")
+        self.assertEqual(self.tr.value(), b"")
         self.assertEqual(self.tr.connected, False)
 
     def _test_sets_filter(self, filter_list):
         self.tr.clear()
         self.assertEqual(len(self.proto.filters), 0)
-        self.proto.stringReceived(DUMMY_AUTHENTICATE_RESPONSE(filter_list).text)
-        self.assertEqual(self.tr.value(), "")
+        self.proto.stringReceived(DUMMY_AUTHENTICATE_RESPONSE(filter_list).raw_bytes)
+        self.assertEqual(self.tr.value(), b"")
         self.assertEqual(self.tr.connected, True)
         self.assertEqual(len(self.proto.filters), len(filter_list))
 
@@ -211,14 +211,14 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
         ])
 
     def test_receive_authenticateresponse_legacy(self):
-        # The legacy forma is in violation of the Transport schema. We no
+        # The legacy form is in violation of the Transport schema. We no
         # longer generate packets that look like this, but the broker still
         # recognizes them.
-        demo_filter =  "//Param[@name=\"SC_Lat\" and @value&lt;600]"
+        demo_filter =  b"//Param[@name=\"SC_Lat\" and @value&lt;600]"
         self.tr.clear()
         self.assertEqual(len(self.proto.filters), 0)
         self.proto.stringReceived(DUMMY_AUTHENTICATE_RESPONSE_LEGACY % demo_filter)
-        self.assertEqual(self.tr.value(), "")
+        self.assertEqual(self.tr.value(), b"")
         self.assertEqual(self.tr.connected, True)
         self.assertEqual(len(self.proto.filters), 1)
 
@@ -226,8 +226,8 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
         self.tr.clear()
         self.assertEqual(len(self.proto.filters), 0)
         self.proto.stringReceived(
-            DUMMY_AUTHENTICATE_RESPONSE(["Not a valid XPath expression"]).text
+            DUMMY_AUTHENTICATE_RESPONSE(["Not a valid XPath expression"]).element.text
         )
-        self.assertEqual(self.tr.value(), "")
+        self.assertEqual(self.tr.value(), b"")
         self.assertEqual(self.tr.connected, True)
         self.assertEqual(len(self.proto.filters), 0)
