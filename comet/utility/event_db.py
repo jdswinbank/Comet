@@ -72,6 +72,6 @@ class Event_DB(object):
         return DeferredList(
             [
                 deferToThread(expire_db, db_path, lock)
-                for db_path, lock in self.databases.iteritems()
+                for db_path, lock in self.databases.items()
             ]
         )
