@@ -2,7 +2,10 @@
 # Tests for EventPrinter plugin.
 
 import sys
-from cStringIO import StringIO
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 import lxml.etree as etree
 
@@ -12,7 +15,7 @@ from twisted.plugin import IPlugin
 from comet.icomet import IHandler
 from comet.plugins.eventprinter import EventPrinter
 
-DUMMY_XML = '<xml/>'
+DUMMY_XML = u'<xml/>'
 
 class DummyEvent(object):
     element = etree.fromstring(DUMMY_XML)
