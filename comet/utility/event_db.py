@@ -2,7 +2,10 @@
 # Event database.
 
 import os
-import anydbm
+try:
+    import anydbm
+except ImportError:
+    import dbm as anydbm
 import time
 from hashlib import sha1
 from threading import Lock
