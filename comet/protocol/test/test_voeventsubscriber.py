@@ -71,39 +71,43 @@ class VOEventSubscriberTestCase(unittest.TestCase):
     def test_receive_unparsable(self):
         # An unparsable message should generate no response, but the
         # transport should not disconnect.
-        unparsable = "This is not parsable"
+        unparsable = b"This is not parsable"
         self.assertRaises(etree.ParseError, etree.fromstring, unparsable)
         self.proto.stringReceived(unparsable)
-        self.assertEqual(self.tr.value(), "")
+        self.assertEqual(self.tr.value(), b"")
         self.assertEqual(self.tr.disconnecting, False)
 
     def test_receive_incomprehensible(self):
         # An incomprehensible message should generate no response, but the
         # transport should not disconnect.
-        incomprehensible = "<xml/>"
+        incomprehensible = b"<xml/>"
         etree.fromstring(incomprehensible) # Should not raise an error
         self.proto.stringReceived(incomprehensible)
-        self.assertEqual(self.tr.value(), "")
+        self.assertEqual(self.tr.value(), b"")
         self.assertEqual(self.tr.disconnecting, False)
 
     def test_receive_iamalive(self):
         self.proto.stringReceived(DUMMY_IAMALIVE)
         received_element = etree.fromstring(self.tr.value()[4:])
         self.assertEqual("iamalive", received_element.attrib['role'])
-        self.assertEqual(DUMMY_SERVICE_IVORN, received_element.find('Response').text)
+        self.assertEqual(DUMMY_SERVICE_IVORN.decode(),
+                         received_element.find('Response').text)
 
     def test_receive_authenticate(self):
         self.proto.stringReceived(DUMMY_AUTHENTICATE)
         received_element = etree.fromstring(self.tr.value()[4:])
         self.assertEqual("authenticate", received_element.attrib['role'])
-        self.assertEqual(DUMMY_SERVICE_IVORN, received_element.find('Response').text)
+        self.assertEqual(DUMMY_SERVICE_IVORN.decode(),
+                         received_element.find('Response').text)
 
     def test_receive_valid_voevent(self):
         self.proto.stringReceived(DUMMY_VOEVENT)
         received_element = etree.fromstring(self.tr.value()[4:])
         self.assertEqual("ack", received_element.attrib['role'])
-        self.assertEqual(DUMMY_SERVICE_IVORN, received_element.find('Response').text)
-        self.assertEqual(DUMMY_EVENT_IVORN, received_element.find('Origin').text)
+        self.assertEqual(DUMMY_SERVICE_IVORN.decode(),
+                         received_element.find('Response').text)
+        self.assertEqual(DUMMY_EVENT_IVORN.decode(),
+                         received_element.find('Origin').text)
 
     def test_receive_invalid_voevent(self):
         # This should not be accepted, but *should not* generate a NAK.
@@ -112,5 +116,7 @@ class VOEventSubscriberTestCase(unittest.TestCase):
         self.proto.stringReceived(DUMMY_VOEVENT)
         received_element = etree.fromstring(self.tr.value()[4:])
         self.assertEqual("ack", received_element.attrib['role'])
-        self.assertEqual(DUMMY_SERVICE_IVORN, received_element.find('Response').text)
-        self.assertEqual(DUMMY_EVENT_IVORN, received_element.find('Origin').text)
+        self.assertEqual(DUMMY_SERVICE_IVORN.decode(),
+                         received_element.find('Response').text)
+        self.assertEqual(DUMMY_EVENT_IVORN.decode(),
+                         received_element.find('Origin').text)

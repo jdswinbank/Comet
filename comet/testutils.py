@@ -24,7 +24,7 @@ DUMMY_IAMALIVE = u"""
         <Origin>%s</Origin>
         <TimeStamp>2012-01-01T00:00:00Z</TimeStamp>
     </trn:Transport>
-""" % (DUMMY_EVENT_IVORN,)
+""" % (DUMMY_EVENT_IVORN.decode(),)
 DUMMY_IAMALIVE = textwrap.dedent(DUMMY_IAMALIVE).strip().encode('UTF-8')
 
 DUMMY_AUTHENTICATE = u"""
@@ -37,7 +37,7 @@ DUMMY_AUTHENTICATE = u"""
         <Origin>%s</Origin>
         <TimeStamp>2012-01-01T00:00:00Z</TimeStamp>
     </trn:Transport>
-""" % (DUMMY_EVENT_IVORN,)
+""" % (DUMMY_EVENT_IVORN.decode(),)
 DUMMY_AUTHENTICATE = textwrap.dedent(DUMMY_AUTHENTICATE).strip().encode('UTF-8')
 
 DUMMY_VOEVENT = u"""
@@ -52,7 +52,7 @@ DUMMY_VOEVENT = u"""
             <Date>2012-01-01T00:00:00</Date>
         </Who>
     </voe:VOEvent>
-""" % (DUMMY_EVENT_IVORN, DUMMY_SERVICE_IVORN)
+""" % (DUMMY_EVENT_IVORN.decode(), DUMMY_SERVICE_IVORN.decode())
 DUMMY_VOEVENT = textwrap.dedent(DUMMY_VOEVENT).strip().encode('UTF-8')
 
 DUMMY_ACK = u"""
@@ -66,7 +66,7 @@ DUMMY_ACK = u"""
         <Response>%s</Response>
         <TimeStamp>2012-01-01T00:00:00Z</TimeStamp>
     </trn:Transport>
-""" % (DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN)
+""" % (DUMMY_SERVICE_IVORN.decode(), DUMMY_SERVICE_IVORN.decode())
 DUMMY_ACK = textwrap.dedent(DUMMY_ACK).strip().encode('UTF-8')
 
 DUMMY_NAK = u"""
@@ -80,7 +80,7 @@ DUMMY_NAK = u"""
         <Response>%s</Response>
         <TimeStamp>2012-01-01T00:00:00Z</TimeStamp>
     </trn:Transport>
-""" % (DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN)
+""" % (DUMMY_SERVICE_IVORN.decode(), DUMMY_SERVICE_IVORN.decode())
 DUMMY_NAK = textwrap.dedent(DUMMY_NAK).strip().encode('UTF-8')
 
 DUMMY_AUTHENTICATE_RESPONSE_LEGACY = u"""
@@ -97,7 +97,7 @@ DUMMY_AUTHENTICATE_RESPONSE_LEGACY = u"""
             <filter type="xpath">%s</filter>
         </Meta>
     </trn:Transport>
-""" % (DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN, "%s")
+""" % (DUMMY_SERVICE_IVORN.decode(), DUMMY_SERVICE_IVORN.decode(), "%s")
 DUMMY_AUTHENTICATE_RESPONSE_LEGACY = textwrap.dedent(
     DUMMY_AUTHENTICATE_RESPONSE_LEGACY
 ).strip().encode('UTF-8')

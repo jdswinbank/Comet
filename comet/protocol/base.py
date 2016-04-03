@@ -102,6 +102,6 @@ class EventHandler(ElementSender):
             else:
                 log.debug("Sending ACK to %s" % (self.transport.getPeer()))
                 self.send_xml(
-                    ack(self.factory.local_ivo, event.attrib['ivorn'])
+                    ack(self.factory.local_ivo, event.element.attrib['ivorn'])
                 )
         return self.validate_event(event).addCallbacks(handle_valid, handle_invalid)

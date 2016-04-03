@@ -58,24 +58,25 @@ class VOEventSubscriber(EventHandler, TimeoutMixin):
         # The root element of both VOEvent and Transport packets has a
         # "role" element which we use to identify the type of message we
         # have received.
-        if incoming.get('role') == "iamalive":
+        if incoming.element.get('role') == "iamalive":
             log.debug("IAmAlive received from %s" % str(self.transport.getPeer()))
             self.send_xml(
-                iamaliveresponse(self.factory.local_ivo, incoming.find('Origin').text)
+                iamaliveresponse(self.factory.local_ivo,
+                incoming.element.find('Origin').text)
             )
-        elif incoming.get('role') == "authenticate":
+        elif incoming.element.get('role') == "authenticate":
             log.debug("Authenticate received from %s" % str(self.transport.getPeer()))
             self.send_xml(
                 authenticateresponse(
                     self.factory.local_ivo,
-                    incoming.find('Origin').text,
+                    incoming.element.find('Origin').text,
                     self.filters
                 )
             )
-        elif incoming.get('role') in VOEVENT_ROLES:
+        elif incoming.element.get('role') in VOEVENT_ROLES:
             log.info(
                 "VOEvent %s received from %s" % (
-                    incoming.attrib['ivorn'],
+                    incoming.element.attrib['ivorn'],
                     str(self.transport.getPeer())
                 )
             )
@@ -85,7 +86,7 @@ class VOEventSubscriber(EventHandler, TimeoutMixin):
         else:
             log.warn(
                 "Incomprehensible data received from %s (role=%s)" %
-                (self.transport.getPeer(), incoming.get("role"))
+                (self.transport.getPeer(), incoming.element.get("role"))
             )
 
 class VOEventSubscriberFactory(ReconnectingClientFactory):
