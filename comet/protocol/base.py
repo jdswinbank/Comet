@@ -21,7 +21,7 @@ class ElementSender(Int32StringReceiver):
         """
         Takes an xml_document and sends it as text.
         """
-        self.sendString(document.text)
+        self.sendString(document.raw_bytes)
 
     def lengthLimitExceeded(self, length):
         """

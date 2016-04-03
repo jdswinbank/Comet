@@ -28,14 +28,14 @@ class ElementSenderTestCase(unittest.TestCase):
         self.proto.send_xml(dummy_element)
         self.assertEqual(
             self.tr.value(),
-            struct.pack("!i", len(dummy_element.text)) + dummy_element.text
+            struct.pack("!i", len(dummy_element.raw_bytes)) + dummy_element.raw_bytes
         )
 
     def test_lengthLimitExceeded(self):
         self.assertEqual(self.tr.disconnecting, False)
         dummy_element = DummyEvent()
         self.proto.dataReceived(
-            struct.pack("<i", len(dummy_element.text)) + dummy_element.text
+            struct.pack("<i", len(dummy_element.raw_bytes)) + dummy_element.raw_bytes
         )
         self.assertEqual(self.tr.disconnecting, True)
 

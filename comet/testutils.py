@@ -110,7 +110,7 @@ class DummyEvent(object):
     def __init__(self, ivorn=DUMMY_EVENT_IVORN):
         self.attrib = {'ivorn': ivorn}
         self.raw_bytes = DUMMY_VOEVENT.replace(DUMMY_EVENT_IVORN, ivorn)
-        self.element = etree.fromstring(self.text)
+        self.element = etree.fromstring(self.raw_bytes)
 
 class DummyLogObserver(object):
     def __init__(self):
