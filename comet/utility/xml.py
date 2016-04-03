@@ -56,4 +56,4 @@ class xml_document(object):
         try:
             return getattr(self.element, name)
         except AttributeError:
-            raise AttributeError, name
+            raise AttributeError(name)

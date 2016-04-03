@@ -39,7 +39,7 @@ def parse_ivorn(ivorn):
     """
     try:
         return IVORN_RE.match(ivorn).groups()
-    except AttributeError, e:
+    except AttributeError as e:
         log.debug("Failed to parse as IVORN: ", str(e))
         raise Exception("Invalid IVORN: %s" % (ivorn,))
 

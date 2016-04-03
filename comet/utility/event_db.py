@@ -36,7 +36,7 @@ class Event_DB(object):
         """
         try:
             db_path, key = self._get_event_details(event)
-        except:
+        except Exception as e:
             log.warn("Unparseable IVORN; failing eventdb lookup");
         else:
             with self.databases[db_path]: # Acquire lock
