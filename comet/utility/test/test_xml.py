@@ -27,13 +27,6 @@ class mutable_element_tests(unittest.TestCase):
         self.doc.element = etree.fromstring("<foo>baz</foo>")
         self.assertNotEqual(self.doc.raw_bytes.find(b"<foo>baz</foo>"), -1)
 
-    def test_getattr_forwarding(self):
-        """Attribute requests are forwarded from doc to doc.element."""
-        self.assertFalse("prefix" in self.doc.__slots__)
-        self.assertEqual(self.doc.prefix, self.doc.element.prefix)
-        self.assertFalse(hasattr(self.doc.element, "foo"))
-        self.assertRaises(AttributeError, getattr, self.doc, "foo")
-
 class xml_document_encoding(unittest.TestCase):
     def test_from_unicode(self):
         # It should not be possible to initalize an XML document from a

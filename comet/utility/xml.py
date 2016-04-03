@@ -71,9 +71,3 @@ class xml_document(object):
         # carrying. Note we need to construct an ElementTree and use that;
         # can't read from the element directly.
         return ElementTree.ElementTree(self._element).docinfo.encoding
-
-    def __getattr__(self, name):
-        try:
-            return getattr(self.element, name)
-        except AttributeError:
-            raise AttributeError(name)
