@@ -34,11 +34,20 @@ class mutable_element_tests(unittest.TestCase):
         self.assertFalse(hasattr(self.doc.element, "foo"))
         self.assertRaises(AttributeError, getattr, self.doc, "foo")
 
-class xml_document_from_unicode(unittest.TestCase):
+class xml_document_encoding(unittest.TestCase):
     def test_from_unicode(self):
         # It should not be possible to initalize an XML document from a
         # unicode string.
         self.assertRaises(ParseError, xml_document, u"<foo>bar</foo>")
+
+    def test_encoding_detection(self):
+        # Default case: UTF-8
+        doc = xml_document(b"<foo>bar</foo>")
+        self.assertEqual(doc.encoding, "UTF-8")
+
+        # Something more exotic!
+        doc = xml_document(b"<?xml version=\'1.0\' encoding=\'BIG5\'?><foo>bar</foo>")
+        self.assertEqual(doc.encoding, "BIG5")
 
 class xml_document_tests(object):
     def test_signature(self):

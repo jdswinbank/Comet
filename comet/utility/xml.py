@@ -65,6 +65,13 @@ class xml_document(object):
     def valid_signature(self):
         return False
 
+    @property
+    def encoding(self):
+        # Return the encoding that lxml detected for the raw_bytes we're
+        # carrying. Note we need to construct an ElementTree and use that;
+        # can't read from the element directly.
+        return ElementTree.ElementTree(self._element).docinfo.encoding
+
     def __getattr__(self, name):
         try:
             return getattr(self.element, name)
