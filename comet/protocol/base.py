@@ -82,7 +82,7 @@ class EventHandler(ElementSender):
         def handle_valid(status):
             log.debug("Event accepted; sending ACK to %s" % (self.transport.getPeer()))
             self.send_xml(
-                ack(self.factory.local_ivo, event.attrib['ivorn'])
+                ack(self.factory.local_ivo, event.element.attrib['ivorn'])
             )
             self.handle_event(event).addCallbacks(
                 lambda x: log.debug("Event processed"),
@@ -95,7 +95,7 @@ class EventHandler(ElementSender):
                 log.debug("Sending NAK to %s" % (self.transport.getPeer()))
                 self.send_xml(
                     nak(
-                        self.factory.local_ivo, event.attrib['ivorn'],
+                        self.factory.local_ivo, event.element.attrib['ivorn'],
                         "Event rejected: %s" % (failure.value.subFailure.getErrorMessage(),)
                     )
                 )
