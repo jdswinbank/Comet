@@ -12,7 +12,7 @@ SHELL = '/bin/sh'
 
 class DummyEvent(object):
     def __init__(self, text=None):
-        self.text = text
+        self.text = text or u""
 
 class SpawnCommandProtocolTestCase(unittest.TestCase):
     def test_interface(self):
