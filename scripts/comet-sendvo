@@ -46,10 +46,15 @@ if __name__ == "__main__":
 
     startLogging(sys.stdout)
 
+    # We handle the input data in binary mode, as we don't want to change the
+    # encoding that has already been applied to the event text.
     if config["file"] == "-":
-        f = sys.stdin
+        if hasattr(sys.stdin, "buffer"):
+            f = sys.stdin.buffer  # Python 3
+        else:
+            f = sys.stdin         # Python 2
     else:
-        f = open(config["file"])
+        f = open(config["file"], 'r+b')
 
     try:
         factory = OneShotSender(xml_document(f.read()))
@@ -68,7 +73,7 @@ if __name__ == "__main__":
 
     # If our factory didn't get an acknowledgement of receipt, we'll exit with
     # status 1.
-    if locals().has_key("factory") and factory.ack:
+    if "factory" in locals() and factory.ack:
         sys.exit(0)
     else:
         sys.exit(1)
