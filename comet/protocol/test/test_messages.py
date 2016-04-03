@@ -51,7 +51,7 @@ class TransportTestCase(unittest.TestCase):
     def test_authenticateresponse_valid_filter(self):
         filters = ["test1<>?!", "test2<>?!"]
         message = authenticateresponse(DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN, filters)
-        filter_elems = message.findall("Meta/Param[@name=\"xpath-filter\"]")
+        filter_elems = message.element.findall("Meta/Param[@name=\"xpath-filter\"]")
         for inp, outp in zip(filters, filter_elems):
             self.assertEqual(inp, outp.get('value'))
         self.assertTrue(self.schema.validate(message.element))
