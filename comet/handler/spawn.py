@@ -19,7 +19,7 @@ class SpawnCommandProtocol(ProcessProtocol):
         self.text = text
 
     def connectionMade(self):
-        self.transport.write(self.text)
+        self.transport.write(self.text.encode('utf-8'))
         self.transport.closeStdin()
 
     def processEnded(self, reason):
