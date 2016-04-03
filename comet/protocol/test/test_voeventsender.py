@@ -35,12 +35,12 @@ class VOEventSenderTestCase(unittest.TestCase):
         self.tr.protocol = self.proto
 
     def test_connectionMade(self):
-        self.assertEqual(self.tr.value()[4:], self.event.text)
+        self.assertEqual(self.tr.value()[4:], self.event.raw_bytes)
 
     def test_receive_unparsable(self):
         # An unparsable message should generate no response, but the
         # transport should not disconnect.
-        unparsable = "This is not parsable"
+        unparsable = b"This is not parsable"
         self.assertRaises(etree.ParseError, etree.fromstring, unparsable)
         self.proto.stringReceived(unparsable)
         self.assertEqual(self.tr.connected, False)
@@ -49,7 +49,7 @@ class VOEventSenderTestCase(unittest.TestCase):
     def test_receive_incomprehensible(self):
         # An incomprehensible message should generate no response, but the
         # transport should not disconnect.
-        incomprehensible = "<xml/>"
+        incomprehensible = b"<xml/>"
         etree.fromstring(incomprehensible) # Should not raise an error
         self.proto.stringReceived(incomprehensible)
         self.assertEqual(self.tr.connected, False)

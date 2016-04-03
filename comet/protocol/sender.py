@@ -39,20 +39,20 @@ class VOEventSender(ElementSender):
         try:
             incoming = xml_document(data)
 
-            if incoming.get('role') == "ack":
+            if incoming.element.get('role') == "ack":
                 log.info("Acknowledgement received from %s" % str(self.transport.getPeer()))
                 self.factory.ack = True
-            elif incoming.get('role') == "nak":
+            elif incoming.element.get('role') == "nak":
                 log.warn("Nak received: %s refused to accept VOEvent (%s)" %
                     (
                         str(self.transport.getPeer()),
-                        incoming.findtext("Meta/Result", default="no reason given")
+                        incoming.element.findtext("Meta/Result", default="no reason given")
                     )
                 )
             else:
                 log.warn(
                     "Incomprehensible data received from %s (role=%s)" %
-                    (self.transport.getPeer(), incoming.get("role"))
+                    (self.transport.getPeer(), incoming.element.get("role"))
                 )
 
         except ParseError:
