@@ -31,11 +31,13 @@ class SpawnCommandProtocolTestCase(unittest.TestCase):
     def test_write_data(self):
         if not os.access(SHELL, os.X_OK):
             raise unittest.SkipTest("Shell not available")
-        TEXT = "Test spawn process"
+        TEXT = u"Test spawn process"
         output_file = tempfile.NamedTemporaryFile()
         def read_data(result):
             try:
-                self.assertEqual(output_file.read(), TEXT)
+                # NamedTemporaryFile is opened in binary mode, so we need to
+                # encode the read for comparison.
+                self.assertEqual(output_file.read().decode('utf-8'), TEXT)
             finally:
                 output_file.close()
         spawn = SpawnCommand('/bin/sh', util.sibpath(__file__, "test_spawn.sh"), output_file.name)
