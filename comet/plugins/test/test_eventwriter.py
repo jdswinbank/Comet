@@ -74,8 +74,10 @@ class EventWriterTestCase(unittest.TestCase):
 
     def test_save_event(self, root=''):
         self.event_writer(self.event)
-        with open(os.path.join(root, string_to_filename(self.event.attrib['ivorn'])), 'r') as f:
-            self.assertEqual(f.read(), DUMMY_VOEVENT)
+        with open(os.path.join(
+            root, string_to_filename(self.event.element.attrib['ivorn'])
+        ), 'r') as f:
+            self.assertEqual(f.read(), DUMMY_VOEVENT.decode('utf-8'))
 
     def test_custom_directory(self):
         self.assertEqual(self.event_writer.get_options()[0][1], os.getcwd())

@@ -63,9 +63,9 @@ class EventWriter(object):
         """
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
-        with event_file(event.attrib['ivorn'], self.directory) as f:
+        with event_file(event.element.attrib['ivorn'], self.directory) as f:
             log.debug("Writing to %s" % (f.name,))
-            f.write(event.text)
+            f.write(event.raw_bytes.decode(event.encoding))
 
     def get_options(self):
         return [('directory', self.directory, 'Target directory')]
