@@ -82,3 +82,12 @@ class EventWriterTestCase(unittest.TestCase):
         with temp_dir() as tmpdir:
             self.event_writer.set_option("directory", tmpdir)
             self.test_save_event(tmpdir)
+
+    def test_create_directory(self):
+        # Demonstrate that the output directory will be created if it doesn't
+        # exist.
+        self.assertEqual(self.event_writer.get_options()[0][1], os.getcwd())
+        with temp_dir() as tmpdir:
+            output_dir = os.path.join(tmpdir, "comet-test")
+            self.event_writer.set_option("directory", output_dir)
+            self.test_save_event(output_dir)
