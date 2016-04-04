@@ -226,7 +226,7 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
         self.tr.clear()
         self.assertEqual(len(self.proto.filters), 0)
         self.proto.stringReceived(
-            DUMMY_AUTHENTICATE_RESPONSE(["Not a valid XPath expression"]).element.text
+            DUMMY_AUTHENTICATE_RESPONSE(["Not a valid XPath expression"]).raw_bytes
         )
         self.assertEqual(self.tr.value(), b"")
         self.assertEqual(self.tr.connected, True)
