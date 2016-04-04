@@ -50,3 +50,6 @@ Many thanks to these contributors:
 
 .. _Tim-Oliver Husser: https://github.com/thusser/
 .. _Tim Staley: http://timstaley.co.uk/
+
+.. image:: https://coveralls.io/repos/github/jdswinbank/Comet/badge.svg?branch=master
+   :target: https://coveralls.io/github/jdswinbank/Comet?branch=master
