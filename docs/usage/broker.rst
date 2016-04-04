@@ -43,14 +43,16 @@ provide a brief usage message::
     -q, --quiet                     Decrease verbosity.
         --print-event               Enable the print-event plugin.
         --save-event                Enable the save-event plugin.
-        --local-ivo=                IVOA identifier for this system (required).
-        --eventdb=                  Event database root. [default: /tmp]
+        --local-ivo=                IVOA identifier for this system (required)
+        --eventdb=                  Event database root. [default: system dependent]
         --receive-port=             TCP port for receiving events. [default: 8098]
         --broadcast-port=           TCP port for broadcasting events. [default:
                                     8099]
         --broadcast-test-interval=  Interval between test event brodcasts (in
                                     seconds; 0 to disable). [default: 3600]
-        --whitelist=                Network to be included in submission
+        --author-whitelist=         Network to be included in author whitelist.
+                                    [default: 0.0.0.0/0]
+        --subscriber-whitelist=     Network to be included in subscriber
                                     whitelist. [default: 0.0.0.0/0]
         --remote=                   Remote broadcaster to subscribe to
                                     (host[:port]).
@@ -59,8 +61,8 @@ provide a brief usage message::
         --cmd=                      Spawn external command on event receipt.
         --save-event-directory=     Target directory [default:
                                     current working directory]
-        --help                      Display this help and exit.
         --version                   Display Twisted version and exit.
+        --help                      Display this help and exit.
 
 Basic Modes of Operation
 ++++++++++++++++++++++++
@@ -117,14 +119,14 @@ Receiver Options
 When acting as a receiving broker (with ``--receive``), Comet will only accept
 new events for publication from hosts which have been specified as
 "whitelisted". Hosts (or, indeed, networks) may be included in the whitelist
-using the ``--whitelist`` option. This option accepts either `CIDR
+using the ``--author-whitelist`` option. This option accepts either `CIDR
 <https://en.wikipedia.org/wiki/CIDR_notation>`_ or dot-decimal notation
-including a subnet mask. For example, ``--whitelist 127.0.0.1/32`` and
-``--whitelist 127.0.0.1/255.255.255.255`` both permit the local host to submit
-events to the broker. This option may be specified multiple times and the
-results are cumulative. To accept submissions from any host, specify
-``--whitelist 0.0.0.0/0``; this is the default if no ``--whitelist`` option is
-supplied.
+including a subnet mask. For example, ``--author-whitelist 127.0.0.1/32`` and
+``--author-whitelist 127.0.0.1/255.255.255.255`` both permit the local host to
+submit events to the broker. This option may be specified multiple times and
+the results are cumulative. To accept submissions from any host, specify
+``--author-whitelist 0.0.0.0/0``; this is the default if no
+``--author-whitelist`` option is supplied.
 
 Broadcaster Options
 +++++++++++++++++++
@@ -134,6 +136,12 @@ every hour. The aim is to help with network debugging. The interval between
 test events may be configured using the ``--broadcast-test-interval`` option,
 which accepts a value in seconds.  Set it to ``0`` to disable the test
 broadcast completely.
+
+The broadcaster supports a similar whitelisting feature to the receiver: in
+this case, new subscribers to the broadcast will not be accepted unless their
+IP address has been added to the whitelist. This is enabled using the
+``--subscriber-whitelist`` option; its semantics are the same as
+``--author-whitelist``.
 
 Subscriber Options
 ++++++++++++++++++

@@ -57,7 +57,8 @@ class Options(BaseOptions):
         ["receive-port", None, 8098, "TCP port for receiving events.", int],
         ["broadcast-port", None, DEFAULT_REMOTE_PORT, "TCP port for broadcasting events.", int],
         ["broadcast-test-interval", None, BCAST_TEST_INTERVAL, "Interval between test event brodcasts (in seconds; 0 to disable).", int],
-        ["whitelist", None, "0.0.0.0/0", "Network to be included in submission whitelist."],
+        ["author-whitelist", None, "0.0.0.0/0", "Network to be included in author whitelist."],
+        ["subscriber-whitelist", None, "0.0.0.0/0", "Network to be included in subscriber whitelist."],
         ["remote", None, None, "Remote broadcaster to subscribe to (host[:port])."],
         ["filter", None, None, "XPath filter applied to events broadcast by remote."],
         ["cmd", None, None, "Spawn external command on event receipt."]
@@ -66,7 +67,8 @@ class Options(BaseOptions):
     def __init__(self):
         BaseOptions.__init__(self)
         self['remotes'] = []
-        self['running_whitelist'] = []
+        self['running_author-whitelist'] = []
+        self['running_subscriber-whitelist'] = []
         self['filters'] = []
         self['handlers'] = []
         self['verbosity'] = 1
@@ -101,16 +103,25 @@ class Options(BaseOptions):
         )
         self['remotes'].append((host, int(port)))
 
-    def opt_whitelist(self, network):
-        reactor.callWhenRunning(log.info, "Whitelisting %s" % network)
-        self['running_whitelist'].append(ip_network(network, strict=False))
+    def opt_author_whitelist(self, network):
+        reactor.callWhenRunning(log.info, "Whitelisting %s for submission" % network)
+        self['running_author-whitelist'].append(ip_network(network, strict=False))
+
+    def opt_subscriber_whitelist(self, network):
+        reactor.callWhenRunning(log.info, "Whitelisting %s for subscription" % network)
+        self['running_subscriber-whitelist'].append(ip_network(network, strict=False))
 
     def postOptions(self):
         BaseOptions.postOptions(self)
-        if self['running_whitelist']:
-            self['whitelist'] = self['running_whitelist']
+        if self['running_author-whitelist']:
+            self['author-whitelist'] = self['running_author-whitelist']
         else:
-            self['whitelist'] = [ip_network(self['whitelist'], strict=False)]
+            self['author-whitelist'] = [ip_network(self['author-whitelist'], strict=False)]
+
+        if self['running_subscriber-whitelist']:
+            self['subscriber-whitelist'] = self['running_subscriber-whitelist']
+        else:
+            self['subscriber-whitelist'] = [ip_network(self['subscriber-whitelist'], strict=False)]
 
         if self['verbosity'] >= 2:
             log.LEVEL = log.Levels.DEBUG
@@ -152,9 +163,13 @@ def makeService(config):
             config["local-ivo"], config['broadcast-test-interval']
         )
         if log.LEVEL >= log.Levels.INFO: broadcaster_factory.noisy = False
+        broadcaster_whitelisting_factory = WhitelistingFactory(
+            broadcaster_factory, config['subscriber-whitelist'], "subscription"
+        )
+        if log.LEVEL >= log.Levels.INFO: broadcaster_whitelisting_factory.noisy = False
         broadcaster_service = TCPServer(
             config['broadcast-port'],
-            broadcaster_factory
+            broadcaster_whitelisting_factory
         )
         broadcaster_service.setName("Broadcaster")
         broadcaster_service.setServiceParent(broker_service)
@@ -176,9 +191,11 @@ def makeService(config):
             handlers=config['handlers']
         )
         if log.LEVEL >= log.Levels.INFO: receiver_factory.noisy = False
-        whitelisting_factory = WhitelistingFactory(receiver_factory, config['whitelist'])
-        if log.LEVEL >= log.Levels.INFO: whitelisting_factory.noisy = False
-        receiver_service = TCPServer(config['receive-port'], whitelisting_factory)
+        author_whitelisting_factory = WhitelistingFactory(
+            receiver_factory, config['author-whitelist'], "submission"
+        )
+        if log.LEVEL >= log.Levels.INFO: author_whitelisting_factory.noisy = False
+        receiver_service = TCPServer(config['receive-port'], author_whitelisting_factory)
         receiver_service.setName("Receiver")
         receiver_service.setServiceParent(broker_service)
 

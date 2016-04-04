@@ -55,19 +55,32 @@ class DefaultOptionsTestCase(unittest.TestCase):
         self.assertTrue((HOST0, PORT) in self.config['remotes'])
         self.assertTrue((HOST1, DEFAULT_REMOTE_PORT) in self.config['remotes'])
 
-    def test_default_whitelist(self):
+    def _test_empty_whitelist(self, whitelist_name):
         self.config.parseOptions(self.cmd_line)
-        self.assertEqual(self.config['whitelist'], [ip_network("0.0.0.0/0")])
+        self.assertEqual(self.config[whitelist_name], [ip_network("0.0.0.0/0")])
 
-    def test_specified_whitelist(self):
+    def test_default_broadcast_whitelist(self):
+        self._test_empty_whitelist('subscriber-whitelist')
+
+    def test_default_submission_whitelist(self):
+        self._test_empty_whitelist('author-whitelist')
+
+    def _test_populated_whitelist(self, whitelist_name):
         net1, net2 = "1.2.3.4/32", "4.3.2.1/255.255.0.0"
-        self.cmd_line.extend(["--whitelist", net1, "--whitelist", net2])
+        cmd_line_flag = "--%s" % (whitelist_name,)
+        self.cmd_line.extend([cmd_line_flag, net1, cmd_line_flag, net2])
         self.config.parseOptions(self.cmd_line)
-        self.assertEqual(len(self.config['whitelist']), 2)
+        self.assertEqual(len(self.config[whitelist_name]), 2)
         for net in [net1, net2]:
             self.assertTrue(
-                ip_network(net, strict=False) in self.config['whitelist']
+                ip_network(net, strict=False) in self.config[whitelist_name]
             )
+
+    def test_populated_broadcast_whitelist(self):
+        self._test_populated_whitelist('subscriber-whitelist')
+
+    def test_populated_submission_whitelist(self):
+        self._test_populated_whitelist('author-whitelist')
 
     def test_has_print_event_plugin(self):
         self.cmd_line.append("--print-event")

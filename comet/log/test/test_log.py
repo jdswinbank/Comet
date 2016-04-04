@@ -3,15 +3,9 @@ from twisted.python import log as twisted_log
 from twisted.internet import defer
 
 import comet.log as log
+from comet.testutils import DummyLogObserver
 
 DUMMY_MESSAGE = "Dummy message"
-
-class DummyLogObserver(object):
-    def __init__(self):
-        self.messages = []
-
-    def __call__(self, logentry):
-        self.messages.append(logentry['message'])
 
 class test_comet_logging(unittest.TestCase):
     def setUp(self):
