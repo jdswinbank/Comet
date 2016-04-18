@@ -214,10 +214,12 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
         # The legacy form is in violation of the Transport schema. We no
         # longer generate packets that look like this, but the broker still
         # recognizes them.
-        demo_filter =  b"//Param[@name=\"SC_Lat\" and @value&lt;600]"
+        demo_filter =  "//Param[@name=\"SC_Lat\" and @value&lt;600]"
+        received = (DUMMY_AUTHENTICATE_RESPONSE_LEGACY.decode()
+                    % demo_filter).encode('UTF-8')
         self.tr.clear()
         self.assertEqual(len(self.proto.filters), 0)
-        self.proto.stringReceived(DUMMY_AUTHENTICATE_RESPONSE_LEGACY % demo_filter)
+        self.proto.stringReceived(received)
         self.assertEqual(self.tr.value(), b"")
         self.assertEqual(self.tr.connected, True)
         self.assertEqual(len(self.proto.filters), 1)
