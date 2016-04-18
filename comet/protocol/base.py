@@ -21,7 +21,7 @@ class ElementSender(Int32StringReceiver):
         """
         Takes an xml_document and sends it as text.
         """
-        self.sendString(document.text)
+        self.sendString(document.raw_bytes)
 
     def lengthLimitExceeded(self, length):
         """
@@ -82,7 +82,7 @@ class EventHandler(ElementSender):
         def handle_valid(status):
             log.debug("Event accepted; sending ACK to %s" % (self.transport.getPeer()))
             self.send_xml(
-                ack(self.factory.local_ivo, event.attrib['ivorn'])
+                ack(self.factory.local_ivo, event.element.attrib['ivorn'])
             )
             self.handle_event(event).addCallbacks(
                 lambda x: log.debug("Event processed"),
@@ -95,13 +95,13 @@ class EventHandler(ElementSender):
                 log.debug("Sending NAK to %s" % (self.transport.getPeer()))
                 self.send_xml(
                     nak(
-                        self.factory.local_ivo, event.attrib['ivorn'],
+                        self.factory.local_ivo, event.element.attrib['ivorn'],
                         "Event rejected: %s" % (failure.value.subFailure.getErrorMessage(),)
                     )
                 )
             else:
                 log.debug("Sending ACK to %s" % (self.transport.getPeer()))
                 self.send_xml(
-                    ack(self.factory.local_ivo, event.attrib['ivorn'])
+                    ack(self.factory.local_ivo, event.element.attrib['ivorn'])
                 )
         return self.validate_event(event).addCallbacks(handle_valid, handle_invalid)

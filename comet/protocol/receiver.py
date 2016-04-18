@@ -48,10 +48,10 @@ class VOEventReceiver(EventHandler, TimeoutMixin):
             # The root element of both VOEvent and Transport packets has a
             # "role" element which we use to identify the type of message we
             # have received.
-            if incoming.get('role') in VOEVENT_ROLES:
+            if incoming.element.get('role') in VOEVENT_ROLES:
                 log.info(
                     "VOEvent %s received from %s" % (
-                        incoming.attrib['ivorn'],
+                        incoming.element.attrib['ivorn'],
                         str(self.transport.getPeer())
                     )
                 )
@@ -59,7 +59,7 @@ class VOEventReceiver(EventHandler, TimeoutMixin):
             else:
                 d = log.warn(
                     "Incomprehensible data received from %s (role=%s)" %
-                    (self.transport.getPeer(), incoming.get("role"))
+                    (self.transport.getPeer(), incoming.element.get("role"))
                 )
         finally:
             return d.addCallback(

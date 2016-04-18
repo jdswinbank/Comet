@@ -5,30 +5,42 @@ import textwrap
 import lxml.etree as etree
 
 from twisted.trial import unittest
+from comet import BINARY_TYPE
 from comet.utility import xml_document, ParseError
 
-EXAMPLE_XML = """<xml></xml>"""
+EXAMPLE_XML = b"""<xml></xml>"""
 
 class mutable_element_tests(unittest.TestCase):
     def setUp(self):
-        self.doc = xml_document("<foo>bar</foo>")
+        self.doc = xml_document(b"<foo>bar</foo>")
 
     def test_transform_text(self):
         self.assertEqual(self.doc.element.text, "bar")
-        self.doc.text = "<foo>baz</foo>"
+        self.doc.raw_bytes = b"<foo>baz</foo>"
         self.assertEqual(self.doc.element.text, "baz")
 
     def test_transform_element(self):
-        self.assertEqual(self.doc.text.find("<foo>baz</foo>"), -1)
-        self.doc.element = etree.fromstring("<foo>baz</foo>")
-        self.assertNotEqual(self.doc.text.find("<foo>baz</foo>"), -1)
+        # Not found in default document
+        self.assertEqual(self.doc.raw_bytes.find(b"<foo>baz</foo>"), -1)
 
-    def test_getattr_forwarding(self):
-        """Attribute requests are forwarded from doc to doc.element."""
-        self.assertFalse("prefix" in self.doc.__slots__)
-        self.assertEqual(self.doc.prefix, self.doc.element.prefix)
-        self.assertFalse(hasattr(self.doc.element, "foo"))
-        self.assertRaises(AttributeError, getattr, self.doc, "foo")
+        # But is in this replacement
+        self.doc.element = etree.fromstring("<foo>baz</foo>")
+        self.assertNotEqual(self.doc.raw_bytes.find(b"<foo>baz</foo>"), -1)
+
+class xml_document_encoding(unittest.TestCase):
+    def test_from_unicode(self):
+        # It should not be possible to initalize an XML document from a
+        # unicode string.
+        self.assertRaises(ParseError, xml_document, u"<foo>bar</foo>")
+
+    def test_encoding_detection(self):
+        # Default case: UTF-8
+        doc = xml_document(b"<foo>bar</foo>")
+        self.assertEqual(doc.encoding, "UTF-8")
+
+        # Something more exotic!
+        doc = xml_document(b"<?xml version=\'1.0\' encoding=\'BIG5\'?><foo>bar</foo>")
+        self.assertEqual(doc.encoding, "BIG5")
 
 class xml_document_tests(object):
     def test_signature(self):
@@ -38,7 +50,7 @@ class xml_document_tests(object):
         self.assertIsInstance(self.doc.element, etree._Element)
 
     def test_text(self):
-        self.assertIsInstance(self.doc.text, str)
+        self.assertIsInstance(self.doc.raw_bytes, BINARY_TYPE)
 
 class xml_document_from_string_TestCase(unittest.TestCase, xml_document_tests):
     def setUp(self):
@@ -62,7 +74,7 @@ class xml_security_TestCase(unittest.TestCase):
 
         http://en.wikipedia.org/wiki/Billion_laughs
         """
-        xml_str = textwrap.dedent("""
+        xml_str = textwrap.dedent(u"""
         <?xml version="1.0"?>
         <!DOCTYPE lolz [
          <!ENTITY lol "lol">
@@ -78,7 +90,7 @@ class xml_security_TestCase(unittest.TestCase):
          <!ENTITY lol9 "&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;">
         ]>
         <lolz>&lol9;</lolz>
-        """).strip()
+        """).strip().encode('utf-8')
         self.assertRaises(ParseError, xml_document, xml_str)
 
     def test_quadratic_blowup(self):
@@ -87,11 +99,11 @@ class xml_security_TestCase(unittest.TestCase):
 
         To avoid this, we'll have to disable entity expansion altogether.
         """
-        xml_str = textwrap.dedent("""
+        xml_str = textwrap.dedent(u"""
         <?xml version="1.0"?>
         <!DOCTYPE bomb [
         <!ENTITY a "xxxxxxx">
         ]>
         <bomb>&a;&a;&a;&a;&a;</bomb>
-        """).strip()
+        """).strip().encode('utf-8')
         self.assertRaises(ParseError, xml_document, xml_str)

@@ -2,7 +2,10 @@
 # Event database.
 
 import os
-import anydbm
+try:
+    import anydbm
+except ImportError:
+    import dbm as anydbm
 import time
 from hashlib import sha1
 from threading import Lock
@@ -24,9 +27,9 @@ class Event_DB(object):
 
     @staticmethod
     def _get_event_details(event):
-        auth, rsrc, local = parse_ivorn(event.attrib['ivorn'])
+        auth, rsrc, local = parse_ivorn(event.element.attrib['ivorn'])
         db_path = os.path.join(auth, rsrc).replace(os.path.sep, "_")
-        key = sha1(event.text).hexdigest()
+        key = sha1(event.raw_bytes).hexdigest()
         return db_path, key
 
     def check_event(self, event):
@@ -36,12 +39,12 @@ class Event_DB(object):
         """
         try:
             db_path, key = self._get_event_details(event)
-        except:
+        except Exception as e:
             log.warn("Unparseable IVORN; failing eventdb lookup");
         else:
             with self.databases[db_path]: # Acquire lock
                 with closing(anydbm.open(os.path.join(self.root, db_path), 'c')) as db:
-                    if not db.has_key(key):
+                    if not key in db:
                         db[key] = str(time.time())
                         return True
         return False
@@ -69,6 +72,6 @@ class Event_DB(object):
         return DeferredList(
             [
                 deferToThread(expire_db, db_path, lock)
-                for db_path, lock in self.databases.iteritems()
+                for db_path, lock in self.databases.items()
             ]
         )

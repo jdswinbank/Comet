@@ -8,7 +8,7 @@ from comet.utility import xml_document
 from comet.validator import CheckIVORN
 from comet.testutils import DUMMY_VOEVENT, DUMMY_EVENT_IVORN
 
-BAD_EVENT_TEXT = """
+BAD_EVENT_TEXT = u"""
 <voe:VOEvent xmlns:voe="http://www.ivoa.net/xml/VOEvent/v2.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.ivoa.net/xml/VOEvent/v2.0
@@ -18,7 +18,7 @@ BAD_EVENT_TEXT = """
     <AuthorIVORN>ivo://comet.broker/test</AuthorIVORN>
   </Who>
 </voe:VOEvent>
-"""
+""".encode("utf-8")
 
 class CheckSchemaTestCase(unittest.TestCase):
     def setUp(self):
@@ -30,7 +30,7 @@ class CheckSchemaTestCase(unittest.TestCase):
 
     def test_invalid(self):
         self.assertRaises(Exception, self.validator,
-            xml_document(BAD_EVENT_TEXT.replace(DUMMY_EVENT_IVORN, "bad_ivorn"))
+            xml_document(BAD_EVENT_TEXT.replace(DUMMY_EVENT_IVORN, b"bad_ivorn"))
         )
 
     def test_interface(self):

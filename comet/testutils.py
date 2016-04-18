@@ -9,10 +9,12 @@ from functools import partial
 import lxml.etree as etree
 from comet.protocol.messages import authenticateresponse
 
-DUMMY_EVENT_IVORN = "ivo://comet.broker/test#1234567890"
-DUMMY_SERVICE_IVORN = "ivo://comet.broker/test"
+# All dummy event text should be RAW BYTES, as received over the network.
 
-DUMMY_IAMALIVE = """
+DUMMY_EVENT_IVORN = u"ivo://comet.broker/test#1234567890".encode('UTF-8')
+DUMMY_SERVICE_IVORN = u"ivo://comet.broker/test".encode('UTF-8')
+
+DUMMY_IAMALIVE = u"""
     <?xml version=\'1.0\' encoding=\'UTF-8\'?>
     <trn:Transport xmlns:trn="http://www.telescope-networks.org/xml/Transport/v1.1"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -22,10 +24,10 @@ DUMMY_IAMALIVE = """
         <Origin>%s</Origin>
         <TimeStamp>2012-01-01T00:00:00Z</TimeStamp>
     </trn:Transport>
-""" % (DUMMY_EVENT_IVORN,)
-DUMMY_IAMALIVE = textwrap.dedent(DUMMY_IAMALIVE).strip()
+""" % (DUMMY_EVENT_IVORN.decode(),)
+DUMMY_IAMALIVE = textwrap.dedent(DUMMY_IAMALIVE).strip().encode('UTF-8')
 
-DUMMY_AUTHENTICATE = """
+DUMMY_AUTHENTICATE = u"""
     <?xml version='1.0' encoding='UTF-8'?>
     <trn:Transport xmlns:trn="http://www.telescope-networks.org/xml/Transport/v1.1"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -35,10 +37,10 @@ DUMMY_AUTHENTICATE = """
         <Origin>%s</Origin>
         <TimeStamp>2012-01-01T00:00:00Z</TimeStamp>
     </trn:Transport>
-""" % (DUMMY_EVENT_IVORN,)
-DUMMY_AUTHENTICATE = textwrap.dedent(DUMMY_AUTHENTICATE).strip()
+""" % (DUMMY_EVENT_IVORN.decode(),)
+DUMMY_AUTHENTICATE = textwrap.dedent(DUMMY_AUTHENTICATE).strip().encode('UTF-8')
 
-DUMMY_VOEVENT = """
+DUMMY_VOEVENT = u"""
     <?xml version='1.0' encoding='UTF-8'?>
     <voe:VOEvent xmlns:voe="http://www.ivoa.net/xml/VOEvent/v2.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -50,10 +52,10 @@ DUMMY_VOEVENT = """
             <Date>2012-01-01T00:00:00</Date>
         </Who>
     </voe:VOEvent>
-""" % (DUMMY_EVENT_IVORN, DUMMY_SERVICE_IVORN)
-DUMMY_VOEVENT = textwrap.dedent(DUMMY_VOEVENT).strip()
+""" % (DUMMY_EVENT_IVORN.decode(), DUMMY_SERVICE_IVORN.decode())
+DUMMY_VOEVENT = textwrap.dedent(DUMMY_VOEVENT).strip().encode('UTF-8')
 
-DUMMY_ACK = """
+DUMMY_ACK = u"""
     <?xml version='1.0' encoding='UTF-8'?>
     <trn:Transport xmlns:trn="http://www.telescope-networks.org/xml/Transport/v1.1"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -64,10 +66,10 @@ DUMMY_ACK = """
         <Response>%s</Response>
         <TimeStamp>2012-01-01T00:00:00Z</TimeStamp>
     </trn:Transport>
-""" % (DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN)
-DUMMY_ACK = textwrap.dedent(DUMMY_ACK).strip()
+""" % (DUMMY_SERVICE_IVORN.decode(), DUMMY_SERVICE_IVORN.decode())
+DUMMY_ACK = textwrap.dedent(DUMMY_ACK).strip().encode('UTF-8')
 
-DUMMY_NAK = """
+DUMMY_NAK = u"""
     <?xml version='1.0' encoding='UTF-8'?>
     <trn:Transport xmlns:trn="http://www.telescope-networks.org/xml/Transport/v1.1"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -78,10 +80,10 @@ DUMMY_NAK = """
         <Response>%s</Response>
         <TimeStamp>2012-01-01T00:00:00Z</TimeStamp>
     </trn:Transport>
-""" % (DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN)
-DUMMY_NAK = textwrap.dedent(DUMMY_NAK).strip()
+""" % (DUMMY_SERVICE_IVORN.decode(), DUMMY_SERVICE_IVORN.decode())
+DUMMY_NAK = textwrap.dedent(DUMMY_NAK).strip().encode('UTF-8')
 
-DUMMY_AUTHENTICATE_RESPONSE_LEGACY = """
+DUMMY_AUTHENTICATE_RESPONSE_LEGACY = u"""
     <?xml version='1.0' encoding='UTF-8'?>
     <trn:Transport xmlns:trn="http://www.telescope-networks.org/xml/Transport/v1.1"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -95,8 +97,10 @@ DUMMY_AUTHENTICATE_RESPONSE_LEGACY = """
             <filter type="xpath">%s</filter>
         </Meta>
     </trn:Transport>
-""" % (DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN, "%s")
-DUMMY_AUTHENTICATE_RESPONSE_LEGACY = textwrap.dedent(DUMMY_AUTHENTICATE_RESPONSE_LEGACY).strip()
+""" % (DUMMY_SERVICE_IVORN.decode(), DUMMY_SERVICE_IVORN.decode(), "%s")
+DUMMY_AUTHENTICATE_RESPONSE_LEGACY = textwrap.dedent(
+    DUMMY_AUTHENTICATE_RESPONSE_LEGACY
+).strip().encode('UTF-8')
 
 DUMMY_AUTHENTICATE_RESPONSE = partial(
     authenticateresponse, DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN
@@ -105,8 +109,8 @@ DUMMY_AUTHENTICATE_RESPONSE = partial(
 class DummyEvent(object):
     def __init__(self, ivorn=DUMMY_EVENT_IVORN):
         self.attrib = {'ivorn': ivorn}
-        self.text = DUMMY_VOEVENT.replace(DUMMY_EVENT_IVORN, ivorn)
-        self.element = etree.fromstring(self.text)
+        self.raw_bytes = DUMMY_VOEVENT.replace(DUMMY_EVENT_IVORN, ivorn)
+        self.element = etree.fromstring(self.raw_bytes)
 
 class DummyLogObserver(object):
     def __init__(self):

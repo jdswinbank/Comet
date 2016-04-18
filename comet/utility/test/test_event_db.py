@@ -43,11 +43,11 @@ class Event_DB_TestCase(unittest.TestCase):
         return d
 
     def test_bad_ivorn(self):
-        bad_event = DummyEvent("ivo://#")
+        bad_event = DummyEvent(b"ivo://#")
         self.assertFalse(self.event_db.check_event(bad_event))
 
     def test_prune_bad_event(self):
-        bad_event = DummyEvent(ivorn="ivo://")
+        bad_event = DummyEvent(ivorn=b"ivo://")
         self.assertNotIn("", self.event_db.databases)
         # This event doesn't validate and is rejected.
         self.assertFalse(self.event_db.check_event(bad_event))
@@ -57,7 +57,7 @@ class Event_DB_TestCase(unittest.TestCase):
 
         def done_prune(result):
             # After pruning, everything in the database should be unlocked.
-            for lock in self.event_db.databases.itervalues():
+            for lock in self.event_db.databases.values():
                 self.assertFalse(lock.locked())
             self.assertFalse(self.event_db.check_event(bad_event))
             self.assertTrue(self.event_db.check_event(self.event))

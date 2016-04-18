@@ -18,7 +18,9 @@ from comet.testutils import DUMMY_SERVICE_IVORN
 class DefaultOptionsTestCase(unittest.TestCase):
     def setUp(self):
         self.config = Options()
-        self.cmd_line = ["--local-ivo", DUMMY_SERVICE_IVORN]
+        # Note that parsing from the command line always results in a str,
+        # regardless of whether we're running Python 2.
+        self.cmd_line = ["--local-ivo", DUMMY_SERVICE_IVORN.decode()]
 
     def test_faulty_cmd_line(self):
         self.cmd_line.append("--not-a-real-option")
@@ -146,7 +148,7 @@ class DefaultOptionsTestCase(unittest.TestCase):
 
     def test_valid_ivorn(self):
         self.config.parseOptions(self.cmd_line)
-        self.assertEqual(self.config['local-ivo'], DUMMY_SERVICE_IVORN)
+        self.assertEqual(self.config['local-ivo'], DUMMY_SERVICE_IVORN.decode())
 
     def test_invalid_ivorn(self):
         self.cmd_line.extend(["--local-ivo", "ivo://"])
@@ -171,7 +173,7 @@ class ServiceTestCase(unittest.TestCase):
             "Receiver", "Broadcaster",
             "Remote %s:%d" % ('dummy', DEFAULT_REMOTE_PORT)
         ):
-            self.assertTrue(service.namedServices.has_key(service_name))
+            self.assertTrue(service_name in service.namedServices)
 
     def test_no_service(self):
         # When we ask for no services on the command line, nothing should be

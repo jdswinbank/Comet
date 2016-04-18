@@ -22,7 +22,7 @@ class EventPrinter(object):
         """
         Print an event to standard output.
         """
-        print(ElementTree.tostring(event.element))
+        print(ElementTree.tounicode(event.element))
 
 # This instance of the handler is what actually constitutes our plugin.
 print_event = EventPrinter()
