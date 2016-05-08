@@ -1,6 +1,5 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns="http://www.ivoa.net/xml/VOEvent/v2.0" xmlns:xs="http://www.w3.org/2001/XMLSchema"
-  targetNamespace="http://www.ivoa.net/xml/VOEvent/v2.0" elementFormDefault="unqualified">
+<?xml version='1.0' encoding='ASCII'?>
+<xs:schema xmlns="http://www.ivoa.net/xml/VOEvent/v2.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.ivoa.net/xml/VOEvent/v2.0" elementFormDefault="unqualified">
 
   <xs:element name="VOEvent">
     <xs:annotation>
@@ -13,18 +12,18 @@
     <xs:complexType>
       <!-- Can have zero or one of each of these, in any order -->
       <xs:all>
-        <xs:element name="Who"         type="Who"       minOccurs="0" maxOccurs="1"/>
-        <xs:element name="What"        type="What"      minOccurs="0" maxOccurs="1"/>
-        <xs:element name="WhereWhen"   type="WhereWhen" minOccurs="0" maxOccurs="1"/>
-        <xs:element name="How"         type="How"       minOccurs="0" maxOccurs="1"/>
-        <xs:element name="Why"         type="Why"       minOccurs="0" maxOccurs="1"/>
-        <xs:element name="Citations"   type="Citations" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="Who" type="Who" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="What" type="What" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="WhereWhen" type="WhereWhen" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="How" type="How" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="Why" type="Why" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="Citations" type="Citations" minOccurs="0" maxOccurs="1"/>
         <xs:element name="Description" type="xs:string" minOccurs="0" maxOccurs="1"/>
-        <xs:element name="Reference"   type="Reference" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="Reference" type="Reference" minOccurs="0" maxOccurs="1"/>
       </xs:all>
-      <xs:attribute name="version"     type="xs:token"   fixed="2.0" use="required"/>
-      <xs:attribute name="ivorn"       type="xs:anyURI"  use="required"/>
-      <xs:attribute name="role"        type="roleValues" default="observation"/>
+      <xs:attribute name="version" type="xs:token" fixed="2.0" use="required"/>
+      <xs:attribute name="ivorn" type="xs:anyURI" use="required"/>
+      <xs:attribute name="role" type="roleValues" default="observation"/>
     </xs:complexType>
   </xs:element>
   <xs:simpleType name="roleValues">
@@ -208,7 +207,7 @@
       <xs:documentation> Part of WhereWhen</xs:documentation>
     </xs:annotation>
     <!-- The empty sequence closes this to content -->
-    <xs:sequence />
+    <xs:sequence/>
     <xs:attribute name="id" type="idValues"/>
   </xs:complexType>
   <xs:simpleType name="idValues">
@@ -422,4 +421,3 @@
   </xs:complexType>
 
 </xs:schema>
-

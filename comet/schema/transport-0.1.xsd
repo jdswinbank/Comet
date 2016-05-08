@@ -1,15 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns='http://www.telescope-networks.org/xml/Transport/v0.1' 
-  xmlns:xs='http://www.w3.org/2001/XMLSchema' 
-  targetNamespace="http://www.telescope-networks.org/xml/Transport/v0.1" 
-  elementFormDefault="unqualified">
+<?xml version='1.0' encoding='ASCII'?>
+<xs:schema xmlns="http://www.telescope-networks.org/xml/Transport/v0.1" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.telescope-networks.org/xml/Transport/v0.1" elementFormDefault="unqualified">
   
  <!-- Transport is the root element -->
   <xs:element name="Transport">
     <xs:complexType>
       <xs:all>
-        <xs:element name="Origin"  type="xs:string" minOccurs="0"/>
-        <xs:element name="Response"  type="xs:string" minOccurs="0"/>
+        <xs:element name="Origin" type="xs:string" minOccurs="0"/>
+        <xs:element name="Response" type="xs:string" minOccurs="0"/>
         <xs:element name="TimeStamp" type="xs:dateTime" minOccurs="0"/>
         <xs:element name="Meta" minOccurs="0"/>   
       </xs:all>
