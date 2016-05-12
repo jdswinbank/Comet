@@ -38,8 +38,8 @@ you might start by taking a look at `virtualenv
 Downloading
 ^^^^^^^^^^^
 
-See the :ref:`release history <sec-history>` to obtain the latest version of
-Comet or check out the source from the `GitHub repository
+See the :doc:`release history <history>` to obtain the latest version of Comet
+or check out the source from the `GitHub repository
 <http://www.github.com/jdswinbank/Comet>`_. The latest version of the source
 can be obtained using `git <http://git-scm.org>`_::
 

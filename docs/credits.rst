@@ -1,5 +1,3 @@
-.. _credits:
-
 Acknowledgements
 ================
 

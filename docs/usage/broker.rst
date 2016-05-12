@@ -1,5 +1,3 @@
-.. _sec-broker:
-
 Broker
 ======
 
@@ -152,7 +150,7 @@ are specified with ``--filter``, in the form of `XPath 1.0
 <http://www.w3.org/TR/xpath/>`_ expressions. The broker will evaluate the
 expression against each event it processes, and only forward the event to the
 subscriber if it produces a non-empty result. For more details see the section
-on :ref:`filtering <sec-filtering>`.
+on :doc:`filtering </filtering>`.
 
 Common Options
 ++++++++++++++
@@ -161,8 +159,8 @@ Plugins
 ^^^^^^^
 
 Custom code may be run to perform arbitrary local processing on an event when
-it is received. For more details, see the section on :ref:`event handlers
-<sec-handlers>`. Plugin actions will be taken whether Comet receives an event
+it is received. For more details, see the section on :doc:`event handlers
+</handlers>`. Plugin actions will be taken whether Comet receives an event
 from an author (``--receive``) or an upstream broker (``--remote``). A plugin
 is enabled by giving its name as a command line option (``--plugin-name``).
 Plugins may also take arguments from the command line. These are given in the

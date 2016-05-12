@@ -1,10 +1,8 @@
-.. _sec-history:
-
 Release History
 ===============
 
-See the :ref:`release procedure <sec-release>` section for more details on
-version numbering and how releases are made.
+See the :doc:`release procedure <appendix/release>` section for more details
+on version numbering and how releases are made.
 
 In Development
 --------------
@@ -49,7 +47,7 @@ Version 2.0.x
     Remove incorrect calls to old (pre-2.0.0) logging API. Thanks to
     Tim-Oliver Husser & Tim Staley. (`GitHub #39`_, `GitHub #40`_)
 
-    Reformat documentation to add :ref:`credits`.
+    Reformat documentation to add :doc:`credits`.
 
 .. _GitHub #39: https://github.com/jdswinbank/Comet/issues/39
 .. _GitHub #40: https://github.com/jdswinbank/Comet/issues/40
@@ -149,7 +147,7 @@ Version 1.1.x
     them.
 
     Event handler plugin system reworked. Plugins may now take command line
-    options. See the :ref:`event handler documentation <sec-handlers>` for
+    options. See the :doc:`event handler documentation </handlers>` for
     details. Note that the syntax for invoking the ``print-event`` handler has
     changed (now ``--print-event`` rather than ``--action=print-event``).
 

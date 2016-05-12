@@ -21,7 +21,7 @@ to publish your own events to the global VOEvent backbone.
    credits
    appendix/index
 
-Released versions of Comet are available for :ref:`download <sec-history>`,
+Released versions of Comet are available for :doc:`download <history>`,
 while the latest development version can be obtained from the `GitHub
 repository <https://github.com/jdswinbank/Comet>`_.
 
