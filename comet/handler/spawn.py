@@ -14,12 +14,15 @@ import comet.log as log
 __all__ = ["SpawnCommand"]
 
 class SpawnCommandProtocol(ProcessProtocol):
-    def __init__(self, deferred, text):
+    def __init__(self, deferred, raw_bytes):
         self.deferred = deferred
-        self.text = text
+        self.raw_bytes = raw_bytes
 
     def connectionMade(self):
-        self.transport.write(self.text.encode('utf-8'))
+        # Note that we're squiring whatever encoding raw_bytes happens to be
+        # in at the process. An alternative option would be to normalize it to
+        # UTF-8. Right answer probably depends on the recipient.
+        self.transport.write(self.raw_bytes)
         self.transport.closeStdin()
 
     def processEnded(self, reason):
@@ -47,7 +50,7 @@ class SpawnCommand(object):
         d = defer.Deferred()
         log.info("Running external command: %s" % (self.cmd,))
         reactor.spawnProcess(
-            SpawnCommandProtocol(d, event.text),
+            SpawnCommandProtocol(d, event.raw_bytes),
             self.cmd,
             args=self.args,
             env=os.environ

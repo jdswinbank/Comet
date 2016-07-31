@@ -1,25 +1,30 @@
 import os
 import sys
 import tempfile
+from unittest import skipUnless
 
 from twisted.trial import unittest
 from twisted.python import util
 
 from comet.icomet import IHandler
 from comet.handler import SpawnCommand
+from comet.testutils import DummyEvent
 
+# Used for spawning test code.
 SHELL = '/bin/sh'
 
-class DummyEvent(object):
-    def __init__(self, text=None):
-        self.text = text or u""
+# This executable is required to exist and to exit cleanly regardless of
+# whatever we squirt into its stdin. Other than that, it doesn't matter what
+# it does.
+EXECUTABLE = '/bin/ls'
 
 class SpawnCommandProtocolTestCase(unittest.TestCase):
     def test_interface(self):
         self.assertTrue(IHandler.implementedBy(SpawnCommand))
 
+    @skipUnless(os.access(EXECUTABLE, os.X_OK), "Test executable not available")
     def test_good_process(self):
-        spawn = SpawnCommand(sys.executable)
+        spawn = SpawnCommand(EXECUTABLE)
         d = spawn(DummyEvent())
         d.addCallback(self.assertEqual, True)
         return d
@@ -28,19 +33,18 @@ class SpawnCommandProtocolTestCase(unittest.TestCase):
         spawn = SpawnCommand("/not/a/real/executable")
         return self.assertFailure(spawn(DummyEvent()), Exception)
 
+    @skipUnless(os.access(SHELL, os.X_OK), "Shell executable not available")
     def test_write_data(self):
-        if not os.access(SHELL, os.X_OK):
-            raise unittest.SkipTest("Shell not available")
-        TEXT = u"Test spawn process"
         output_file = tempfile.NamedTemporaryFile()
+        dummy_event = DummyEvent()
         def read_data(result):
             try:
-                # NamedTemporaryFile is opened in binary mode, so we need to
-                # encode the read for comparison.
-                self.assertEqual(output_file.read().decode('utf-8'), TEXT)
+                # NamedTemporaryFile is opened in binary mode, so we compare
+                # raw bytes.
+                self.assertEqual(output_file.read(), dummy_event.raw_bytes)
             finally:
                 output_file.close()
         spawn = SpawnCommand('/bin/sh', util.sibpath(__file__, "test_spawn.sh"), output_file.name)
-        d = spawn(DummyEvent(TEXT))
+        d = spawn(dummy_event)
         d.addCallback(read_data)
         return d
