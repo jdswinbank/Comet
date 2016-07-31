@@ -53,7 +53,7 @@ class xml_document(object):
         return self._element
     def set_element(self, value):
         self._element = value
-        self._raw_bytes =  ElementTree.tostring(
+        self._raw_bytes = ElementTree.tostring(
             self._element,
             xml_declaration=True,
             encoding="UTF-8",
