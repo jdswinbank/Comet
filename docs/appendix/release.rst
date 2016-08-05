@@ -45,7 +45,7 @@ release. Commit this change with an appropriate log message::
 
 Next tag the release with the version number::
 
-  $ git tag -a "N.M.P" -m "Comet release N.M.P"
+  $ git tag "N.M.P" -m "Comet release N.M.P"
 
 Push everything, including the tag, to GitHub::
 
