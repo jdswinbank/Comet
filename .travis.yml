@@ -7,7 +7,7 @@ install:
   - pip install -r requirements${TRAVIS_PYTHON_VERSION:0:1}.txt
   - pip install coveralls
 script:
-  - coverage run --source=comet --omit=*test_\*py $(which trial) comet
+  - PYTHONPATH=. coverage run --source=comet --omit=*test_\*py $(which trial) comet
 after_success:
   - coveralls
 sudo: false
