@@ -44,7 +44,7 @@ class SpawnCommandProtocolTestCase(unittest.TestCase):
                 self.assertEqual(output_file.read(), dummy_event.raw_bytes)
             finally:
                 output_file.close()
-        spawn = SpawnCommand('/bin/sh', util.sibpath(__file__, "test_spawn.sh"), output_file.name)
+        spawn = SpawnCommand(SHELL, util.sibpath(__file__, "test_spawn.sh"), output_file.name)
         d = spawn(dummy_event)
         d.addCallback(read_data)
         return d
