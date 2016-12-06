@@ -28,7 +28,7 @@ In Development
   #41`_)
 
 - Log the return code of failed external commands at level ``WARN``. Log
-  standard output at level ``DEBUG``.
+  standard output and error at level ``DEBUG``.
 
 .. _does not fully support Python 3: https://twistedmatrix.com/trac/milestone/Python-3.x
 .. _Twisted 16.0: http://labs.twistedmatrix.com/2016/03/twisted-160-released.html

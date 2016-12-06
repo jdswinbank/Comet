@@ -44,7 +44,8 @@ class SpawnCommandProtocolTestCase(unittest.TestCase):
         log.LEVEL = log.Levels.DEBUG
         spawn = SpawnCommand(SHELL, util.sibpath(__file__, script_name))
         def _check_log(_):
-            self.assertTrue(sentinel in observer.messages[1][0])
+            self.assertTrue(sentinel in
+                            " ".join(msg[0] for msg in observer.messages))
         d = spawn(DummyEvent())
         if should_fail:
             return self.assertFailure(d, Exception).addCallback(_check_log)
@@ -65,9 +66,18 @@ class SpawnCommandProtocolTestCase(unittest.TestCase):
         """
         Demonstrate we can read stdout from the process.
         """
-        # Script prints the string TESTTEST; we should be able to read that in
-        # the logs.
-        return self._check_logged_value("test_spawn_stdout.sh", "TESTTEST")
+        # Script prints the string THIS_IS_STDOUT; we should be able to read
+        # that in the logs.
+        return self._check_logged_value("test_spawn_stdout.sh", "THIS_IS_STDOUT")
+
+    @skipUnless(os.access(SHELL, os.X_OK), "Shell executable not available")
+    def test_stderr(self):
+        """
+        Demonstrate we can read stderr from the process.
+        """
+        # Script prints the string THIS_IS_STDERR to standard error; we should
+        # be able to read that in the logs.
+        return self._check_logged_value("test_spawn_stdout.sh", "THIS_IS_STDERR")
 
     @skipUnless(os.access(SHELL, os.X_OK), "Shell executable not available")
     def test_write_data(self):

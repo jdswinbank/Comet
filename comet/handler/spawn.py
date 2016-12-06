@@ -34,6 +34,9 @@ class SpawnCommandProtocol(ProcessProtocol):
         log.debug("External process said: %s" %
                   (data.decode(self.STDOUT_ENCODING),))
 
+    def errReceived(self, data):
+        self.outReceived(data)
+
     def processEnded(self, reason):
         if reason.value.exitCode:
             self.deferred.errback(reason)

@@ -185,12 +185,12 @@ Spawning External Commands
 Similarly, received events may be sent to one or more external commands for
 processing. These are specified using the ``--cmd`` option. They should accept
 the event on standard input and perform whatever processing is required before
-exiting. The standard output from the external process will be written to
-Comet's log with level ``DEBUG``. If it returns a value other than 0, it will
-be logged as a failure.  Note that external commands are run in a separate
-thread, so will not block the subscriber from processing new events; however,
-the user is nevertheless responsible for ensuring that they terminate in a
-timely fashion.
+exiting. The standard output and error from the external process will be
+written to Comet's log with level ``DEBUG``. If it returns a value other than
+0, it will be logged as a failure.  Note that external commands are run in a
+separate thread, so will not block the subscriber from processing new events;
+however, the user is nevertheless responsible for ensuring that they terminate
+in a timely fashion.
 
 Logging
 ^^^^^^^

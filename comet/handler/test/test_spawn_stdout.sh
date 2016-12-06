@@ -1,3 +1,4 @@
 #!/bin/sh
 
-echo TESTTEST
+echo THIS_IS_STDOUT
+echo THIS_IS_STDERR 1>&2
