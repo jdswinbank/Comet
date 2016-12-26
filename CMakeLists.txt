@@ -10,7 +10,7 @@ find_package (PythonInterp REQUIRED)
 find_package (Pygments REQUIRED)
 
 execute_process(
-    COMMAND ${PYTHON_EXECUTABLE} -c "from pygments.formatters import LatexFormatter; f = LatexFormatter(); print f.get_style_defs()"
+    COMMAND ${PYTHON_EXECUTABLE} -c "from pygments.formatters import LatexFormatter; f = LatexFormatter(); print(f.get_style_defs())"
     OUTPUT_VARIABLE PYGMENTS_PREAMBLE
 )
 
