@@ -42,7 +42,7 @@ provide a brief usage message::
         --print-event               Enable the print-event plugin.
         --save-event                Enable the save-event plugin.
         --local-ivo=                IVOA identifier for this system (required)
-        --eventdb=                  Event database root. [default: system dependent]
+        --eventdb=                  Event database root-directory. [default: system dependent]
         --receive-port=             TCP port for receiving events. [default: 8098]
         --broadcast-port=           TCP port for broadcasting events. [default:
                                     8099]
@@ -106,10 +106,11 @@ VOEvent Network Maintenance
 In order to prevent looping on the network (ie, two brokers exchanging the
 same event ad infinitum), a database of previously seen event is maintained.
 This database is written to the filesystem in the location specified by the
-``--eventdb`` option. Events which are recorded in the database are not
-forwarded by Comet. This is important: looping would degrade the quality of
-the VOEvent network for all users! Note that events persist in the database
-for 30 days, after which they are expired to save space.
+``--eventdb`` option (which should specify a pre-existing directory). Events
+which are recorded in the database are not forwarded by Comet. This is
+important: looping would degrade the quality of the VOEvent network for all
+users! Note that events persist in the database for 30 days, after which they
+are expired to save space.
 
 Receiver Options
 ++++++++++++++++
