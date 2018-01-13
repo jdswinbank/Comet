@@ -155,7 +155,13 @@ class DefaultOptionsTestCase(unittest.TestCase):
         self.assertRaises(usage.UsageError, self.config.parseOptions, self.cmd_line)
 
     def test_ivorn_missing(self):
-        self.assertRaises(usage.UsageError, self.config.parseOptions, "")
+        # It's fine not to provide an IVOID on the command line as of the VTP2
+        # spec, as long as we're only operating as a subscriber.
+        self.config.parseOptions("")
+
+        # But it's required if we act as broadcaster or receiver.
+        self.assertRaises(usage.UsageError, self.config.parseOptions, "-b")
+        self.assertRaises(usage.UsageError, self.config.parseOptions, "-r")
 
 
 class ServiceTestCase(unittest.TestCase):

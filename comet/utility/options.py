@@ -9,7 +9,8 @@ __all__ = ["BaseOptions"]
 
 class BaseOptions(usage.Options):
     optParameters = [
-        ["local-ivo", None, None, "IVOA identifier for this system (required)"]
+        ["local-ivo", None, None, "IVOA identifier for this system "
+                                  "(required for --receive and --broadcast)."]
     ]
 
     def opt_local_ivo(self, local_ivo):
@@ -25,5 +26,5 @@ class BaseOptions(usage.Options):
         self['local-ivo'] = local_ivo
 
     def postOptions(self):
-        if not self['local-ivo']:
+        if not self['local-ivo'] and (self['broadcast'] or self['receive']):
             raise usage.UsageError("IVOA identifier required (--local-ivo)")
