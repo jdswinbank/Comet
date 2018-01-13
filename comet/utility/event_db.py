@@ -22,6 +22,8 @@ __all__ = ["Event_DB"]
 
 class Event_DB(object):
     def __init__(self, root):
+        if not os.path.exists(root):
+            os.makedirs(root)
         self.root = root
         self.databases = defaultdict(Lock)
 

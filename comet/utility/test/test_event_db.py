@@ -2,6 +2,7 @@
 # Event database tests.
 
 import tempfile
+import time
 import shutil
 from multiprocessing.pool import ThreadPool
 from itertools import repeat
@@ -16,6 +17,13 @@ class Event_DB_TestCase(unittest.TestCase):
         self.event_db_dir = tempfile.mkdtemp()
         self.event_db = Event_DB(self.event_db_dir)
         self.event = DummyEvent()
+
+    def test_non_existing_dir(self):
+        # If the root for the Event_DB doesn't exist, we should create it.
+        # Note the relative path means that this DB will be created in the
+        # _trial_temp directory.
+        event_db = Event_DB("event_db_test_%s" % (time.time(),))
+        self.assertTrue(event_db.check_event(self.event))
 
     def test_unseen(self):
         # Unseen event -> return True
