@@ -26,20 +26,20 @@ class Event_DB_TestCase(unittest.TestCase):
         # If the root for the Event_DB doesn't exist, we should create it.
         # Note the relative path means that this DB will be created in the
         # _trial_temp directory.
-        event_db = Event_DB("event_db_test_%s" % (time.time(),))
+        event_db = Event_DB("event_db_test_%.5f" % (time.time(),))
         self.assertTrue(event_db.check_event(self.event))
 
     def test_dir_is_file(self):
         # If the path specified for the Event_DB *does* exist but isn't a
         # directory, then we should fail fast.
-        filename = "event_db_test_%s" % (time.time(),)
+        filename = "event_db_test_%.5f" % (time.time(),)
         open(filename, 'w').close()
         self.assertRaises(RuntimeError, Event_DB, filename)
 
     def test_dir_is_unusable(self):
         # If the path specified for the Event_DB exists and is a directory,
         # but we don't have permissions to use it, fail fast.
-        filename = "event_db_test_%s" % (time.time(),)
+        filename = "event_db_test_%.5f" % (time.time(),)
         os.makedirs(filename)
         os.chmod(filename, 0)
         self.assertRaises(RuntimeError, Event_DB, filename)
