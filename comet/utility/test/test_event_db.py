@@ -2,13 +2,13 @@
 # Event database tests.
 
 import os
+import shutil
 import stat
 import tempfile
 import time
-import shutil
-from multiprocessing.pool import ThreadPool
 from functools import reduce
 from itertools import repeat, permutations
+from multiprocessing.pool import ThreadPool
 from operator import __or__
 
 from twisted.trial import unittest
