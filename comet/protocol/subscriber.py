@@ -95,7 +95,7 @@ class VOEventSubscriberFactory(ReconnectingClientFactory):
     protocol = VOEventSubscriber
     callLater = reactor.callLater # Can be replaced in test cases
     def __init__(self,
-        local_ivo, validators=None, handlers=None, filters=None,
+        local_ivo=None, validators=None, handlers=None, filters=None,
     ):
         self.local_ivo = local_ivo
         self.handlers = handlers or []

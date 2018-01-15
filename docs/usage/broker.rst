@@ -41,7 +41,8 @@ provide a brief usage message::
     -q, --quiet                     Decrease verbosity.
         --print-event               Enable the print-event plugin.
         --save-event                Enable the save-event plugin.
-        --local-ivo=                IVOA identifier for this system (required)
+        --local-ivo=                IVOA identifier for this system (required for
+                                    --receive and --broadcast)
         --eventdb=                  Event database root. [default: system dependent]
         --receive-port=             TCP port for receiving events. [default: 8098]
         --broadcast-port=           TCP port for broadcasting events. [default:
@@ -93,12 +94,14 @@ immediately.
 Identification
 ++++++++++++++
 
-Whatever the mode of operation, Comet identifies itself by means of an
-*International Virtual Observatory Resource Name* or *IVORN*: see the `VOEvent
-standard <http://www.ivoa.net/Documents/VOEvent/index.html>`_ for details. You
-should specify some appropriate IVORN for your site using the ``--local-ivo``
-option. This should be of the format ``ivo://${organization}/${name}``; for
-example, ``ivo://org.transientskp/comet_broker``.
+Comet identifies itself to other systems by means of an *International Virtual
+Observatory Resource Name* or *IVORN*: see the `VOEvent standard
+<http://www.ivoa.net/Documents/VOEvent/index.html>`_ for details. You should
+specify some appropriate IVORN for your site using the ``--local-ivo`` option.
+This is required when one or both of ``--receive`` or ``--broadcast`` is
+specified; it's optional, but will be used if provided, otherwise.  This
+should be of the format ``ivo://${organization}/${name}``; for example,
+``ivo://org.transientskp/comet_broker``.
 
 VOEvent Network Maintenance
 +++++++++++++++++++++++++++

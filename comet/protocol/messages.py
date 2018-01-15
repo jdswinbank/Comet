@@ -28,8 +28,9 @@ def origin_response_message(local_ivo, remote_ivo):
     root_element = transport_message().element
     origin = ElementTree.SubElement(root_element, "Origin")
     origin.text = remote_ivo
-    response = ElementTree.SubElement(root_element, "Response")
-    response.text = local_ivo
+    if local_ivo:
+        response = ElementTree.SubElement(root_element, "Response")
+        response.text = local_ivo
     timestamp = ElementTree.SubElement(root_element, "TimeStamp")
     timestamp.text = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
     return xml_document(root_element)

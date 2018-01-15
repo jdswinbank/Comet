@@ -57,9 +57,15 @@ class VOEventSubscriberTimeoutTestCase(unittest.TestCase):
         self.assertEqual(self.tr.connected, False)
 
 
-class VOEventSubscriberTestCase(unittest.TestCase):
+# Per the VTP spec, it's valid for subscribers either to have or not to have
+# IVOIDs. If they do have them, though, they must be used properly. We run the
+# same set of tests for both cases.
+
+class VOEventSubscriberTestCase(object):
+    # Abstract base for the with and without ID test cases, below.
+
     def setUp(self):
-        factory = VOEventSubscriberFactory(DUMMY_SERVICE_IVORN)
+        factory = VOEventSubscriberFactory(self.IVOID)
         factory.callLater = task.Clock().callLater
         self.proto = factory.buildProtocol(('127.0.0.1', 0))
         self.tr = proto_helpers.StringTransport()
@@ -90,22 +96,25 @@ class VOEventSubscriberTestCase(unittest.TestCase):
         self.proto.stringReceived(DUMMY_IAMALIVE)
         received_element = etree.fromstring(self.tr.value()[4:])
         self.assertEqual("iamalive", received_element.attrib['role'])
-        self.assertEqual(DUMMY_SERVICE_IVORN.decode(),
-                         received_element.find('Response').text)
+        if self.IVOID:
+            self.assertEqual(DUMMY_SERVICE_IVORN.decode(),
+                             received_element.find('Response').text)
 
     def test_receive_authenticate(self):
         self.proto.stringReceived(DUMMY_AUTHENTICATE)
         received_element = etree.fromstring(self.tr.value()[4:])
         self.assertEqual("authenticate", received_element.attrib['role'])
-        self.assertEqual(DUMMY_SERVICE_IVORN.decode(),
-                         received_element.find('Response').text)
+        if self.IVOID:
+            self.assertEqual(DUMMY_SERVICE_IVORN.decode(),
+                             received_element.find('Response').text)
 
     def test_receive_valid_voevent(self):
         self.proto.stringReceived(DUMMY_VOEVENT)
         received_element = etree.fromstring(self.tr.value()[4:])
         self.assertEqual("ack", received_element.attrib['role'])
-        self.assertEqual(DUMMY_SERVICE_IVORN.decode(),
-                         received_element.find('Response').text)
+        if self.IVOID:
+            self.assertEqual(DUMMY_SERVICE_IVORN.decode(),
+                             received_element.find('Response').text)
         self.assertEqual(DUMMY_EVENT_IVORN.decode(),
                          received_element.find('Origin').text)
 
@@ -116,7 +125,14 @@ class VOEventSubscriberTestCase(unittest.TestCase):
         self.proto.stringReceived(DUMMY_VOEVENT)
         received_element = etree.fromstring(self.tr.value()[4:])
         self.assertEqual("ack", received_element.attrib['role'])
-        self.assertEqual(DUMMY_SERVICE_IVORN.decode(),
-                         received_element.find('Response').text)
+        if self.IVOID:
+            self.assertEqual(DUMMY_SERVICE_IVORN.decode(),
+                             received_element.find('Response').text)
         self.assertEqual(DUMMY_EVENT_IVORN.decode(),
                          received_element.find('Origin').text)
+
+class VOEventSubscriberWithID(VOEventSubscriberTestCase, unittest.TestCase):
+    IVOID = DUMMY_SERVICE_IVORN
+
+class VOEventSubscriberWithoutID(VOEventSubscriberTestCase, unittest.TestCase):
+    IVOID = None
