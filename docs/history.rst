@@ -30,11 +30,16 @@ In Development
 - Log the return code of failed external commands at level ``WARN``. Log
   standard output and error at level ``DEBUG``.
 
+- Automatically create the event DB directory if it doesn't exist. Thanks to
+  Tim Staley for the suggestion. (`GitHub #54`_, `GitHub #55`_)
+
 .. _does not fully support Python 3: https://twistedmatrix.com/trac/milestone/Python-3.x
 .. _Twisted 16.0: http://labs.twistedmatrix.com/2016/03/twisted-160-released.html
 .. _GitHub #10: https://github.com/jdswinbank/Comet/issues/10
 .. _GitHub #39: https://github.com/jdswinbank/Comet/issues/39
 .. _GitHub #41: https://github.com/jdswinbank/Comet/issues/41
+.. _GitHub #54: https://github.com/jdswinbank/Comet/issues/54
+.. _GitHub #55: https://github.com/jdswinbank/Comet/issues/55
 
 Version 2.0.x
 -------------

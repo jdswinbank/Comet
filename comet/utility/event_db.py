@@ -22,7 +22,7 @@ __all__ = ["Event_DB"]
 
 class Event_DB(object):
     def __init__(self, root):
-        self.root = root
+        self.root = self._ensure_dir(root)
         self.databases = defaultdict(Lock)
 
     @staticmethod
@@ -31,6 +31,24 @@ class Event_DB(object):
         db_path = os.path.join(auth, rsrc).replace(os.path.sep, "_")
         key = sha1(event.raw_bytes).hexdigest()
         return db_path, key
+
+    @staticmethod
+    def _ensure_dir(path):
+        """
+        Check that ``path`` exists, is a directory, and has appropriate
+        permissions for use as an event database.
+        """
+        # This check can't be bulletproof: there's nothing we can do to
+        # prevent directories being removed or permissions being changed after
+        # we've started. The aim here is to fail fast on startup for the sake
+        # of user convenience, rather than to take robust security precautions.
+        if not os.path.exists(path):
+            os.makedirs(path)
+        elif not os.path.isdir(path):
+            raise RuntimeError("Event database is not a directory.")
+        elif not os.access(path, os.R_OK | os.W_OK | os.X_OK):
+            raise RuntimeError("Insufficient permissions to manipulate event database.")
+        return path
 
     def check_event(self, event):
         """
