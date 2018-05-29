@@ -2,6 +2,8 @@
 # Tests for VTP messages.
 
 import os
+from datetime import datetime
+
 import lxml.etree as etree
 from twisted.trial import unittest
 
@@ -20,33 +22,40 @@ class TransportTestCase(unittest.TestCase):
             )
         )
 
-    def test_iamalive_valid(self):
-        message = iamalive(DUMMY_SERVICE_IVORN)
+    def _check_message(self, message):
+        """
+        Check that the provided message:
+
+        - Is valid per the transport schema;
+        - Has all TimeStamps marked as UTC (ie, with a 'Z' suffix).
+        """
         self.assertTrue(self.schema.validate(message.element))
+        for timestamp in message.element.findall("TimeStamp"):
+            datetime.strptime(timestamp.text, "%Y-%m-%dT%H:%M:%SZ")
+
+    def test_iamalive_valid(self):
+        self._check_message(iamalive(DUMMY_SERVICE_IVORN))
 
     def test_iamaliveresponse_valid(self):
-        message = iamaliveresponse(DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN)
-        self.assertTrue(self.schema.validate(message.element))
+        self._check_message(iamaliveresponse(DUMMY_SERVICE_IVORN,
+                                             DUMMY_SERVICE_IVORN))
 
     def test_ack_valid(self):
-        message = ack(DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN)
-        self.assertTrue(self.schema.validate(message.element))
+        self._check_message(ack(DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN))
 
     def test_nak_valid(self):
-        message = nak(DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN)
-        self.assertTrue(self.schema.validate(message.element))
+        self._check_message(nak(DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN))
 
     def test_nak_with_result_valid(self):
-        message = nak(DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN, "reason")
-        self.assertTrue(self.schema.validate(message.element))
+        self._check_message(nak(DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN,
+                                "reason"))
 
     def test_authenticate_valid(self):
-        message = authenticate(DUMMY_SERVICE_IVORN)
-        self.assertTrue(self.schema.validate(message.element))
+        self._check_message(authenticate(DUMMY_SERVICE_IVORN))
 
     def test_authenticateresponse_valid(self):
-        message = authenticateresponse(DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN, [])
-        self.assertTrue(self.schema.validate(message.element))
+        self._check_message(authenticateresponse(DUMMY_SERVICE_IVORN,
+                                                 DUMMY_SERVICE_IVORN, []))
 
     def test_authenticateresponse_valid_filter(self):
         filters = ["test1<>?!", "test2<>?!"]
@@ -54,4 +63,4 @@ class TransportTestCase(unittest.TestCase):
         filter_elems = message.element.findall("Meta/Param[@name=\"xpath-filter\"]")
         for inp, outp in zip(filters, filter_elems):
             self.assertEqual(inp, outp.get('value'))
-        self.assertTrue(self.schema.validate(message.element))
+        self._check_message(message)
