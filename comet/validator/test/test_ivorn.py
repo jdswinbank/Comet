@@ -1,5 +1,5 @@
 # Comet VOEvent Broker.
-# Test to wwed out bad IVORNs.
+# Test to weed out bad IVORNs.
 
 from twisted.trial import unittest
 
