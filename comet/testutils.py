@@ -11,8 +11,8 @@ from comet.protocol.messages import authenticateresponse
 
 # All dummy event text should be RAW BYTES, as received over the network.
 
-DUMMY_EVENT_IVORN = u"ivo://comet.broker/test#1234567890".encode('UTF-8')
-DUMMY_SERVICE_IVORN = u"ivo://comet.broker/test".encode('UTF-8')
+DUMMY_EVENT_IVOID = u"ivo://comet.broker/test#1234567890".encode('UTF-8')
+DUMMY_SERVICE_IVOID = u"ivo://comet.broker/test".encode('UTF-8')
 
 DUMMY_IAMALIVE = u"""
     <?xml version=\'1.0\' encoding=\'UTF-8\'?>
@@ -24,7 +24,7 @@ DUMMY_IAMALIVE = u"""
         <Origin>%s</Origin>
         <TimeStamp>2012-01-01T00:00:00Z</TimeStamp>
     </trn:Transport>
-""" % (DUMMY_EVENT_IVORN.decode(),)
+""" % (DUMMY_EVENT_IVOID.decode(),)
 DUMMY_IAMALIVE = textwrap.dedent(DUMMY_IAMALIVE).strip().encode('UTF-8')
 
 DUMMY_AUTHENTICATE = u"""
@@ -37,7 +37,7 @@ DUMMY_AUTHENTICATE = u"""
         <Origin>%s</Origin>
         <TimeStamp>2012-01-01T00:00:00Z</TimeStamp>
     </trn:Transport>
-""" % (DUMMY_EVENT_IVORN.decode(),)
+""" % (DUMMY_EVENT_IVOID.decode(),)
 DUMMY_AUTHENTICATE = textwrap.dedent(DUMMY_AUTHENTICATE).strip().encode('UTF-8')
 
 DUMMY_VOEVENT = u"""
@@ -52,7 +52,7 @@ DUMMY_VOEVENT = u"""
             <Date>2012-01-01T00:00:00</Date>
         </Who>
     </voe:VOEvent>
-""" % (DUMMY_EVENT_IVORN.decode(), DUMMY_SERVICE_IVORN.decode())
+""" % (DUMMY_EVENT_IVOID.decode(), DUMMY_SERVICE_IVOID.decode())
 DUMMY_VOEVENT = textwrap.dedent(DUMMY_VOEVENT).strip().encode('UTF-8')
 
 DUMMY_ACK = u"""
@@ -66,7 +66,7 @@ DUMMY_ACK = u"""
         <Response>%s</Response>
         <TimeStamp>2012-01-01T00:00:00Z</TimeStamp>
     </trn:Transport>
-""" % (DUMMY_SERVICE_IVORN.decode(), DUMMY_SERVICE_IVORN.decode())
+""" % (DUMMY_SERVICE_IVOID.decode(), DUMMY_SERVICE_IVOID.decode())
 DUMMY_ACK = textwrap.dedent(DUMMY_ACK).strip().encode('UTF-8')
 
 DUMMY_NAK = u"""
@@ -80,7 +80,7 @@ DUMMY_NAK = u"""
         <Response>%s</Response>
         <TimeStamp>2012-01-01T00:00:00Z</TimeStamp>
     </trn:Transport>
-""" % (DUMMY_SERVICE_IVORN.decode(), DUMMY_SERVICE_IVORN.decode())
+""" % (DUMMY_SERVICE_IVOID.decode(), DUMMY_SERVICE_IVOID.decode())
 DUMMY_NAK = textwrap.dedent(DUMMY_NAK).strip().encode('UTF-8')
 
 DUMMY_AUTHENTICATE_RESPONSE_LEGACY = u"""
@@ -97,19 +97,19 @@ DUMMY_AUTHENTICATE_RESPONSE_LEGACY = u"""
             <filter type="xpath">%s</filter>
         </Meta>
     </trn:Transport>
-""" % (DUMMY_SERVICE_IVORN.decode(), DUMMY_SERVICE_IVORN.decode(), "%s")
+""" % (DUMMY_SERVICE_IVOID.decode(), DUMMY_SERVICE_IVOID.decode(), "%s")
 DUMMY_AUTHENTICATE_RESPONSE_LEGACY = textwrap.dedent(
     DUMMY_AUTHENTICATE_RESPONSE_LEGACY
 ).strip().encode('UTF-8')
 
 DUMMY_AUTHENTICATE_RESPONSE = partial(
-    authenticateresponse, DUMMY_SERVICE_IVORN, DUMMY_SERVICE_IVORN
+    authenticateresponse, DUMMY_SERVICE_IVOID, DUMMY_SERVICE_IVOID
 )
 
 class DummyEvent(object):
-    def __init__(self, ivorn=DUMMY_EVENT_IVORN):
-        self.attrib = {'ivorn': ivorn}
-        self.raw_bytes = DUMMY_VOEVENT.replace(DUMMY_EVENT_IVORN, ivorn)
+    def __init__(self, ivoid=DUMMY_EVENT_IVOID):
+        self.attrib = {'ivorn': ivoid}
+        self.raw_bytes = DUMMY_VOEVENT.replace(DUMMY_EVENT_IVOID, ivoid)
         self.element = etree.fromstring(self.raw_bytes)
 
 class DummyLogObserver(object):

@@ -10,11 +10,11 @@ from twisted.trial import unittest
 import comet
 from comet.utility import broker_test_message
 from comet.utility import parse_ivoid
-from comet.testutils import DUMMY_SERVICE_IVORN
+from comet.testutils import DUMMY_SERVICE_IVOID
 
 class broker_test_messageTestCase(unittest.TestCase):
     def setUp(self):
-        self.message = broker_test_message(DUMMY_SERVICE_IVORN.decode())
+        self.message = broker_test_message(DUMMY_SERVICE_IVOID.decode())
 
     def test_valid(self):
         schema = etree.XMLSchema(

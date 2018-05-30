@@ -7,25 +7,25 @@ from twisted.internet import task
 from twisted.trial import unittest
 from twisted.test import proto_helpers
 
-from comet.testutils import DUMMY_VOEVENT, DUMMY_SERVICE_IVORN
+from comet.testutils import DUMMY_VOEVENT, DUMMY_SERVICE_IVOID
 
 from comet.protocol.receiver import VOEventReceiver, VOEventReceiverFactory
 
 class VOEventReceiverFactoryTestCase(unittest.TestCase):
     def setUp(self):
-        self.factory = VOEventReceiverFactory(DUMMY_SERVICE_IVORN)
+        self.factory = VOEventReceiverFactory(DUMMY_SERVICE_IVOID)
 
     def test_protocol(self):
         self.assertEqual(self.factory.protocol, VOEventReceiver)
 
     def test_contents(self):
-        self.assertEqual(self.factory.local_ivo, DUMMY_SERVICE_IVORN)
+        self.assertEqual(self.factory.local_ivo, DUMMY_SERVICE_IVOID)
         self.assertFalse(self.factory.validators) # Should be empty
         self.assertFalse(self.factory.handlers)   # Should be empty
 
 class VOEventReceiverTestCase(unittest.TestCase):
     def setUp(self):
-        self.factory = VOEventReceiverFactory(DUMMY_SERVICE_IVORN)
+        self.factory = VOEventReceiverFactory(DUMMY_SERVICE_IVOID)
         self.proto = self.factory.buildProtocol(('127.0.0.1', 0))
         self.clock = task.Clock()
         self.proto.callLater = self.clock.callLater

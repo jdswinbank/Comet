@@ -7,7 +7,7 @@ from twisted.internet import task
 from twisted.trial import unittest
 from twisted.test import proto_helpers
 
-from comet.testutils import (DUMMY_EVENT_IVORN, DUMMY_SERVICE_IVORN,
+from comet.testutils import (DUMMY_EVENT_IVOID, DUMMY_SERVICE_IVOID,
                              DUMMY_IAMALIVE, DUMMY_AUTHENTICATE,
                              DUMMY_VOEVENT)
 
@@ -17,7 +17,7 @@ from comet.protocol.subscriber import (VOEventSubscriber,
 class VOEventSubscriberFactoryTestCase(unittest.TestCase):
     def setUp(self):
         self.clock = task.Clock()
-        self.factory = VOEventSubscriberFactory(DUMMY_EVENT_IVORN)
+        self.factory = VOEventSubscriberFactory(DUMMY_EVENT_IVOID)
         self.factory.callLater = self.clock.callLater
         self.transport = proto_helpers.StringTransportWithDisconnection()
         self.proto = self.factory.buildProtocol(('127.0.0.1', 0))
@@ -43,7 +43,7 @@ class VOEventSubscriberFactoryTestCase(unittest.TestCase):
 
 class VOEventSubscriberTimeoutTestCase(unittest.TestCase):
     def setUp(self):
-        factory = VOEventSubscriberFactory(DUMMY_EVENT_IVORN)
+        factory = VOEventSubscriberFactory(DUMMY_EVENT_IVOID)
         self.clock = task.Clock()
         factory.callLater = self.clock.callLater
         self.proto = factory.buildProtocol(('127.0.0.1', 0))
@@ -97,7 +97,7 @@ class VOEventSubscriberTestCase(object):
         received_element = etree.fromstring(self.tr.value()[4:])
         self.assertEqual("iamalive", received_element.attrib['role'])
         if self.IVOID:
-            self.assertEqual(DUMMY_SERVICE_IVORN.decode(),
+            self.assertEqual(DUMMY_SERVICE_IVOID.decode(),
                              received_element.find('Response').text)
 
     def test_receive_authenticate(self):
@@ -105,7 +105,7 @@ class VOEventSubscriberTestCase(object):
         received_element = etree.fromstring(self.tr.value()[4:])
         self.assertEqual("authenticate", received_element.attrib['role'])
         if self.IVOID:
-            self.assertEqual(DUMMY_SERVICE_IVORN.decode(),
+            self.assertEqual(DUMMY_SERVICE_IVOID.decode(),
                              received_element.find('Response').text)
 
     def test_receive_valid_voevent(self):
@@ -113,9 +113,9 @@ class VOEventSubscriberTestCase(object):
         received_element = etree.fromstring(self.tr.value()[4:])
         self.assertEqual("ack", received_element.attrib['role'])
         if self.IVOID:
-            self.assertEqual(DUMMY_SERVICE_IVORN.decode(),
+            self.assertEqual(DUMMY_SERVICE_IVOID.decode(),
                              received_element.find('Response').text)
-        self.assertEqual(DUMMY_EVENT_IVORN.decode(),
+        self.assertEqual(DUMMY_EVENT_IVOID.decode(),
                          received_element.find('Origin').text)
 
     def test_receive_invalid_voevent(self):
@@ -126,13 +126,13 @@ class VOEventSubscriberTestCase(object):
         received_element = etree.fromstring(self.tr.value()[4:])
         self.assertEqual("ack", received_element.attrib['role'])
         if self.IVOID:
-            self.assertEqual(DUMMY_SERVICE_IVORN.decode(),
+            self.assertEqual(DUMMY_SERVICE_IVOID.decode(),
                              received_element.find('Response').text)
-        self.assertEqual(DUMMY_EVENT_IVORN.decode(),
+        self.assertEqual(DUMMY_EVENT_IVOID.decode(),
                          received_element.find('Origin').text)
 
 class VOEventSubscriberWithID(VOEventSubscriberTestCase, unittest.TestCase):
-    IVOID = DUMMY_SERVICE_IVORN
+    IVOID = DUMMY_SERVICE_IVOID
 
 class VOEventSubscriberWithoutID(VOEventSubscriberTestCase, unittest.TestCase):
     IVOID = None
