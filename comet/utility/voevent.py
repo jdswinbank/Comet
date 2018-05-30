@@ -17,8 +17,8 @@ __all__ = ["parse_ivorn", "broker_test_message"]
 ElementTree.register_namespace("voe", "http://www.ivoa.net/xml/VOEvent/v2.0")
 
 IVORN_RE = re.compile("""ivo://
-                         (?P<auth>[a-zA-Z0-9][\w\-.~*'()]{2,}) /     # Authority
-                         (?P<rsrc>[\w\-\.~\*'()/]*) \#?              # Resource name
+                         (?P<auth>[a-zA-Z0-9][\w\-.~*'()]{2,})       # Authority
+                         (?P<rsrc>/[\w\-\.~\*'()/]*)? \#?            # Resource name
                          (?P<localID>[\w\-\.~\*'()\+=/%!$&,;:@?]*) $ # Fragment
                       """, re.VERBOSE)
 
@@ -26,20 +26,30 @@ def parse_ivorn(ivorn):
     """
     Takes an IVORN of the form
 
-        ivo://authorityID/resourceKey#local_ID
+        ivo://[authorityID][resourceKey]#[local_ID]
 
     and returns (authorityID, resourceKey, local_ID). Raise if that isn't
     possible.
 
-    Refer to the IVOA Identifiers Recommendation (1.12) for justification, but
-    note that document is not as clear as unambiguous as one might hope. We
-    have assumed that anything which is not explicitly permitted is forbitten
-    in the authority and the resource name, while anything which would be
-    permitted in an RFC-3986 URI is permitted in the fragment.
+    Note that the resourceKey will normally start with a slash. This is part
+    of the key, and this function will not trim it.
+
+    Refer to the IVOA Identifiers Recommendation (2.0) for details.
     """
     try:
-        return IVORN_RE.match(ivorn).groups()
-    except AttributeError as e:
+        groups = IVORN_RE.match(ivorn).groups()
+
+        # If there's n
+        rsrc = groups[1] if groups[1] is not None else ""
+
+        # These may not appear in the resource key per IVOA Identifiers
+        # Version 2.0 \S2.3.3.
+        for forbidden in ['//', '/../', '/./']:
+            assert(forbidden not in rsrc)
+        assert(not rsrc.endswith('/'))
+
+        return groups[0], rsrc, groups[2]
+    except (AttributeError, AssertionError) as e:
         log.debug("Failed to parse as IVORN: ", str(e))
         raise Exception("Invalid IVORN: %s" % (ivorn,))
 
