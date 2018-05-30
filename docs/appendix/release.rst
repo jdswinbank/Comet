@@ -36,16 +36,16 @@ The release will correspond to a particular commit in which we set the version
 number. After all the other commits which will constitute the release have
 been committed to the release branch, edit the file ``comet/__init__.py`` and
 set the ``__version__`` variable appropriately. Also make sure the release
-history page ``docs/appendix/history.rst`` contains the date of the new
-release. Commit this change with an appropriate log message::
+history page ``docs/history.rst`` contains the date of the new release. Commit
+this change with an appropriate log message::
 
   $ vim comet/__init__.py
-  $ vim docs/appendix/history.rst
-  $ git commit comet/__init__.py -m "Set version N.M.P"
+  $ vim docs/history.rst
+  $ git commit comet/__init__.py docs/history.rst -m "Set version N.M.P."
 
 Next tag the release with the version number::
 
-  $ git tag "N.M.P" -m "Comet release N.M.P"
+  $ git tag "N.M.P" -m "Comet release N.M.P."
 
 Push everything, including the tag, to GitHub::
 
