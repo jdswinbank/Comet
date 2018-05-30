@@ -3,7 +3,7 @@
 
 from zope.interface import implementer
 from comet.icomet import IValidator
-from comet.utility import parse_ivorn
+from comet.utility import parse_ivoid
 
 __all__ = ["CheckIVORN"]
 
@@ -16,7 +16,7 @@ class CheckIVORN(object):
     following a #).
     """
     def __call__(self, event):
-        # parse_ivorn() raises if whatever it's being parsed
-        auth, rsrc, local_ID = parse_ivorn(event.element.attrib['ivorn'])
+        # parse_ivoid() raises if whatever it is passed is unparseable.
+        auth, rsrc, local_ID = parse_ivoid(event.element.attrib['ivorn'])
         if not local_ID:
             raise Exception("No per-event local ID")

@@ -3,7 +3,7 @@
 
 from twisted.python import usage
 from comet import BINARY_TYPE
-from comet.utility.voevent import parse_ivorn
+from comet.utility.voevent import parse_ivoid
 
 __all__ = ["BaseOptions"]
 
@@ -19,7 +19,7 @@ class BaseOptions(usage.Options):
         if isinstance(local_ivo, BINARY_TYPE):
             local_ivo = local_ivo.decode()
         try:
-            parse_ivorn(local_ivo)
+            parse_ivoid(local_ivo)
         except Exception as e:
             raise usage.UsageError("Invalid IVOA identifier: %s\n  "
                   "Required format: ivo://authorityID/resourceKey#local_ID" % local_ivo)

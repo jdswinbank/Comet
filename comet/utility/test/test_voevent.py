@@ -9,7 +9,7 @@ from twisted.trial import unittest
 
 import comet
 from comet.utility import broker_test_message
-from comet.utility import parse_ivorn
+from comet.utility import parse_ivoid
 from comet.testutils import DUMMY_SERVICE_IVORN
 
 class broker_test_messageTestCase(unittest.TestCase):
@@ -24,7 +24,7 @@ class broker_test_messageTestCase(unittest.TestCase):
         )
         self.assertTrue(schema.validate(self.message.element))
 
-class parse_ivornTestCase(unittest.TestCase):
+class parse_ivoidTestCase(unittest.TestCase):
     # Character classes as defined by the IVOA Identifiers spec, 1.12
     ALPHANUM = string.ascii_letters + string.digits
     MARK = "-_."
@@ -33,18 +33,18 @@ class parse_ivornTestCase(unittest.TestCase):
     RESERVED = "?;:@!&$,"
     DISALLOWED = "<>#%\"`?{}|\\^[]+="
 
-    def _build_ivorn(self, auth, rsrc, local):
+    def _build_ivoid(self, auth, rsrc, local):
         return "ivo://%s%s#%s" % (auth, rsrc, local)
 
     def _bad_parse(self, auth, rsrc, local):
-        # IVORN parsing should fail: parse_ivorn() raises.
-        ivorn = self._build_ivorn(auth, rsrc, local)
-        self.assertRaises(Exception, parse_ivorn, ivorn)
+        # IVOID parsing should fail: parse_ivoid() raises.
+        ivoid = self._build_ivoid(auth, rsrc, local)
+        self.assertRaises(Exception, parse_ivoid, ivoid)
 
     def _good_parse(self, auth, rsrc, local):
-        # IVORN should be parsed and inputs recovered.
-        ivorn = self._build_ivorn(auth, rsrc, local)
-        self.assertEqual(parse_ivorn(ivorn), (auth, rsrc, local))
+        # IVOID should be parsed and inputs recovered.
+        ivoid = self._build_ivoid(auth, rsrc, local)
+        self.assertEqual(parse_ivoid(ivoid), (auth, rsrc, local))
 
     def test_simple(self):
         for auth, rsrc, local in [
@@ -58,16 +58,16 @@ class parse_ivornTestCase(unittest.TestCase):
 
     def test_no_fragment(self):
         auth, rsrc = "authorityID", "/resourceKey"
-        ivorn = "ivo://%s%s" % (auth, rsrc)
-        self.assertEqual((auth, rsrc, ''), parse_ivorn(ivorn))
+        ivoid = "ivo://%s%s" % (auth, rsrc)
+        self.assertEqual((auth, rsrc, ''), parse_ivoid(ivoid))
 
-    def test_partial_ivorn(self):
-        for ivorn in [
+    def test_partial_ivoid(self):
+        for ivoid in [
             "ivo://#localID",
             "ivo:///resourceKey#",
             "ivo://"
         ]:
-            self.assertRaises(Exception, parse_ivorn, ivorn)
+            self.assertRaises(Exception, parse_ivoid, ivoid)
 
     def test_authority_id(self):
         # Per IVOA Identifiers spec:
@@ -152,5 +152,5 @@ class parse_ivornTestCase(unittest.TestCase):
         # This one is special, because we have no way to tell that
         # "ivo://authreskey#local" isn't a valid IVOID with no resource key.
         # We expect the parse to be wrong, and we can't do anything about it!
-        self.assertNotEqual(parse_ivorn("ivo://authreskey#local"),
+        self.assertNotEqual(parse_ivoid("ivo://authreskey#local"),
                                        ("auth", "reskey", "local"))

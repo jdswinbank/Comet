@@ -12,19 +12,19 @@ from comet import __version__, __url__
 import comet.log as log
 from comet.utility.xml import xml_document
 
-__all__ = ["parse_ivorn", "broker_test_message"]
+__all__ = ["parse_ivoid", "broker_test_message"]
 
 ElementTree.register_namespace("voe", "http://www.ivoa.net/xml/VOEvent/v2.0")
 
-IVORN_RE = re.compile("""ivo://
+IVOID_RE = re.compile("""ivo://
                          (?P<auth>[a-zA-Z0-9][\w\-.~*'()]{2,})       # Authority
                          (?P<rsrc>/[\w\-\.~\*'()/]*)? \#?            # Resource name
                          (?P<localID>[\w\-\.~\*'()\+=/%!$&,;:@?]*) $ # Fragment
                       """, re.VERBOSE)
 
-def parse_ivorn(ivorn):
+def parse_ivoid(ivoid):
     """
-    Takes an IVORN of the form
+    Takes an IVOID of the form
 
         ivo://[authorityID][resourceKey]#[local_ID]
 
@@ -37,7 +37,7 @@ def parse_ivorn(ivorn):
     Refer to the IVOA Identifiers Recommendation (2.0) for details.
     """
     try:
-        groups = IVORN_RE.match(ivorn).groups()
+        groups = IVOID_RE.match(ivoid).groups()
 
         # If there's n
         rsrc = groups[1] if groups[1] is not None else ""
@@ -50,8 +50,8 @@ def parse_ivorn(ivorn):
 
         return groups[0], rsrc, groups[2]
     except (AttributeError, AssertionError) as e:
-        log.debug("Failed to parse as IVORN: ", str(e))
-        raise Exception("Invalid IVORN: %s" % (ivorn,))
+        log.debug("Failed to parse as IVOID: ", str(e))
+        raise Exception("Invalid IVOID: %s" % (ivoid,))
 
 def broker_test_message(ivo):
     """
@@ -66,8 +66,8 @@ def broker_test_message(ivo):
         }
     )
     who = ElementTree.SubElement(root_element, "Who")
-    author_ivorn = ElementTree.SubElement(who, "AuthorIVORN")
-    author_ivorn.text = ivo
+    author_ivoid = ElementTree.SubElement(who, "AuthorIVORN")
+    author_ivoid.text = ivo
     date = ElementTree.SubElement(who, "Date")
     date.text = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
     what = ElementTree.SubElement(root_element, "What")
