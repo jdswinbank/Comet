@@ -44,8 +44,14 @@ In Development
   don't reject transport messages from the remote end of a connection which
   don't do this.) (`GitHub #52`_)
 
+- Events submitted by authors to the broker running in ``--receive`` mode are
+  now required to have IVORNs which validate according to the `IVOA
+  Identifiers Version 2.0`_ specification for IVOIDs. This is somewhat better
+  defined than the earlier (version 1.12) specification for IVORNs.
+
 .. _does not fully support Python 3: https://twistedmatrix.com/trac/milestone/Python-3.x
 .. _Twisted 16.0: http://labs.twistedmatrix.com/2016/03/twisted-160-released.html
+.. _IVOA Identifiers Version 2.0_: http://www.ivoa.net/documents/IVOAIdentifiers/20160523/index.html
 .. _GitHub #10: https://github.com/jdswinbank/Comet/issues/10
 .. _GitHub #39: https://github.com/jdswinbank/Comet/issues/39
 .. _GitHub #41: https://github.com/jdswinbank/Comet/issues/41

@@ -26,7 +26,7 @@ from comet.protocol import VOEventBroadcasterFactory
 from comet.protocol import VOEventReceiverFactory
 from comet.protocol import VOEventSubscriberFactory
 from comet.utility import Event_DB, BaseOptions, WhitelistingFactory
-from comet.validator import CheckIVORN, CheckPreviouslySeen, CheckSchema
+from comet.validator import CheckIVOID, CheckPreviouslySeen, CheckSchema
 
 # Handlers and plugins
 import comet.plugins
@@ -186,7 +186,7 @@ def makeService(config):
                 CheckSchema(
                     os.path.join(comet.__path__[0], "schema/VOEvent-v2.0.xsd")
                 ),
-                CheckIVORN()
+                CheckIVOID()
             ],
             handlers=config['handlers']
         )
