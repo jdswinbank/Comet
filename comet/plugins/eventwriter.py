@@ -24,14 +24,14 @@ def string_to_filename(input_string):
     )
 
 @contextmanager
-def event_file(ivorn, dirname=None):
+def event_file(ivoid, dirname=None):
     # Return a file object into which we can write an event.
     # If a directory is specified, write into that; otherwise, use the cwd.
     # We use a lock to ensure we don't clobber other files with the same name.
     if not dirname:
         dirname=os.getcwd()
-    fname = os.path.join(dirname, string_to_filename(ivorn))
-    lock = lockfile.FilesystemLock(string_to_filename(ivorn) + "-lock")
+    fname = os.path.join(dirname, string_to_filename(ivoid))
+    lock = lockfile.FilesystemLock(string_to_filename(ivoid) + "-lock")
     lock.lock()
     try:
         while os.path.exists(fname):

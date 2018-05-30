@@ -16,7 +16,7 @@ from twisted.internet.threads import deferToThread
 from twisted.internet.defer import DeferredList
 
 import comet.log as log
-from comet.utility.voevent import parse_ivorn
+from comet.utility.voevent import parse_ivoid
 
 __all__ = ["Event_DB"]
 
@@ -27,7 +27,7 @@ class Event_DB(object):
 
     @staticmethod
     def _get_event_details(event):
-        auth, rsrc, local = parse_ivorn(event.element.attrib['ivorn'])
+        auth, rsrc, local = parse_ivoid(event.element.attrib['ivorn'])
         db_path = os.path.join(auth, rsrc).replace(os.path.sep, "_")
         key = sha1(event.raw_bytes).hexdigest()
         return db_path, key
@@ -58,7 +58,7 @@ class Event_DB(object):
         try:
             db_path, key = self._get_event_details(event)
         except Exception as e:
-            log.warn("Unparseable IVORN; failing eventdb lookup");
+            log.warn("Unparseable IVOID; failing eventdb lookup");
         else:
             with self.databases[db_path]: # Acquire lock
                 with closing(anydbm.open(os.path.join(self.root, db_path), 'c')) as db:

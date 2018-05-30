@@ -11,7 +11,7 @@ from twisted.test import proto_helpers
 from comet.testutils import (DUMMY_IAMALIVE, DUMMY_ACK, DUMMY_NAK,
                              DUMMY_AUTHENTICATE_RESPONSE,
                              DUMMY_AUTHENTICATE_RESPONSE_LEGACY,
-                             DUMMY_SERVICE_IVORN, DummyEvent)
+                             DUMMY_SERVICE_IVOID, DummyEvent)
 from comet.service.broker import BCAST_TEST_INTERVAL
 
 from comet.protocol.broadcaster import VOEventBroadcaster, VOEventBroadcasterFactory
@@ -31,7 +31,7 @@ class DummyBroadcaster(object):
 class VOEventBroadcasterFactoryTestCaseBase(unittest.TestCase):
     def setUp(self, test_interval=BCAST_TEST_INTERVAL):
         self.factory = VOEventBroadcasterFactory(
-            DUMMY_SERVICE_IVORN.decode(), test_interval
+            DUMMY_SERVICE_IVOID.decode(), test_interval
         )
         self.factory.alive_loop.clock = task.Clock()
         self.factory.test_loop.clock = task.Clock()
@@ -75,7 +75,7 @@ class VOEventBroadcasterFactoryNoTestEventsTestCase(VOEventBroadcasterFactoryTes
 class VOEventBroadcasterTestCase(unittest.TestCase):
     def setUp(self):
         self.factory = VOEventBroadcasterFactory(
-            DUMMY_SERVICE_IVORN.decode(), BCAST_TEST_INTERVAL
+            DUMMY_SERVICE_IVOID.decode(), BCAST_TEST_INTERVAL
         )
         self.factory.alive_loop.clock = task.Clock()
         self.factory.test_loop.clock = task.Clock()
@@ -95,7 +95,7 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
     def test_sent_authenticate(self):
         received_element = etree.fromstring(self.tr.value()[4:])
         self.assertEqual("authenticate", received_element.attrib['role'])
-        self.assertEqual(DUMMY_SERVICE_IVORN.decode(), received_element.find('Origin').text)
+        self.assertEqual(DUMMY_SERVICE_IVOID.decode(), received_element.find('Origin').text)
 
     def test_sendIAmAlive(self):
         self.tr.clear()
@@ -103,7 +103,7 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
         self.factory.alive_loop.clock.advance(self.factory.IAMALIVE_INTERVAL)
         received_element = etree.fromstring(self.tr.value()[4:])
         self.assertEqual("iamalive", received_element.attrib['role'])
-        self.assertEqual(DUMMY_SERVICE_IVORN.decode(), received_element.find('Origin').text)
+        self.assertEqual(DUMMY_SERVICE_IVOID.decode(), received_element.find('Origin').text)
         self.assertEqual(self.proto.alive_count - init_alive_count, 1)
 
     def test_alive_timeout(self):

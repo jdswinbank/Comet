@@ -13,14 +13,14 @@ from comet.service.broker import BCAST_TEST_INTERVAL
 from comet.service.broker import DEFAULT_REMOTE_PORT
 from comet.service.broker import Options
 from comet.service.broker import makeService
-from comet.testutils import DUMMY_SERVICE_IVORN
+from comet.testutils import DUMMY_SERVICE_IVOID
 
 class DefaultOptionsTestCase(unittest.TestCase):
     def setUp(self):
         self.config = Options()
         # Note that parsing from the command line always results in a str,
         # regardless of whether we're running Python 2.
-        self.cmd_line = ["--local-ivo", DUMMY_SERVICE_IVORN.decode()]
+        self.cmd_line = ["--local-ivo", DUMMY_SERVICE_IVOID.decode()]
 
     def test_faulty_cmd_line(self):
         self.cmd_line.append("--not-a-real-option")
@@ -146,15 +146,15 @@ class DefaultOptionsTestCase(unittest.TestCase):
         self.config.parseOptions(self.cmd_line)
         self.assertEqual(log.LEVEL, log.DEFAULT_LEVEL)
 
-    def test_valid_ivorn(self):
+    def test_valid_ivoid(self):
         self.config.parseOptions(self.cmd_line)
-        self.assertEqual(self.config['local-ivo'], DUMMY_SERVICE_IVORN.decode())
+        self.assertEqual(self.config['local-ivo'], DUMMY_SERVICE_IVOID.decode())
 
-    def test_invalid_ivorn(self):
+    def test_invalid_ivoid(self):
         self.cmd_line.extend(["--local-ivo", "ivo://"])
         self.assertRaises(usage.UsageError, self.config.parseOptions, self.cmd_line)
 
-    def test_ivorn_missing(self):
+    def test_ivoid_missing(self):
         # It's fine not to provide an IVOID on the command line as of the VTP2
         # spec, as long as we're only operating as a subscriber.
         self.config.parseOptions("")

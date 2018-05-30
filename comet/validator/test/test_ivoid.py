@@ -1,12 +1,12 @@
 # Comet VOEvent Broker.
-# Test to wwed out bad IVORNs.
+# Test to weed out bad IVOIDs.
 
 from twisted.trial import unittest
 
 from comet.icomet import IValidator
 from comet.utility import xml_document
-from comet.validator import CheckIVORN
-from comet.testutils import DUMMY_VOEVENT, DUMMY_EVENT_IVORN
+from comet.validator import CheckIVOID
+from comet.testutils import DUMMY_VOEVENT, DUMMY_EVENT_IVOID
 
 BAD_EVENT_TEXT = u"""
 <voe:VOEvent xmlns:voe="http://www.ivoa.net/xml/VOEvent/v2.0"
@@ -22,7 +22,7 @@ BAD_EVENT_TEXT = u"""
 
 class CheckSchemaTestCase(unittest.TestCase):
     def setUp(self):
-        self.validator = CheckIVORN()
+        self.validator = CheckIVOID()
 
     def test_valid(self):
         # Should not raise
@@ -30,7 +30,7 @@ class CheckSchemaTestCase(unittest.TestCase):
 
     def test_invalid(self):
         self.assertRaises(Exception, self.validator,
-            xml_document(BAD_EVENT_TEXT.replace(DUMMY_EVENT_IVORN, b"bad_ivorn"))
+            xml_document(BAD_EVENT_TEXT.replace(DUMMY_EVENT_IVOID, b"bad_ivoid"))
         )
 
     def test_interface(self):

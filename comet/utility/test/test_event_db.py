@@ -76,12 +76,12 @@ class Event_DB_TestCase(unittest.TestCase):
         d.addCallback(done_prune)
         return d
 
-    def test_bad_ivorn(self):
+    def test_bad_ivoid(self):
         bad_event = DummyEvent(b"ivo://#")
         self.assertFalse(self.event_db.check_event(bad_event))
 
     def test_prune_bad_event(self):
-        bad_event = DummyEvent(ivorn=b"ivo://")
+        bad_event = DummyEvent(ivoid=b"ivo://")
         self.assertNotIn("", self.event_db.databases)
         # This event doesn't validate and is rejected.
         self.assertFalse(self.event_db.check_event(bad_event))

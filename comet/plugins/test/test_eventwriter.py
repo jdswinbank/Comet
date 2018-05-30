@@ -33,10 +33,11 @@ class StringToFilenameTestCase(unittest.TestCase):
 
 class EventFileTestCase(unittest.TestCase):
     def setUp(self):
-        self.ivorn = "ivo://test.ivorn/1234#5678"
-        with event_file(self.ivorn) as f:
+        self.ivoid = "ivo://test.ivoid/1234#5678"
+        with event_file(self.ivoid) as f:
             f.write("Test data")
-        self.filename = os.path.join(os.getcwd(), string_to_filename(self.ivorn))
+        self.filename = os.path.join(os.getcwd(),
+                                     string_to_filename(self.ivoid))
 
     def tearDown(self):
         os.unlink(self.filename)
@@ -49,13 +50,13 @@ class EventFileTestCase(unittest.TestCase):
             self.assertEqual(f.read(), "Test data")
 
     def test_dup_file(self):
-        self.ivorn = "ivo://test.ivorn/1234#5678"
-        with event_file(self.ivorn) as f:
+        self.ivoid = "ivo://test.ivoid/1234#5678"
+        with event_file(self.ivoid) as f:
             self.assertEqual(f.name, self.filename + ".")
 
     def test_temp_dir(self):
         with temp_dir() as tmpdir:
-            with event_file(self.ivorn, dirname=tmpdir) as f:
+            with event_file(self.ivoid, dirname=tmpdir) as f:
                 self.assertEqual(os.path.dirname(f.name), tmpdir)
 
 

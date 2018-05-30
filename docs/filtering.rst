@@ -50,3 +50,9 @@ Or messages from particular senders selected::
 
   //Who[AuthorIVORN="ivo://lofar.transients/"]
 
+.. note::
+
+   Although Comet and `current IVOA usage
+   <http://www.ivoa.net/documents/IVOAIdentifiers/20160523/index.html>`_
+   prefer the term “IVOID”, VOEvents themselves still use the older “IVORN”
+   terminology.

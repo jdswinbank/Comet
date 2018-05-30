@@ -9,7 +9,7 @@ from twisted.internet import defer
 from twisted.test import proto_helpers
 from twisted.internet.protocol import ServerFactory
 
-from comet.testutils import DummyEvent, DUMMY_EVENT_IVORN
+from comet.testutils import DummyEvent, DUMMY_EVENT_IVOID
 from comet.protocol.base import ElementSender, EventHandler
 
 class ElementSenderFactory(ServerFactory):
@@ -42,7 +42,7 @@ class ElementSenderTestCase(unittest.TestCase):
 
 class EventHandlerFactory(ServerFactory):
     protocol = EventHandler
-    local_ivo = DUMMY_EVENT_IVORN
+    local_ivo = DUMMY_EVENT_IVOID
 
 
 class Succeeds(object):
