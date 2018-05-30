@@ -95,13 +95,21 @@ Identification
 ++++++++++++++
 
 Comet identifies itself to other systems by means of an *International Virtual
-Observatory Resource Name* or *IVORN*: see the `VOEvent standard
-<http://www.ivoa.net/Documents/VOEvent/index.html>`_ for details. You should
-specify some appropriate IVORN for your site using the ``--local-ivo`` option.
-This is required when one or both of ``--receive`` or ``--broadcast`` is
-specified; it's optional, but will be used if provided, otherwise.  This
-should be of the format ``ivo://${organization}/${name}``; for example,
-``ivo://org.transientskp/comet_broker``.
+Observatory Identifier* or *IVOID*: see the `IVOA Identifiers Version 2.0
+standard <http://www.ivoa.net/documents/IVOAIdentifiers/20160523/index.html>`_
+for details.
+
+.. note::
+
+   The `VOEvent standard <http://www.ivoa.net/Documents/VOEvent/index.html>`_
+   uses the older term “IVORN” rather than IVOID; Comet prefers the more
+   modern usage.
+
+You should specify some appropriate IVOID for your site using the
+``--local-ivo`` option.  This is required when one or both of ``--receive`` or
+``--broadcast`` is specified; it's optional, but will be used if provided,
+otherwise.  This should be of the format ``ivo://${organization}/${name}``;
+for example, ``ivo://org.transientskp/comet_broker``.
 
 VOEvent Network Maintenance
 +++++++++++++++++++++++++++
@@ -178,7 +186,7 @@ The second plugin shipped with Comet is ``save-event``, which writes events to
 file. It is enabled with the ``--save-event`` option. By default, events are
 written to the default working directory (normally the directory in which you
 invoked Comet): this may be customized using the ``--save-event-directory=``
-option. The filename under which an event is saved is based on its IVORN, but
+option. The filename under which an event is saved is based on its IVOID, but
 modified to avoid characters which are awkard to work with on standard
 filesystems.
 
