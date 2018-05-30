@@ -1,7 +1,7 @@
 __description__ = "VOEvent Broker"
 __url__ = "http://comet.transientskp.org/"
 __author__ = "John Swinbank"
-__contact__ = "swinbank@princeton.edu"
+__contact__ = "john@swinbank.org"
 __version__ = "3.0.0a0"
 
 import sys
