@@ -57,9 +57,11 @@ release branch is marked as active (i.e. that documentation for that branch
 will be built). Normally, the most recent release should be marked as the
 "default version".
 
-Push an update to `PyPI <http://pypi.python.org>`_. Should be as simple as::
+Push an update to `PyPI <http://pypi.python.org>`_::
 
-  $ python setup.py sdist upload.
+  $ python setup.py sdist
+  $ pip install twine  # If it's not already installed.
+  $ twine upload dist/*
 
 Chance back to the ``master`` branch and increment the version number to
 indicate that it is now a pre-release of the next version of Comet (e.g.,
