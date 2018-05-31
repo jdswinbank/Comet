@@ -2,7 +2,7 @@ from distutils.core import setup
 import sys
 import comet
 
-with open('requirements%s.txt' % (sys.version_info.major,)) as f:
+with open('requirements.txt') as f:
     required = f.read().splitlines()
 
 setup(

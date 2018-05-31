@@ -4,6 +4,11 @@ Release History
 See the :doc:`release procedure <appendix/release>` section for more details
 on version numbering and how releases are made.
 
+Development Version
+-------------------
+
+- Python 2.7 support has been removed.
+
 Version 3.0.x
 -------------
 

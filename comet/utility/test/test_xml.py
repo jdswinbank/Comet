@@ -5,7 +5,6 @@ import textwrap
 import lxml.etree as etree
 
 from twisted.trial import unittest
-from comet import BINARY_TYPE
 from comet.utility import xml_document, ParseError
 
 EXAMPLE_XML = b"""<xml></xml>"""
@@ -50,7 +49,7 @@ class xml_document_tests(object):
         self.assertIsInstance(self.doc.element, etree._Element)
 
     def test_text(self):
-        self.assertIsInstance(self.doc.raw_bytes, BINARY_TYPE)
+        self.assertIsInstance(self.doc.raw_bytes, bytes)
 
 class xml_document_from_string_TestCase(unittest.TestCase, xml_document_tests):
     def setUp(self):

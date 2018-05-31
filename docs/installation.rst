@@ -19,16 +19,12 @@ Manual installation
 Requirements
 ^^^^^^^^^^^^
 
-Comet is developed targeting Python 2.7 with experimental support for Python
-3.4 and later. It depends upon:
+Comet is developed targeting Python 3.4 and later. It depends upon:
 
-* `Twisted <http://twistedmatrix.com/>`_ (version 11.1.0 or later for Python
-  2.7; 16.0 or later for Python 3.x);
+* `Twisted <http://twistedmatrix.com/>`_ (version 16.0 or later);
 * `lxml <http://lxml.de/>`_ (version 2.3 or later);
-* `zope.interface <http://docs.zope.org/zope.interface/>`_ (versions 3.6.0 or
-  later for Python 2.6; 4.1.1 or later for Python 3.x);
-* `py2-ipaddress <https://bitbucket.org/kwi/py2-ipaddress/>`_ (Python 2.7
-  only; not required for Python 3.x).
+* `zope.interface <http://docs.zope.org/zope.interface/>`_ (version 4.1.1 or
+  later);
 
 How you make these dependencies available on your system is up to your (or,
 perhaps, to your system administrator). However, the author strongly suggests

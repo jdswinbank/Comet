@@ -1,7 +1,6 @@
 # Comet VOEvent Broker.
 # XML document parsing.
 
-from comet import BINARY_TYPE
 import lxml.etree as ElementTree
 
 __all__ = ["ParseError", "xml_document"]
@@ -31,7 +30,7 @@ class xml_document(object):
     def get_raw_bytes(self):
         return self._raw_bytes
     def set_raw_bytes(self, value):
-        if not isinstance(value, BINARY_TYPE):
+        if not isinstance(value, bytes):
             raise ParseError("Raw bytes required.")
         self._raw_bytes = value
 

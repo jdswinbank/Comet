@@ -2,7 +2,6 @@
 # Base class for command line options.
 
 from twisted.python import usage
-from comet import BINARY_TYPE
 from comet.utility.voevent import parse_ivoid
 
 __all__ = ["BaseOptions"]
@@ -14,10 +13,6 @@ class BaseOptions(usage.Options):
     ]
 
     def opt_local_ivo(self, local_ivo):
-        # In Python 3, we should receive options as unicode strings. In Python
-        # 2, we'll get byte strings. Normalize so they are always unicode.
-        if isinstance(local_ivo, BINARY_TYPE):
-            local_ivo = local_ivo.decode()
         try:
             parse_ivoid(local_ivo)
         except Exception as e:
