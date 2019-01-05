@@ -10,6 +10,8 @@ from functools import reduce
 from itertools import repeat, permutations
 from multiprocessing.pool import ThreadPool
 from operator import __or__
+from sys import platform
+from unittest import skipIf
 
 from twisted.trial import unittest
 
@@ -36,9 +38,11 @@ class Event_DB_TestCase(unittest.TestCase):
         open(filename, 'w').close()
         self.assertRaises(RuntimeError, Event_DB, filename)
 
+    @skipIf(platform == "win32", "Not available on Windows.")
     def test_dir_is_unusable(self):
         # If the path specified for the Event_DB exists and is a directory,
         # but we don't have permissions to use it, fail fast.
+        # Note that os.chmod() isn't properly supported on Windows.
         filename = "event_db_test_%.5f" % (time.time(),)
         os.makedirs(filename)
         os.chmod(filename, 0)
