@@ -9,4 +9,4 @@ install:
   - pip install -r requirements${TRAVIS_PYTHON_VERSION:0:1}.txt
 script:
   - PYTHONPATH=. $(which trial) comet
-sudo: false
+dist: xenial
