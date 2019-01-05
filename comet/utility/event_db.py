@@ -28,7 +28,15 @@ class Event_DB(object):
     @staticmethod
     def _get_event_details(event):
         auth, rsrc, local = parse_ivoid(event.element.attrib['ivorn'])
-        db_path = os.path.join(auth, rsrc).replace(os.path.sep, "_")
+
+        # Although "/" isn't the path separator on Windows, it os.path.join()
+        # still gets confused if it appears in a filename.
+        db_path = (
+            os.path.join(auth, rsrc)
+            .replace(os.path.sep, "_")
+            .replace("/", "_")
+        )
+
         key = sha1(event.raw_bytes).hexdigest()
         return db_path, key
 
