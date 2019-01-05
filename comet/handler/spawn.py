@@ -55,25 +55,30 @@ class SpawnCommand(object):
         self.args.extend(args)
 
     def __call__(self, event):
-        d = defer.Deferred()
         log.info("Running external command: %s" % (self.cmd,))
-        reactor.spawnProcess(
-            SpawnCommandProtocol(d, event.raw_bytes),
-            self.cmd,
-            args=self.args,
-            env=os.environ
-        )
-        def log_reason(reason):
-            """
-            Catch a Failure returned from an unsuccessful process execution
-            and log the return value, then re-raise the error.
-            """
-            if not os.access(self.cmd, os.X_OK):
-                msg = "%s is not an executable" % (self.cmd,)
-            else:
+        d = defer.Deferred()
+        if not os.access(self.cmd, os.X_OK):
+            msg = "%s is not executable" % (self.cmd,)
+            log.warn(msg)
+            d.errback(Exception(msg))
+
+        else:
+            def log_reason(reason):
+                """
+                Catch a Failure returned from an unsuccessful process execution
+                and log the return value, then re-raise the error.
+                """
                 msg = "%s returned non-zero (%d)" % (self.cmd,
                                                      reason.value.exitCode)
-            log.warn(msg)
-            return reason
-        d.addErrback(log_reason)
+                log.warn(msg)
+                return reason
+
+            d.addErrback(log_reason)
+
+            reactor.spawnProcess(
+                SpawnCommandProtocol(d, event.raw_bytes),
+                self.cmd,
+                args=self.args,
+                env=os.environ
+            )
         return d
