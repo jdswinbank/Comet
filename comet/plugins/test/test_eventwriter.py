@@ -50,7 +50,6 @@ class EventFileTestCase(unittest.TestCase):
             self.assertEqual(f.read(), "Test data")
 
     def test_dup_file(self):
-        self.ivoid = "ivo://test.ivoid/1234#5678"
         with event_file(self.ivoid) as f:
             self.assertEqual(f.name, self.filename + ".")
 
