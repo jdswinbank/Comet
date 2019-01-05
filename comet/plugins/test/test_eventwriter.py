@@ -13,6 +13,7 @@ from comet.testutils import DUMMY_VOEVENT, temp_dir
 from comet.plugins.eventwriter import EventWriter
 from comet.plugins.eventwriter import string_to_filename
 from comet.plugins.eventwriter import event_file
+from comet.plugins.eventwriter import FILENAME_PAD
 
 class StringToFilenameTestCase(unittest.TestCase):
     def test_characters(self):
@@ -51,7 +52,7 @@ class EventFileTestCase(unittest.TestCase):
 
     def test_dup_file(self):
         with event_file(self.ivoid) as f:
-            self.assertEqual(f.name, self.filename + ".")
+            self.assertEqual(f.name, self.filename + FILENAME_PAD)
 
     def test_temp_dir(self):
         with temp_dir() as tmpdir:
