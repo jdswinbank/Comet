@@ -190,6 +190,8 @@ option. The filename under which an event is saved is based on its IVOID, but
 modified to avoid characters which are awkard to work with on standard
 filesystems.
 
+.. _spawn:
+
 Spawning External Commands
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 

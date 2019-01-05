@@ -4,6 +4,25 @@ Release History
 See the :doc:`release procedure <appendix/release>` section for more details
 on version numbering and how releases are made.
 
+Version 3.1.x
+-------------
+
+3.1.0 (2019-01-19) [`Download <//github.com/jdswinbank/Comet/tarball/3.1.0>`__]
+
+- Add support for Windows.
+
+  More accurately, the test suite has been updated so that no tests fail on
+  Windows (tested with Windows 10 Version 1803 running Python 3.7.1). Test
+  coverage is pretty good, so this should be a fair indication that Comet is
+  functional, but I'm not aware of anybody actually deploying Comet on Windows
+  in the wild.
+
+  A few tests are skipped. Most of these refer to :ref:`spawning external
+  commands <spawn>`. That functionality should be regarded as untested; if it
+  works for you, please let me know.
+
+.. _GitHub #58: https://github.com/jdswinbank/Comet/issues/58
+
 Version 3.0.x
 -------------
 
