@@ -9,6 +9,20 @@ Development Version
 
 - Python 2.7 support has been removed.
 
+- Add support for Windows.
+
+  More accurately, the test suite has been updated so that no tests fail on
+  Windows (tested with Windows 10 Version 1803 running Python 3.7.1). Test
+  coverage is pretty good, so this should be a fair indication that Comet is
+  functional, but I'm not aware of anybody actually deploying Comet on Windows
+  in the wild.
+
+  Six tests are skipped. Most of these refer to :ref:`spawning external
+  commands <spawn>`. That functionality should be regarded as untested; if it
+  works for you, please let me know.
+
+.. _GitHub #58: https://github.com/jdswinbank/Comet/issues/58
+
 Version 3.0.x
 -------------
 
