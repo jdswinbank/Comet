@@ -9,6 +9,11 @@ Development Version
 
 - Python 2.7 support has been removed.
 
+Version 3.1.x
+-------------
+
+3.1.0 (2019-01-19) [`Download <//github.com/jdswinbank/Comet/tarball/3.1.0>`__]
+
 - Add support for Windows.
 
   More accurately, the test suite has been updated so that no tests fail on
