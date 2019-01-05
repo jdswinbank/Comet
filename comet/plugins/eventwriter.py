@@ -12,6 +12,9 @@ from twisted.python import lockfile
 from comet.icomet import IHandler, IHasOptions
 import comet.log as log
 
+# Used when building filenames to avoid over-writing.
+FILENAME_PAD = "_"
+
 def string_to_filename(input_string):
     # Strip weird, confusing or special characters from input_string so that
     # we can safely use it as a filename.
@@ -35,7 +38,7 @@ def event_file(ivoid, dirname=None):
     lock.lock()
     try:
         while os.path.exists(fname):
-            fname += "."
+            fname += FILENAME_PAD
         with open(fname, 'w') as f:
             yield f
     finally:
