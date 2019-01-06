@@ -1,11 +1,19 @@
 import os
 import sys
 import tempfile
+from unittest import skipIf
 from unittest import skipUnless
 
 from twisted.trial import unittest
 from twisted.python import util
 from twisted.python import log as twisted_log
+
+try:
+    # Only required for spawning commands on Windows.
+    # Tests will be skipped if it is required and not available.
+    import win32api
+except ImportError:
+    win32api = None
 
 import comet.log as log
 from comet.icomet import IHandler
@@ -18,13 +26,18 @@ SHELL = '/bin/sh'
 # This executable is required to exist and to exit cleanly regardless of
 # whatever we squirt into its stdin. Other than that, it doesn't matter what
 # it does.
-EXECUTABLE = '/bin/ls'
+if sys.platform == 'win32':
+    EXECUTABLE = 'C:\Windows\System32\CMD.EXE'
+else:
+    EXECUTABLE = '/bin/ls'
 
 class SpawnCommandProtocolTestCase(unittest.TestCase):
     def test_interface(self):
         self.assertTrue(IHandler.implementedBy(SpawnCommand))
 
     @skipUnless(os.access(EXECUTABLE, os.X_OK), "Test executable not available")
+    @skipIf(sys.platform == 'win32' and not win32api,
+            "Spawning commands on Windows requires win32api")
     def test_good_process(self):
         spawn = SpawnCommand(EXECUTABLE)
         d = spawn(DummyEvent())
@@ -54,6 +67,8 @@ class SpawnCommandProtocolTestCase(unittest.TestCase):
             return d
 
     @skipUnless(os.access(SHELL, os.X_OK), "Shell executable not available")
+    @skipIf(sys.platform == 'win32' and not win32api,
+            "Spawning commands on Windows requires win32api")
     def test_bad_process(self):
         """
         Fail when the executable returns non-zero
@@ -62,6 +77,8 @@ class SpawnCommandProtocolTestCase(unittest.TestCase):
         return self._check_logged_value("test_spawn_failure.sh", "99", True)
 
     @skipUnless(os.access(SHELL, os.X_OK), "Shell executable not available")
+    @skipIf(sys.platform == 'win32' and not win32api,
+            "Spawning commands on Windows requires win32api")
     def test_stdout(self):
         """
         Demonstrate we can read stdout from the process.
@@ -71,6 +88,8 @@ class SpawnCommandProtocolTestCase(unittest.TestCase):
         return self._check_logged_value("test_spawn_stdout.sh", "THIS_IS_STDOUT")
 
     @skipUnless(os.access(SHELL, os.X_OK), "Shell executable not available")
+    @skipIf(sys.platform == 'win32' and not win32api,
+            "Spawning commands on Windows requires win32api")
     def test_stderr(self):
         """
         Demonstrate we can read stderr from the process.
@@ -80,6 +99,8 @@ class SpawnCommandProtocolTestCase(unittest.TestCase):
         return self._check_logged_value("test_spawn_stdout.sh", "THIS_IS_STDERR")
 
     @skipUnless(os.access(SHELL, os.X_OK), "Shell executable not available")
+    @skipIf(sys.platform == 'win32' and not win32api,
+            "Spawning commands on Windows requires win32api")
     def test_write_data(self):
         """
         Demonstrate that an external command can save data.
