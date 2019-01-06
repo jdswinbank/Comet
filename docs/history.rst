@@ -17,7 +17,7 @@ Development Version
   functional, but I'm not aware of anybody actually deploying Comet on Windows
   in the wild.
 
-  Six tests are skipped. Most of these refer to :ref:`spawning external
+  A few tests are skipped. Most of these refer to :ref:`spawning external
   commands <spawn>`. That functionality should be regarded as untested; if it
   works for you, please let me know.
 
