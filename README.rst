@@ -49,3 +49,11 @@ Many thanks to these contributors:
 
 .. _Tim-Oliver Husser: https://github.com/thusser/
 .. _Tim Staley: http://timstaley.co.uk/
+
+.. image:: https://travis-ci.org/jdswinbank/Comet.svg?branch=master
+   :target: https://travis-ci.org/jdswinbank/Comet
+   :alt: Build status (Linux)
+
+.. image:: https://ci.appveyor.com/api/projects/status/lj2wcn34srues2g2/branch/master?svg=true
+   :target: https://ci.appveyor.com/project/jdswinbank/comet
+   :alt: Build status (Windows)
