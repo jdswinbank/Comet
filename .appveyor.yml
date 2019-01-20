@@ -1,0 +1,30 @@
+version: 1.0.{build}
+image: Visual Studio 2017
+environment:
+  matrix:
+  - PYTHON: C:\Python37-x64
+    PYVER: 3
+  - PYTHON: C:\Python36-x64
+    PYVER: 3
+  - PYTHON: C:\Python35-x64
+    PYVER: 3
+  - PYTHON: C:\Python37
+    PYVER: 3
+install:
+- cmd: >-
+    %PYTHON%/Scripts/pip.exe install -r requirements%PYVER%.txt
+
+    %PYTHON%/Scripts/pip.exe install pywin32
+build: off
+test_script:
+- cmd: >-
+    set PYTHONPATH=%PYTHONPATH%;.
+
+    %PYTHON%/Scripts/trial comet
+notifications:
+- provider: Email
+  to:
+  - john@swinbank.org
+  on_build_success: true
+  on_build_failure: true
+  on_build_status_changed: false
