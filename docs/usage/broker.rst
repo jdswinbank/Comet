@@ -45,8 +45,12 @@ provide a brief usage message::
                                     --receive and --broadcast)
         --eventdb=                  Event database root. [default: system dependent]
         --receive-port=             TCP port for receiving events. [default: 8098]
+        --receive-unix-socket=      Path to UNIX domain socket for receiving
+                                    events.
         --broadcast-port=           TCP port for broadcasting events. [default:
                                     8099]
+        --broadcast-unix-socket=    Path to UNIX domain socket for broadcasting
+                                    events.
         --broadcast-test-interval=  Interval between test event brodcasts (in
                                     seconds; 0 to disable). [default: 3600]
         --author-whitelist=         Network to be included in author whitelist.
@@ -55,6 +59,8 @@ provide a brief usage message::
                                     whitelist. [default: 0.0.0.0/0]
         --remote=                   Remote broadcaster to subscribe to
                                     (host[:port]).
+        --remote-unix-socket=       Path to UNIX domain socket for remote
+                                    broadcaster to subscribe to.
         --filter=                   XPath filter applied to events broadcast by
                                     remote.
         --cmd=                      Spawn external command on event receipt.

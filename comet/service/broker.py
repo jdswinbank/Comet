@@ -18,6 +18,8 @@ from twisted.internet.task import LoopingCall
 from twisted.application.service import MultiService
 from twisted.application.internet import TCPClient
 from twisted.application.internet import TCPServer
+from twisted.application.internet import UNIXClient
+from twisted.application.internet import UNIXServer
 
 # Comet broker routines
 import comet
@@ -55,11 +57,14 @@ class Options(BaseOptions):
     optParameters = [
         ["eventdb", None, os.environ.get("TMPDIR", "/tmp"), "Event database root."],
         ["receive-port", None, 8098, "TCP port for receiving events.", int],
+        ["receive-unix-socket", None, None, "Path to UNIX domain socket for receiving events."],
         ["broadcast-port", None, DEFAULT_REMOTE_PORT, "TCP port for broadcasting events.", int],
+        ["broadcast-unix-socket", None, None, "Path to UNIX domain socket for broadcasting events."],
         ["broadcast-test-interval", None, BCAST_TEST_INTERVAL, "Interval between test event brodcasts (in seconds; 0 to disable).", int],
         ["author-whitelist", None, "0.0.0.0/0", "Network to be included in author whitelist."],
         ["subscriber-whitelist", None, "0.0.0.0/0", "Network to be included in subscriber whitelist."],
         ["remote", None, None, "Remote broadcaster to subscribe to (host[:port])."],
+        ["remote-unix-socket", None, None, "Path to UNIX domain socket for remote broadcaster to subscribe to."],
         ["filter", None, None, "XPath filter applied to events broadcast by remote."],
         ["cmd", None, None, "Spawn external command on event receipt."]
     ]
@@ -67,6 +72,7 @@ class Options(BaseOptions):
     def __init__(self):
         BaseOptions.__init__(self)
         self['remotes'] = []
+        self['remotes_unix_socket'] = []
         self['running_author-whitelist'] = []
         self['running_subscriber-whitelist'] = []
         self['filters'] = []
@@ -102,6 +108,9 @@ class Options(BaseOptions):
             "Subscribing to remote broker %s:%d" % (host, int(port))
         )
         self['remotes'].append((host, int(port)))
+
+    def opt_remote_unix_socket(self, remote_unix_socket):
+        self['remotes_unix_socket'].append(remotes_unix_socket)
 
     def opt_author_whitelist(self, network):
         reactor.callWhenRunning(log.info, "Whitelisting %s for submission" % network)
@@ -173,6 +182,13 @@ def makeService(config):
         )
         broadcaster_service.setName("Broadcaster")
         broadcaster_service.setServiceParent(broker_service)
+        if config['broadcast-unix-socket']:
+            broadcaster_service = UNIXServer(
+                config['broadcast-unix-socket'],
+                broadcaster_factory
+            )
+            broadcaster_service.setName("Broadcaster (UNIX domain socket)")
+            broadcaster_service.setServiceParent(broker_service)
 
         # If we're running a broadcast, we will rebroadcast any events we
         # receive to it.
@@ -198,6 +214,10 @@ def makeService(config):
         receiver_service = TCPServer(config['receive-port'], author_whitelisting_factory)
         receiver_service.setName("Receiver")
         receiver_service.setServiceParent(broker_service)
+        if config['receive-unix-socket']:
+            receiver_service = UNIXServer(config['receive-unix-socket'], receiver_factory)
+            receiver_service.setName("Receiver (UNIX domain socket)")
+            receiver_service.setServiceParent(broker_service)
 
     for host, port in config["remotes"]:
         subscriber_factory = VOEventSubscriberFactory(
@@ -209,6 +229,18 @@ def makeService(config):
         if log.LEVEL >= log.Levels.INFO: subscriber_factory.noisy = False
         remote_service = TCPClient(host, port, subscriber_factory)
         remote_service.setName("Remote %s:%d" % (host, port))
+        remote_service.setServiceParent(broker_service)
+
+    for path in config["remotes_unix_socket"]:
+        subscriber_factory = VOEventSubscriberFactory(
+            local_ivo=config["local-ivo"],
+            validators=[CheckPreviouslySeen(event_db)],
+            handlers=config['handlers'],
+            filters=config['filters']
+        )
+        if log.LEVEL >= log.Levels.INFO: subscriber_factory.noisy = False
+        remote_service = UNIXClient(path, subscriber_factory)
+        remote_service.setName("Remote %s" % path)
         remote_service.setServiceParent(broker_service)
 
     if not broker_service.services:

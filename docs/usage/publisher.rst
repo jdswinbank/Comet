@@ -13,6 +13,7 @@ message::
   Options:
     -h, --host=             Host to send to. [default: localhost]
     -p, --port=             Port to send to. [default: 8098]
+    -s, --unix-socket=      UNIX domain socket to send to.
     -f, --file=             Where to read XML text (- is stdin). [default: -]
         --version           Display Twisted version and exit.
         --help              Display this help and exit.

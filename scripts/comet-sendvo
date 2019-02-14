@@ -24,6 +24,7 @@ class Options(usage.Options):
     optParameters = [
         ["host", "h", "localhost", "Host to send to."],
         ["port", "p", 8098, "Port to send to.", int],
+        ["unix-socket", "s", None, "UNIX domain socket to send to."],
         ["file", "f", "-", "Where to read XML text to send (- is stdin)."]
     ]
 
@@ -65,7 +66,10 @@ if __name__ == "__main__":
         log.warn("Could not parse event text")
         reactor.callWhenRunning(reactor.stop)
     else:
-        reactor.connectTCP(config['host'], config['port'], factory)
+        if config['unix-socket'] is None:
+            reactor.connectTCP(config['host'], config['port'], factory)
+        else:
+            reactor.connectUNIX(config['unix-socket'], factory)
     finally:
         f.close()
 
