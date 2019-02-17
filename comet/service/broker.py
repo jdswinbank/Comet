@@ -11,13 +11,14 @@ from ipaddress import ip_network
 from lxml.etree import XPath, XPathSyntaxError
 
 # Twisted
-from twisted.internet import reactor
-from twisted.python import usage
-from twisted.plugin import getPlugins
-from twisted.internet.task import LoopingCall
-from twisted.application.service import MultiService
-from twisted.application.internet import TCPClient
+from twisted.application.internet import ClientService
 from twisted.application.internet import TCPServer
+from twisted.application.service import MultiService
+from twisted.internet import reactor
+from twisted.internet.endpoints import clientFromString
+from twisted.internet.task import LoopingCall
+from twisted.plugin import getPlugins
+from twisted.python import usage
 
 # Comet broker routines
 import comet
@@ -153,6 +154,18 @@ for plugin in getPlugins(IHandler, comet.plugins):
             )
 
 
+def makeSubscriberService(host, port, local_ivo, validators, handlers, filters):
+    client_endpoint = clientFromString(reactor, f"tcp:{host}:{port}")
+    subscriber_factory = VOEventSubscriberFactory(
+        local_ivo=local_ivo, validators=validators,
+        handlers=handlers, filters=filters
+    )
+    # Note that ClientService provides its own back-off approach; seems fine
+    # for now.
+    remote_service = ClientService(client_endpoint, subscriber_factory)
+    remote_service.setName("Remote %s:%d" % (host, port))
+    return remote_service
+
 def makeService(config):
     event_db = Event_DB(config['eventdb'])
     LoopingCall(event_db.prune, MAX_AGE).start(PRUNE_INTERVAL)
@@ -200,15 +213,10 @@ def makeService(config):
         receiver_service.setServiceParent(broker_service)
 
     for host, port in config["remotes"]:
-        subscriber_factory = VOEventSubscriberFactory(
-            local_ivo=config["local-ivo"],
-            validators=[CheckPreviouslySeen(event_db)],
-            handlers=config['handlers'],
-            filters=config['filters']
-        )
-        if log.LEVEL >= log.Levels.INFO: subscriber_factory.noisy = False
-        remote_service = TCPClient(host, port, subscriber_factory)
-        remote_service.setName("Remote %s:%d" % (host, port))
+        remote_service = makeSubscriberService(host, port, config['local-ivo'],
+                                               [CheckPreviouslySeen(event_db)],
+                                               config['handlers'],
+                                               config['filters'])
         remote_service.setServiceParent(broker_service)
 
     if not broker_service.services:
