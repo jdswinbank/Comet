@@ -88,6 +88,7 @@ class VOEventSubscriber(EventHandler, TimeoutMixin):
                 (self.transport.getPeer(), incoming.element.get("role"))
             )
 
+
 class VOEventSubscriberFactory(Factory):
     protocol = VOEventSubscriber
     def __init__(self,

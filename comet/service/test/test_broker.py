@@ -164,7 +164,7 @@ class DefaultOptionsTestCase(unittest.TestCase):
         self.assertRaises(usage.UsageError, self.config.parseOptions, "-r")
 
 
-class ServiceTestCase(unittest.TestCase):
+class BrokerServiceTestCase(unittest.TestCase):
     def setUp(self):
         self.config = Options()
 
@@ -177,7 +177,7 @@ class ServiceTestCase(unittest.TestCase):
                                       '-b', '--remote', 'dummy'])
         for service_name in (
             "Receiver", "Broadcaster",
-            "Remote %s:%d" % ('dummy', DEFAULT_REMOTE_PORT)
+            "Remote tcp:%s:%d" % ('dummy', DEFAULT_REMOTE_PORT)
         ):
             self.assertTrue(service_name in service.namedServices)
 

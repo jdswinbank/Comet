@@ -12,7 +12,7 @@ from comet.testutils import (DUMMY_EVENT_IVOID, DUMMY_SERVICE_IVOID,
                              DUMMY_VOEVENT)
 
 from comet.protocol.subscriber import (VOEventSubscriber,
-                                         VOEventSubscriberFactory)
+                                       VOEventSubscriberFactory)
 
 class VOEventSubscriberFactoryTestCase(unittest.TestCase):
     def setUp(self):
@@ -25,19 +25,6 @@ class VOEventSubscriberFactoryTestCase(unittest.TestCase):
 
     def test_protocol(self):
         self.assertIsInstance(self.proto, VOEventSubscriber)
-
-    def test_reconnect_delay(self):
-        # Retries and delay are not reset immediately on connection, but
-        # rather only after RESET_DELAY seconds have passed.
-        self.factory.retries = VOEventSubscriberFactory.retries + 1
-        self.factory.delay = VOEventSubscriberFactory.delay + 1
-        self.proto.makeConnection(self.transport)
-        self.assertNotEqual(self.factory.retries, VOEventSubscriberFactory.retries)
-        self.assertNotEqual(self.factory.delay, VOEventSubscriberFactory.delay)
-        self.clock.advance(VOEventSubscriberFactory.RESET_DELAY)
-        self.assertEqual(self.factory.retries, VOEventSubscriberFactory.retries)
-        self.assertEqual(self.factory.delay, VOEventSubscriberFactory.delay)
-    test_reconnect_delay.todo = "Reimplement for ClientService"
 
 
 class VOEventSubscriberTimeoutTestCase(unittest.TestCase):
