@@ -22,8 +22,8 @@ from twisted.python import usage
 import comet
 import comet.log as log
 from comet.protocol import VOEventBroadcasterFactory
-from comet.protocol import VOEventReceiverFactory
 from comet.service.subscriber import makeSubscriberService
+from comet.service.receiver import makeReceiverService
 from comet.utility import Event_DB, BaseOptions, WhitelistingFactory
 from comet.validator import CheckIVOID, CheckPreviouslySeen, CheckSchema
 
@@ -178,24 +178,15 @@ def makeService(config):
         config['handlers'].append(EventRelay(broadcaster_factory))
 
     if config['receive']:
-        receiver_factory = VOEventReceiverFactory(
-            local_ivo=config['local-ivo'],
-            validators=[
-                CheckPreviouslySeen(event_db),
-                CheckSchema(
-                    os.path.join(comet.__path__[0], "schema/VOEvent-v2.0.xsd")
-                ),
-                CheckIVOID()
-            ],
-            handlers=config['handlers']
-        )
-        if log.LEVEL >= log.Levels.INFO: receiver_factory.noisy = False
-        author_whitelisting_factory = WhitelistingFactory(
-            receiver_factory, config['author-whitelist'], "submission"
-        )
-        if log.LEVEL >= log.Levels.INFO: author_whitelisting_factory.noisy = False
-        receiver_service = TCPServer(config['receive-port'], author_whitelisting_factory)
-        receiver_service.setName("Receiver")
+        endpoint = f"tcp:{config['receive-port']}"
+        validators=[CheckPreviouslySeen(event_db),
+                    CheckSchema(os.path.join(comet.__path__[0],
+                                             "schema/VOEvent-v2.0.xsd")),
+                    CheckIVOID()]
+        receiver_service = makeReceiverService(reactor, endpoint,
+                                               config['local-ivo'], validators,
+                                               config['handlers'],
+                                               config['author-whitelist'])
         receiver_service.setServiceParent(broker_service)
 
     for host, port in config["remotes"]:
