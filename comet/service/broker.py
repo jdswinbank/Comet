@@ -21,10 +21,10 @@ from twisted.python import usage
 # Comet broker routines
 import comet
 import comet.log as log
-from comet.protocol import VOEventBroadcasterFactory
+from comet.service.broadcaster import makeBroadcasterService
 from comet.service.subscriber import makeSubscriberService
 from comet.service.receiver import makeReceiverService
-from comet.utility import Event_DB, BaseOptions, WhitelistingFactory
+from comet.utility import Event_DB, BaseOptions
 from comet.validator import CheckIVOID, CheckPreviouslySeen, CheckSchema
 
 # Handlers and plugins
@@ -158,31 +158,23 @@ def makeService(config):
 
     broker_service = MultiService()
     if config['broadcast']:
-        broadcaster_factory = VOEventBroadcasterFactory(
-            config["local-ivo"], config['broadcast-test-interval']
-        )
-        if log.LEVEL >= log.Levels.INFO: broadcaster_factory.noisy = False
-        broadcaster_whitelisting_factory = WhitelistingFactory(
-            broadcaster_factory, config['subscriber-whitelist'], "subscription"
-        )
-        if log.LEVEL >= log.Levels.INFO: broadcaster_whitelisting_factory.noisy = False
-        broadcaster_service = TCPServer(
-            config['broadcast-port'],
-            broadcaster_whitelisting_factory
-        )
-        broadcaster_service.setName("Broadcaster")
+        endpoint = f"tcp:{config['broadcast-port']}"
+        broadcaster_service = makeBroadcasterService(reactor, endpoint,
+                                                     config['local-ivo'],
+                                                     config['broadcast-test-interval'],
+                                                     config['subscriber-whitelist'])
         broadcaster_service.setServiceParent(broker_service)
 
         # If we're running a broadcast, we will rebroadcast any events we
         # receive to it.
-        config['handlers'].append(EventRelay(broadcaster_factory))
+        config['handlers'].append(EventRelay(broadcaster_service.factory))
 
     if config['receive']:
         endpoint = f"tcp:{config['receive-port']}"
-        validators=[CheckPreviouslySeen(event_db),
-                    CheckSchema(os.path.join(comet.__path__[0],
-                                             "schema/VOEvent-v2.0.xsd")),
-                    CheckIVOID()]
+        validators = [CheckPreviouslySeen(event_db),
+                      CheckSchema(os.path.join(comet.__path__[0],
+                                               "schema/VOEvent-v2.0.xsd")),
+                      CheckIVOID()]
         receiver_service = makeReceiverService(reactor, endpoint,
                                                config['local-ivo'], validators,
                                                config['handlers'],

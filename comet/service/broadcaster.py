@@ -5,12 +5,12 @@ from twisted.internet.endpoints import serverFromString
 
 import comet.log as log
 from comet.utility import WhitelistingFactory
-from comet.protocol import VOEventReceiverFactory
+from comet.protocol import VOEventBroadcasterFactory
 
-__all__ = ["makeReceiverService"]
+__all__ = ["makeBroadcasterService"]
 
-def makeReceiverService(reactor, endpoint, local_ivo, validators, handlers,
-                        whitelist):
+def makeBroadcasterService(reactor, endpoint, local_ivo, test_interval,
+                           whitelist):
     """Create a VOEvent receiver service.
 
     The receiver service accepts VOEvent messages submitted to the broker by
@@ -24,14 +24,12 @@ def makeReceiverService(reactor, endpoint, local_ivo, validators, handlers,
         The endpoint to which the service will connect.
     local_ivo : `str`
         IVOA identifier for the subscriber.
-    validators : `list` of implementers of `~comet.icomet.IValidator`.
-        Validators which will be applied to incoming events. Events which fail
-        validation will be rejected.
-    handlers : `list` of implementers of `~comet.icomet.IHandler`.
-        Handlers to which events which pass validation will be passed.
+    test_interval: `int`
+        The interval in seconds between test events to be broadcast. If ``0``,
+        no test events will be sent.
     whitelist : `list` of `ipaddress.IPv4Network` or `ipaddress.IPv6Network`
-        Submissions are only accepted from addresses which fall in a network
-        included in the whitelist.
+        Only addresses which fall in a network included in the whitelist are
+        permitted to subscribe.
 
     Warnings
     --------
@@ -40,17 +38,16 @@ def makeReceiverService(reactor, endpoint, local_ivo, validators, handlers,
     probably break horribly).
     """
     server_endpoint = serverFromString(reactor, endpoint)
-    factory = VOEventReceiverFactory(local_ivo=local_ivo,
-                                     validators=validators,
-                                     handlers=handlers)
+    factory = VOEventBroadcasterFactory(local_ivo, test_interval)
     if log.LEVEL >= log.Levels.INFO:
         factory.noisy = False
 
-    whitelisting_factory = WhitelistingFactory(factory, whitelist, "submission")
+    whitelisting_factory = WhitelistingFactory(factory, whitelist,
+                                               "subscription")
     if log.LEVEL >= log.Levels.INFO:
         whitelisting_factory.noisy = False
 
     service = StreamServerEndpointService(server_endpoint, whitelisting_factory)
-    service.setName("Receiver")
+    service.setName("Broadcaster")
 
     return service

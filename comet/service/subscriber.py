@@ -37,10 +37,7 @@ def makeSubscriberService(reactor, endpoint, local_ivo, validators, handlers,
     `twisted.application.internet.ClientService`.
     """
     client_endpoint = clientFromString(reactor, endpoint)
-    subscriber_factory = VOEventSubscriberFactory(
-        local_ivo=local_ivo, validators=validators,
-        handlers=handlers, filters=filters
-    )
-    remote_service = ClientService(client_endpoint, subscriber_factory)
-    remote_service.setName(f"Remote {endpoint}")
-    return remote_service
+    factory = VOEventSubscriberFactory(local_ivo, validators,handlers, filters)
+    service = ClientService(client_endpoint, factory)
+    service.setName(f"Remote {endpoint}")
+    return service
