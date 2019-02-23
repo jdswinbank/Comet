@@ -20,3 +20,12 @@ class WhitelistingFactory(WrappingFactory):
         else:
             log.info("Attempted %s from non-whitelisted %s" % (self.connection_type, str(addr)))
             return None
+
+    def __getattr__(self, name):
+        """Delegate attribute access to the wrapped factory.
+        """
+        if hasattr(self.wrappedFactory, name):
+            return getattr(self.wrappedFactory, name)
+        else:
+            raise AttributeError("'%s' object has no attribute '%s'" %
+                                 (self.__class__.__name__, name))

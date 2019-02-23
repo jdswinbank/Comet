@@ -14,6 +14,7 @@ from comet.testutils import DummyLogObserver
 
 class TestFactory(ServerFactory):
     protocol = Protocol
+    test_attribute = "test_attribute"
 
 class WhitelistingFactoryTestCase(unittest.TestCase):
     def setUp(self):
@@ -62,3 +63,15 @@ class WhitelistingFactoryTestCase(unittest.TestCase):
         )
         self.assertFalse("connection" in self.observer.messages[0][0])
         self.assertTrue(TEST_STRING in self.observer.messages[0][0])
+
+    def test_getattr_delegation(self):
+        """Check that missing attributes are delegated to the wrapped factory.
+        """
+        factory = WhitelistingFactory(TestFactory(), [])
+
+        # This attribute is defined on the wrapped factory.
+        self.assertEqual(factory.test_attribute, TestFactory.test_attribute)
+
+        with self.assertRaises(AttributeError):
+            # This attribute does not exist.
+            factory.bad_attribute
