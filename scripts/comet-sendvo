@@ -49,10 +49,7 @@ if __name__ == "__main__":
     # We handle the input data in binary mode, as we don't want to change the
     # encoding that has already been applied to the event text.
     if config["file"] == "-":
-        if hasattr(sys.stdin, "buffer"):
-            f = sys.stdin.buffer  # Python 3
-        else:
-            f = sys.stdin         # Python 2
+        f = sys.stdin.buffer
     else:
         f = open(config["file"], 'r+b')
 
