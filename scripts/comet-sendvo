@@ -7,18 +7,17 @@
 import sys
 
 # Twisted
-from twisted.python.log import startLogging
+from twisted.internet import task
+from twisted.internet.endpoints import clientFromString, connectProtocol
 from twisted.python import usage
-from twisted.internet import reactor
+from twisted.python.log import startLogging
+from twisted.python.failure import Failure
 
 # VOEvent transport protocol
-from comet.protocol import VOEventSenderFactory
+from comet.protocol.sender import VOEventSender
 
 # Encapsulation of event
 from comet.utility import xml_document
-import lxml.etree as ElementTree
-
-import comet.log as log
 
 class Options(usage.Options):
     optParameters = [
@@ -27,25 +26,7 @@ class Options(usage.Options):
         ["file", "f", "-", "Where to read XML text to send (- is stdin)."]
     ]
 
-class OneShotSender(VOEventSenderFactory):
-    """
-    A factory that shuts down the reactor when we lose the connection to the
-    remote host. That either means that our event has been sent or that we
-    failed.
-    """
-    def clientConnectionLost(self, connector, reason):
-        reactor.stop()
-
-    def clientConnectionFailed(self, connector, reason):
-        log.warn("Connection failed")
-        reactor.stop()
-
-if __name__ == "__main__":
-    config = Options()
-    config.parseOptions()
-
-    startLogging(sys.stdout)
-
+def read_event(filename):
     # We handle the input data in binary mode, as we don't want to change the
     # encoding that has already been applied to the event text.
     if config["file"] == "-":
@@ -54,23 +35,24 @@ if __name__ == "__main__":
         f = open(config["file"], 'r+b')
 
     try:
-        factory = OneShotSender(xml_document(f.read()))
-    except IOError:
-        log.warn("Reading XML document failed")
-        reactor.callWhenRunning(reactor.stop)
-    except ElementTree.Error:
-        log.warn("Could not parse event text")
-        reactor.callWhenRunning(reactor.stop)
-    else:
-        reactor.connectTCP(config['host'], config['port'], factory)
+        return xml_document(f.read())
     finally:
         f.close()
 
-    reactor.run()
+def send_event(reactor, host, port, event):
+    def gotProtocol(p):
+        def fail_on_nak(incoming):
+            if incoming.element.get('role') == 'nak':
+                return Failure(Exception("Remote refused event."))
+        return p.send_event(event).addCallback(fail_on_nak)
 
-    # If our factory didn't get an acknowledgement of receipt, we'll exit with
-    # status 1.
-    if "factory" in locals() and factory.ack:
-        sys.exit(0)
-    else:
-        sys.exit(1)
+    ep = clientFromString(reactor, f"tcp:{host}:{port}")
+    d = connectProtocol(ep, VOEventSender())
+    return d.addCallback(gotProtocol)
+
+if __name__ == "__main__":
+    config = Options()
+    config.parseOptions()
+    startLogging(sys.stdout)
+    event = read_event(config['file'])
+    task.react(send_event, (config['host'], config['port'], event))

@@ -2,7 +2,7 @@
 # VOEventSender: publish VOEvents to a broker.
 
 # Twisted protocol definition
-from twisted.internet.protocol import ClientFactory
+from twisted.internet.defer import Deferred
 
 # Comet protocol definitions
 from comet.protocol.base import ElementSender
@@ -11,7 +11,7 @@ from comet.protocol.base import ElementSender
 import comet.log as log
 from comet.utility import xml_document, ParseError
 
-__all__ = ["VOEventSenderFactory"]
+__all__ = ["VOEventSender"]
 
 class VOEventSender(ElementSender):
     """
@@ -25,8 +25,64 @@ class VOEventSender(ElementSender):
     The sender connects to a remote host, sends a message, waits for an
     acknowledgement, and disconnects.
     """
-    def connectionMade(self):
-        self.send_xml(self.factory.event)
+    def __init__(self):
+        ElementSender.__init__(self)
+        self._sent_ivorns = {}
+
+    def send_event(self, event):
+        """Send a VOEvent message.
+
+        Parameters
+        ---------
+        event : `~comet.utility.xml_document`
+            The event packet to send.
+
+        Returns
+        -------
+        d : `~twisted.internet.defer.Deferred`
+            A `~twisted.interet.defer.Deferred` which will be fired when the
+            event is acknowledged by the recipient.
+        """
+        def log_response(incoming):
+            """Default action to take on receiving an acknowledgement.
+
+            The result is logged, the connection is closed (per the VTP spec)
+            and the incoming packet is passed on to the next callback in the
+            chain (if any).
+
+            Parameters
+            ----------
+            incoming : `comet.utility.xml_document`
+                The acknowledgement received.
+
+            Returns
+            -------
+            incoming : `comet.utility.xml_document`
+                The acknowledgement received.
+
+            Notes
+            -----
+            A NAK is not considered a failure (we do not call an errback).
+            """
+            if incoming.element.get('role') == "ack":
+                log.info("ACK received: %s accepted VOEvent" %
+                         str(self.transport.getPeer()))
+            elif incoming.element.get('role') == "nak":
+                log.warn("NAK received: %s refused to accept VOEvent (%s)" %
+                    (
+                        str(self.transport.getPeer()),
+                        incoming.element.findtext("Meta/Result",
+                                                  default="no reason given")
+                    )
+                )
+            self.transport.loseConnection()
+            return incoming
+
+        outgoing_ivorn = event.element.attrib['ivorn']
+        self.send_xml(event)
+        d = Deferred().addCallback(log_response)
+        self._sent_ivorns[outgoing_ivorn] = d
+        return d
 
     def stringReceived(self, data):
         """
@@ -39,16 +95,9 @@ class VOEventSender(ElementSender):
         try:
             incoming = xml_document(data)
 
-            if incoming.element.get('role') == "ack":
-                log.info("Acknowledgement received from %s" % str(self.transport.getPeer()))
-                self.factory.ack = True
-            elif incoming.element.get('role') == "nak":
-                log.warn("Nak received: %s refused to accept VOEvent (%s)" %
-                    (
-                        str(self.transport.getPeer()),
-                        incoming.element.findtext("Meta/Result", default="no reason given")
-                    )
-                )
+            if incoming.element.get('role') in ("ack", "nak"):
+                d = self._sent_ivorns.pop(incoming.element.find("Origin").text)
+                d.callback(incoming)
             else:
                 log.warn(
                     "Incomprehensible data received from %s (role=%s)" %
@@ -57,19 +106,3 @@ class VOEventSender(ElementSender):
 
         except ParseError:
             log.warn("Unparsable message received from %s" % str(self.transport.getPeer()))
-
-        finally:
-            # After receiving a message, we shut down the connection.
-            self.transport.loseConnection()
-
-class VOEventSenderFactory(ClientFactory):
-    protocol = VOEventSender
-    def __init__(self, event):
-        self.event = event
-        self.ack = False
-
-    def stopFactory(self):
-        if self.ack:
-            log.info("Event was sent successfully")
-        else:
-            log.warn("Event was NOT sent successfully")
