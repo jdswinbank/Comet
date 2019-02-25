@@ -39,7 +39,7 @@ def parse_ivoid(ivoid):
     try:
         groups = IVOID_RE.match(ivoid).groups()
 
-        # If there's n
+        # An empty resource name is valid.
         rsrc = groups[1] if groups[1] is not None else ""
 
         # These may not appear in the resource key per IVOA Identifiers
