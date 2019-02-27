@@ -64,17 +64,15 @@ class VOEventSender(ElementSender):
             -----
             A NAK is not considered a failure (we do not call an errback).
             """
-            if incoming.element.get('role') == "ack":
-                log.info("ACK received: %s accepted VOEvent" %
-                         str(self.transport.getPeer()))
-            elif incoming.element.get('role') == "nak":
-                log.warn("NAK received: %s refused to accept VOEvent (%s)" %
-                    (
-                        str(self.transport.getPeer()),
-                        incoming.element.findtext("Meta/Result",
-                                                  default="no reason given")
-                    )
-                )
+            if incoming.role == "ack":
+                log.info(f"ACK received: "
+                         f"{self.transport.getPeer()} accepted VOEvent")
+            elif incoming.role == "nak":
+                reason = incoming.element.findtext("Meta/Result",
+                                                   default="no reason given")
+                log.warn(f"NAK received: "
+                         f"{self.transport.getPeer()} refused to accept VOEvent "
+                         f"({reason})")
             self.transport.loseConnection()
             return incoming
 
@@ -94,15 +92,21 @@ class VOEventSender(ElementSender):
         log.debug("Got response from %s" % str(self.transport.getPeer()))
         try:
             incoming = xml_document.infer_type(data)
-
-            if incoming.role in ("ack", "nak"):
-                d = self._sent_ivoids.pop(incoming.element.find("Origin").text)
-                d.callback(incoming)
-            else:
-                log.warn(
-                    "Incomprehensible data received from %s (role=%s)" %
-                    (self.transport.getPeer(), incoming.role)
-                )
-
         except ParseError:
-            log.warn("Unparsable message received from %s" % str(self.transport.getPeer()))
+            log.warn(f"Unparsable message received from "
+                     f"{self.transport.getPeer()}")
+            return
+
+        if incoming.role not in ("ack", "nak"):
+            log.warn(f"Unexpected {incoming.role} received "
+                     f"from {self.transport.getPeer()}")
+            return
+
+        try:
+            d = self._sent_ivoids.pop(incoming.origin)
+        except KeyError:
+            log.warn(f"Received a receipt for {incoming.origin}, "
+                     f"which is unknown to us")
+            return
+
+        d.callback(incoming)
