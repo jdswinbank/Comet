@@ -6,10 +6,11 @@ from twisted.protocols.policies import TimeoutMixin
 from twisted.internet.protocol import Factory
 
 # Base protocol definitions
-from comet.protocol.base import EventHandler, VOEVENT_ROLES
+from comet.protocol.base import EventHandler
 
 # Constructors for transport protocol messages
-from comet.protocol.messages import iamaliveresponse, authenticateresponse
+#from comet.protocol.messages import iamaliveresponse, authenticateresponse
+from comet.protocol.messages import TransportMessage
 
 # Comet utility routines
 import comet.log as log
@@ -45,7 +46,7 @@ class VOEventSubscriber(EventHandler, TimeoutMixin):
         Called when a complete new message is received.
         """
         try:
-            incoming = xml_document(data)
+            incoming = xml_document.infer_type(data)
         except ParseError:
             log.warn("Unparsable message received")
             return
@@ -57,28 +58,18 @@ class VOEventSubscriber(EventHandler, TimeoutMixin):
         # The root element of both VOEvent and Transport packets has a
         # "role" element which we use to identify the type of message we
         # have received.
-        if incoming.element.get('role') == "iamalive":
+        if incoming.role == "iamalive":
             log.debug("IAmAlive received from %s" % str(self.transport.getPeer()))
-            self.send_xml(
-                iamaliveresponse(self.factory.local_ivo,
-                incoming.element.find('Origin').text)
-            )
-        elif incoming.element.get('role') == "authenticate":
+            self.send_xml(TransportMessage.iamaliveresponse(self.factory.local_ivo,
+                                                            incoming.origin))
+        elif incoming.role == "authenticate":
             log.debug("Authenticate received from %s" % str(self.transport.getPeer()))
-            self.send_xml(
-                authenticateresponse(
-                    self.factory.local_ivo,
-                    incoming.element.find('Origin').text,
-                    self.filters
-                )
-            )
-        elif incoming.element.get('role') in VOEVENT_ROLES:
-            log.info(
-                "VOEvent %s received from %s" % (
-                    incoming.element.attrib['ivorn'],
-                    str(self.transport.getPeer())
-                )
-            )
+            self.send_xml(TransportMessage.authenticateresponse(self.factory.local_ivo,
+                                                                incoming.origin,
+                                                                self.filters))
+        elif hasattr(incoming, "ivoid"):
+            log.info("VOEvent %s received from %s" % (incoming.ivoid,
+                                                      str(self.transport.getPeer())))
             # We don't send a NAK even if the event is invalid since we don't
             # want to be removed from upstream's distribution list.
             self.process_event(incoming, can_nak=False)

@@ -7,7 +7,7 @@ import textwrap
 from contextlib import contextmanager
 from functools import partial
 import lxml.etree as etree
-from comet.protocol.messages import authenticateresponse
+from comet.protocol import TransportMessage
 
 # All dummy event text should be RAW BYTES, as received over the network.
 
@@ -102,9 +102,8 @@ DUMMY_AUTHENTICATE_RESPONSE_LEGACY = textwrap.dedent(
     DUMMY_AUTHENTICATE_RESPONSE_LEGACY
 ).strip().encode('UTF-8')
 
-DUMMY_AUTHENTICATE_RESPONSE = partial(
-    authenticateresponse, DUMMY_SERVICE_IVOID, DUMMY_SERVICE_IVOID
-)
+DUMMY_AUTHENTICATE_RESPONSE = partial(TransportMessage.authenticateresponse,
+                                      DUMMY_SERVICE_IVOID, DUMMY_SERVICE_IVOID)
 
 class DummyEvent(object):
     def __init__(self, ivoid=DUMMY_EVENT_IVOID):

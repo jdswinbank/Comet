@@ -27,7 +27,7 @@ class VOEventSender(ElementSender):
     """
     def __init__(self):
         ElementSender.__init__(self)
-        self._sent_ivorns = {}
+        self._sent_ivoids = {}
 
     def send_event(self, event):
         """Send a VOEvent message.
@@ -78,10 +78,10 @@ class VOEventSender(ElementSender):
             self.transport.loseConnection()
             return incoming
 
-        outgoing_ivorn = event.element.attrib['ivorn']
+        outgoing_ivoid = event.element.attrib['ivorn']
         self.send_xml(event)
         d = Deferred().addCallback(log_response)
-        self._sent_ivorns[outgoing_ivorn] = d
+        self._sent_ivoids[outgoing_ivoid] = d
         return d
 
     def stringReceived(self, data):
@@ -93,15 +93,15 @@ class VOEventSender(ElementSender):
         """
         log.debug("Got response from %s" % str(self.transport.getPeer()))
         try:
-            incoming = xml_document(data)
+            incoming = xml_document.infer_type(data)
 
-            if incoming.element.get('role') in ("ack", "nak"):
-                d = self._sent_ivorns.pop(incoming.element.find("Origin").text)
+            if incoming.role in ("ack", "nak"):
+                d = self._sent_ivoids.pop(incoming.element.find("Origin").text)
                 d.callback(incoming)
             else:
                 log.warn(
                     "Incomprehensible data received from %s (role=%s)" %
-                    (self.transport.getPeer(), incoming.element.get("role"))
+                    (self.transport.getPeer(), incoming.role)
                 )
 
         except ParseError:

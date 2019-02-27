@@ -6,7 +6,7 @@ from twisted.protocols.policies import TimeoutMixin
 from twisted.internet.protocol import ServerFactory
 
 # Base protocol definitions
-from comet.protocol.base import EventHandler, VOEVENT_ROLES
+from comet.protocol.base import EventHandler
 
 # Comet utility routines
 import comet.log as log
@@ -41,25 +41,21 @@ class VOEventReceiver(EventHandler, TimeoutMixin):
         Called when a complete new message is received.
         """
         try:
-            incoming = xml_document(data)
+            incoming = xml_document.infer_type(data)
         except ParseError:
             d = log.warn("Unparsable message received from %s" % str(self.transport.getPeer()))
         else:
             # The root element of both VOEvent and Transport packets has a
             # "role" element which we use to identify the type of message we
             # have received.
-            if incoming.element.get('role') in VOEVENT_ROLES:
-                log.info(
-                    "VOEvent %s received from %s" % (
-                        incoming.element.attrib['ivorn'],
-                        str(self.transport.getPeer())
-                    )
-                )
+            if hasattr(incoming, "ivoid"):
+                log.info("VOEvent %s received from %s" % (incoming.ivoid,
+                                                          str(self.transport.getPeer())))
                 d = self.process_event(incoming)
             else:
                 d = log.warn(
                     "Incomprehensible data received from %s (role=%s)" %
-                    (self.transport.getPeer(), incoming.element.get("role"))
+                    (self.transport.getPeer(), incoming.role)
                 )
         finally:
             return d.addCallback(

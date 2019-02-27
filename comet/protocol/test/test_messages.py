@@ -9,9 +9,7 @@ from twisted.trial import unittest
 
 import comet
 from comet.testutils import DUMMY_SERVICE_IVOID
-
-from comet.protocol.messages import (iamalive, iamaliveresponse, ack, nak,
-                                     authenticate, authenticateresponse)
+from comet.protocol.messages import TransportMessage
 
 class TransportTestCase(unittest.TestCase):
 
@@ -22,45 +20,60 @@ class TransportTestCase(unittest.TestCase):
             )
         )
 
-    def _check_message(self, message):
+    def _check_message(self, message, role):
         """
         Check that the provided message:
 
         - Is valid per the transport schema;
-        - Has all TimeStamps marked as UTC (ie, with a 'Z' suffix).
+        - Has all TimeStamps marked as UTC (ie, with a 'Z' suffix);
+        - Has the right role.
         """
         self.assertTrue(self.schema.validate(message.element))
         for timestamp in message.element.findall("TimeStamp"):
             datetime.strptime(timestamp.text, "%Y-%m-%dT%H:%M:%SZ")
+        self.assertEqual(message.role, role)
 
     def test_iamalive_valid(self):
-        self._check_message(iamalive(DUMMY_SERVICE_IVOID))
+        self._check_message(TransportMessage.iamalive(DUMMY_SERVICE_IVOID),
+                            "iamalive")
 
     def test_iamaliveresponse_valid(self):
-        self._check_message(iamaliveresponse(DUMMY_SERVICE_IVOID,
-                                             DUMMY_SERVICE_IVOID))
+        self._check_message(TransportMessage.iamaliveresponse(DUMMY_SERVICE_IVOID,
+                                                              DUMMY_SERVICE_IVOID),
+                            "iamalive")
 
     def test_ack_valid(self):
-        self._check_message(ack(DUMMY_SERVICE_IVOID, DUMMY_SERVICE_IVOID))
+        self._check_message(TransportMessage.ack(DUMMY_SERVICE_IVOID,
+                                                 DUMMY_SERVICE_IVOID),
+                            "ack")
 
     def test_nak_valid(self):
-        self._check_message(nak(DUMMY_SERVICE_IVOID, DUMMY_SERVICE_IVOID))
+        self._check_message(TransportMessage.nak(DUMMY_SERVICE_IVOID,
+                                                 DUMMY_SERVICE_IVOID),
+                            "nak")
 
     def test_nak_with_result_valid(self):
-        self._check_message(nak(DUMMY_SERVICE_IVOID, DUMMY_SERVICE_IVOID,
-                                "reason"))
+        self._check_message(TransportMessage.nak(DUMMY_SERVICE_IVOID,
+                                                 DUMMY_SERVICE_IVOID,
+                                                 "reason"),
+                             "nak")
 
     def test_authenticate_valid(self):
-        self._check_message(authenticate(DUMMY_SERVICE_IVOID))
+        self._check_message(TransportMessage.authenticate(DUMMY_SERVICE_IVOID),
+                            "authenticate")
 
     def test_authenticateresponse_valid(self):
-        self._check_message(authenticateresponse(DUMMY_SERVICE_IVOID,
-                                                 DUMMY_SERVICE_IVOID, []))
+        self._check_message(TransportMessage.authenticateresponse(DUMMY_SERVICE_IVOID,
+                                                                  DUMMY_SERVICE_IVOID,
+                                                                  []),
+                            "authenticate")
 
     def test_authenticateresponse_valid_filter(self):
         filters = ["test1<>?!", "test2<>?!"]
-        message = authenticateresponse(DUMMY_SERVICE_IVOID, DUMMY_SERVICE_IVOID, filters)
+        message = TransportMessage.authenticateresponse(DUMMY_SERVICE_IVOID,
+                                                        DUMMY_SERVICE_IVOID,
+                                                        filters)
         filter_elems = message.element.findall("Meta/Param[@name=\"xpath-filter\"]")
         for inp, outp in zip(filters, filter_elems):
             self.assertEqual(inp, outp.get('value'))
-        self._check_message(message)
+        self._check_message(message, "authenticate")

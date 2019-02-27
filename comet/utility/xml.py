@@ -5,6 +5,10 @@ import lxml.etree as ElementTree
 
 __all__ = ["ParseError", "xml_document"]
 
+# Used to infer incoming message type
+VOEVENT_ROLES = ('observation', 'prediction', 'utility', 'test')
+TRANSPORT_ROLES = ('iamalive', 'ack', 'nak', 'authenticate')
+
 class ParseError(Exception):
     pass
 
@@ -20,6 +24,10 @@ class xml_document(object):
     best guess.
     """
     __slots__ = ["_element", "_raw_bytes"]
+
+    @property
+    def role(self):
+        return self.element.get('role')
 
     def __init__(self, document):
         if isinstance(document, ElementTree._Element):
@@ -70,3 +78,18 @@ class xml_document(object):
         # carrying. Note we need to construct an ElementTree and use that;
         # can't read from the element directly.
         return ElementTree.ElementTree(self._element).docinfo.encoding
+
+    @staticmethod
+    def infer_type(raw_bytes):
+        """Given a payload, attempt to infer its message type.
+        """
+        # The double-parse is unfortunate.
+        xmldoc = xml_document(raw_bytes)
+        if xmldoc.role in VOEVENT_ROLES:
+            from comet.utility.voevent import VOEventMessage
+            return VOEventMessage(raw_bytes)
+        elif xmldoc.role in TRANSPORT_ROLES:
+            from comet.protocol import TransportMessage
+            return TransportMessage(raw_bytes)
+        else:
+            raise ParseError(f"Unknown role: {xmldoc.role}")

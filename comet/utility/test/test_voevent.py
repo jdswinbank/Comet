@@ -8,13 +8,12 @@ import lxml.etree as etree
 from twisted.trial import unittest
 
 import comet
-from comet.utility import broker_test_message
-from comet.utility import parse_ivoid
+from comet.utility import VOEventMessage, parse_ivoid
 from comet.testutils import DUMMY_SERVICE_IVOID
 
 class broker_test_messageTestCase(unittest.TestCase):
     def setUp(self):
-        self.message = broker_test_message(DUMMY_SERVICE_IVOID.decode())
+        self.message = VOEventMessage.broker_test(DUMMY_SERVICE_IVOID.decode())
 
     def test_valid(self):
         schema = etree.XMLSchema(
@@ -23,6 +22,8 @@ class broker_test_messageTestCase(unittest.TestCase):
             )
         )
         self.assertTrue(schema.validate(self.message.element))
+        self.assertEqual(self.message.role, "test")
+        self.assertTrue(self.message.ivoid.startswith(DUMMY_SERVICE_IVOID.decode()))
 
 class parse_ivoidTestCase(unittest.TestCase):
     # Character classes as defined by the IVOA Identifiers spec, 1.12

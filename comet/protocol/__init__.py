@@ -33,3 +33,4 @@ from comet.protocol.broadcaster import *
 from comet.protocol.receiver import *
 from comet.protocol.sender import *
 from comet.protocol.subscriber import *
+from comet.protocol.messages import *
