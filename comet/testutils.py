@@ -66,7 +66,7 @@ DUMMY_ACK = u"""
         <Response>%s</Response>
         <TimeStamp>2012-01-01T00:00:00Z</TimeStamp>
     </trn:Transport>
-""" % (DUMMY_SERVICE_IVOID.decode(), DUMMY_SERVICE_IVOID.decode())
+""" % (DUMMY_EVENT_IVOID.decode(), DUMMY_SERVICE_IVOID.decode())
 DUMMY_ACK = textwrap.dedent(DUMMY_ACK).strip().encode('UTF-8')
 
 DUMMY_NAK = u"""
@@ -80,7 +80,7 @@ DUMMY_NAK = u"""
         <Response>%s</Response>
         <TimeStamp>2012-01-01T00:00:00Z</TimeStamp>
     </trn:Transport>
-""" % (DUMMY_SERVICE_IVOID.decode(), DUMMY_SERVICE_IVOID.decode())
+""" % (DUMMY_EVENT_IVOID.decode(), DUMMY_SERVICE_IVOID.decode())
 DUMMY_NAK = textwrap.dedent(DUMMY_NAK).strip().encode('UTF-8')
 
 DUMMY_AUTHENTICATE_RESPONSE_LEGACY = u"""
