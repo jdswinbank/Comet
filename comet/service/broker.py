@@ -53,7 +53,7 @@ class Options(BaseOptions):
 
     optParameters = [
         ["eventdb", None, os.environ.get("TMPDIR", "/tmp"), "Event database root."],
-        ["receive-port", None, 8098, "TCP port for receiving events.", int],
+        ["receive-endpoint", None, "tcp:8098", "Endpoint for receiving events."],
         ["broadcast-port", None, DEFAULT_REMOTE_PORT, "TCP port for broadcasting events.", int],
         ["broadcast-test-interval", None, BCAST_TEST_INTERVAL, "Interval between test event brodcasts (in seconds; 0 to disable).", int],
         ["author-whitelist", None, "0.0.0.0/0", "Network to be included in author whitelist."],
@@ -170,12 +170,12 @@ def makeService(config):
         config['handlers'].append(EventRelay(broadcaster_service.factory))
 
     if config['receive']:
-        endpoint = f"tcp:{config['receive-port']}"
         validators = [CheckPreviouslySeen(event_db),
                       CheckSchema(os.path.join(comet.__path__[0],
                                                "schema/VOEvent-v2.0.xsd")),
                       CheckIVOID()]
-        receiver_service = makeReceiverService(reactor, endpoint,
+        receiver_service = makeReceiverService(reactor,
+                                               config['receive-endpoint'],
                                                config['local-ivo'], validators,
                                                config['handlers'],
                                                config['author-whitelist'])
