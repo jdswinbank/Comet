@@ -21,8 +21,7 @@ from comet.utility import xml_document
 
 class Options(usage.Options):
     optParameters = [
-        ["host", "h", "localhost", "Host to send to."],
-        ["port", "p", 8098, "Port to send to.", int],
+        ["target", None, "tcp:localhost:8098"],
         ["file", "f", "-", "Where to read XML text to send (- is stdin)."]
     ]
 
@@ -39,14 +38,14 @@ def read_event(filename):
     finally:
         f.close()
 
-def send_event(reactor, host, port, event):
+def send_event(reactor, target, event):
     def gotProtocol(p):
         def fail_on_nak(incoming):
             if incoming.element.get('role') == 'nak':
                 return Failure(Exception("Remote refused event."))
         return p.send_event(event).addCallback(fail_on_nak)
 
-    ep = clientFromString(reactor, f"tcp:{host}:{port}")
+    ep = clientFromString(reactor, target)
     d = connectProtocol(ep, VOEventSender())
     return d.addCallback(gotProtocol)
 
@@ -55,4 +54,4 @@ if __name__ == "__main__":
     config.parseOptions()
     startLogging(sys.stdout)
     event = read_event(config['file'])
-    task.react(send_event, (config['host'], config['port'], event))
+    task.react(send_event, (config['target'], event))
