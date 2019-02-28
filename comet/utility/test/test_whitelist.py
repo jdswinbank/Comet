@@ -5,7 +5,7 @@ from ipaddress import ip_network
 
 from twisted.internet.protocol import ServerFactory
 from twisted.internet.protocol import Protocol
-from twisted.internet.address import IPv4Address
+from twisted.internet.address import IPv4Address, UNIXAddress
 from twisted.python import log as twisted_log
 from twisted.trial import unittest
 
@@ -75,3 +75,23 @@ class WhitelistingFactoryTestCase(unittest.TestCase):
         with self.assertRaises(AttributeError):
             # This attribute does not exist.
             factory.bad_attribute
+
+    def test_unix_domain_socket(self):
+        """Test that the whitelist is skipped for Unix domain sockets.
+        """
+        factory = WhitelistingFactory(TestFactory(), [])
+
+        # Should be blocking IP addresses
+        self.assertEqual(
+            factory.buildProtocol(IPv4Address('TCP', '127.0.0.1', 0)),
+            None
+        )
+
+        # But Unix domain sockets are allowed
+        self.assertIsInstance(
+            factory.buildProtocol(UNIXAddress('/test/address')),
+            Protocol
+        )
+
+        # With a warning logged
+        self.assertTrue("Bypassing" in self.observer.messages[1][0])
