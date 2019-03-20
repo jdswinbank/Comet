@@ -2,8 +2,9 @@
 # Master broker service.
 
 # Python standard library
-import os
+import os.path
 from argparse import ArgumentTypeError
+from tempfile import gettempdir
 
 # Used for building IP whitelist
 from ipaddress import ip_network
@@ -56,8 +57,7 @@ class Options(BaseOptions):
 
         # Note that `Event_DB` fails gracefully(ish) if this isn't an
         # appopriate location, so we don't sanity check it here.
-        self.parser.add_argument("--eventdb",
-                                 default=os.environ.get("TMPDIR", "/tmp"),
+        self.parser.add_argument("--eventdb", default=gettempdir(),
                                  help="Event database root.")
 
         self.parser.add_argument("--receive",
