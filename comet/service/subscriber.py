@@ -7,17 +7,14 @@ from comet.protocol.subscriber import VOEventSubscriberFactory
 
 __all__ = ["makeSubscriberService"]
 
-def makeSubscriberService(reactor, endpoint, local_ivo, validators, handlers,
-                          filters):
+def makeSubscriberService(endpoint, local_ivo, validators, handlers, filters):
     """Create a reconnecting VOEvent subscriber service.
 
     Parameters
     ----------
-    reactor : implements `IReactorCore`
-        The reactor which will host the serice.
-    endpoint : `str`
+    endpoint : implements `twisted.internet.interfaces.IStreamClientEndpoint`
         The endpoint to which the service will connect.
-    local_ivo : `str`
+    local_ivo : `str` or `None`
         IVOA identifier for the subscriber.
     validators : `list` of implementers of `~comet.icomet.IValidator`.
         Validators which will be applied to incoming events. Events which fail
@@ -36,8 +33,7 @@ def makeSubscriberService(reactor, endpoint, local_ivo, validators, handlers,
     Reconnection is handled according to the default policies of
     `twisted.application.internet.ClientService`.
     """
-    client_endpoint = clientFromString(reactor, endpoint)
     factory = VOEventSubscriberFactory(local_ivo, validators,handlers, filters)
-    service = ClientService(client_endpoint, factory)
-    service.setName(f"Remote {endpoint}")
+    service = ClientService(endpoint, factory)
+
     return service

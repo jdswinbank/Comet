@@ -12,7 +12,7 @@ from comet import __version__, __url__
 import comet.log as log
 from comet.utility.xml import xml_document
 
-__all__ = ["parse_ivoid", "VOEventMessage"]
+__all__ = ["parse_ivoid", "VOEventMessage", "BadIvoidError"]
 
 ElementTree.register_namespace("voe", "http://www.ivoa.net/xml/VOEvent/v2.0")
 
@@ -21,6 +21,11 @@ IVOID_RE = re.compile("""ivo://
                          (?P<rsrc>/[\w\-\.~\*'()/]*)? \#?            # Resource name
                          (?P<localID>[\w\-\.~\*'()\+=/%!$&,;:@?]*) $ # Fragment
                       """, re.VERBOSE)
+
+class BadIvoidError(Exception):
+    """Raised when an IVOID fails to validate.
+    """
+    pass
 
 def parse_ivoid(ivoid):
     """
@@ -51,7 +56,7 @@ def parse_ivoid(ivoid):
         return groups[0], rsrc, groups[2]
     except (AttributeError, AssertionError) as e:
         log.debug("Failed to parse as IVOID: ", str(e))
-        raise Exception("Invalid IVOID: %s" % (ivoid,))
+        raise BadIvoidError("Invalid IVOID: %s" % (ivoid,))
 
 
 class VOEventMessage(xml_document):

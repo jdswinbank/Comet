@@ -71,7 +71,8 @@ class EventWriter(object):
             f.write(event.raw_bytes.decode(event.encoding))
 
     def get_options(self):
-        return [('directory', self.directory, 'Target directory')]
+        return [('directory', self.directory,
+                 'Directory in which to save events')]
 
     def set_option(self, name, value):
         if name == "directory":

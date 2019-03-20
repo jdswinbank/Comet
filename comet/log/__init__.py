@@ -9,8 +9,7 @@ from twisted.python import log as twisted_log
 from twisted.python import context
 from twisted.internet import defer
 
-__all__ = ["Levels", "DEFAULT_LEVEL", "LEVEL",
-           "warn", "info", "debug", "err"]
+__all__ = ["Levels", "LEVEL", "warn", "info", "debug", "err"]
 
 class Levels(object):
     """
@@ -20,12 +19,11 @@ class Levels(object):
     INFO  = 200
     WARNING = 300
 
-# Levels.INFO is the default level.
-DEFAULT_LEVEL = Levels.INFO
+# Levels.WARNING is the default level.
 try:
     LEVEL
 except NameError:
-    LEVEL = DEFAULT_LEVEL
+    LEVEL = Levels.WARNING
 
 # The basic logging function.
 def log(level, message, system=None):

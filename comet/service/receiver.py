@@ -1,7 +1,6 @@
 # Comet VOEvent Broker.
 
 from twisted.application.internet import StreamServerEndpointService
-from twisted.internet.endpoints import serverFromString
 
 import comet.log as log
 from comet.utility import WhitelistingFactory
@@ -9,8 +8,7 @@ from comet.protocol import VOEventReceiverFactory
 
 __all__ = ["makeReceiverService"]
 
-def makeReceiverService(reactor, endpoint, local_ivo, validators, handlers,
-                        whitelist):
+def makeReceiverService(endpoint, local_ivo, validators, handlers, whitelist):
     """Create a VOEvent receiver service.
 
     The receiver service accepts VOEvent messages submitted to the broker by
@@ -18,10 +16,8 @@ def makeReceiverService(reactor, endpoint, local_ivo, validators, handlers,
 
     Parameters
     ----------
-    reactor : implements `IReactorCore`
-        The reactor which will host the serice.
-    endpoint : `str`
-        The endpoint to which the service will connect.
+    endpoint : implements `twisted.internet.interfaces.IStreamServerEndpoint`
+        The endpoint to which the service will listen.
     local_ivo : `str`
         IVOA identifier for the subscriber.
     validators : `list` of implementers of `~comet.icomet.IValidator`.
@@ -39,7 +35,6 @@ def makeReceiverService(reactor, endpoint, local_ivo, validators, handlers,
     example), the whitelist won't be applied to it correctly (indeed, it will
     probably break horribly).
     """
-    server_endpoint = serverFromString(reactor, endpoint)
     factory = VOEventReceiverFactory(local_ivo=local_ivo,
                                      validators=validators,
                                      handlers=handlers)
@@ -50,7 +45,6 @@ def makeReceiverService(reactor, endpoint, local_ivo, validators, handlers,
     if log.LEVEL >= log.Levels.INFO:
         whitelisting_factory.noisy = False
 
-    service = StreamServerEndpointService(server_endpoint, whitelisting_factory)
-    service.setName("Receiver")
+    service = StreamServerEndpointService(endpoint, whitelisting_factory)
 
     return service
