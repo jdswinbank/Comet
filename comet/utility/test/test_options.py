@@ -3,6 +3,7 @@
 
 from argparse import ArgumentTypeError
 from contextlib import redirect_stderr
+from os import devnull
 
 from twisted.trial import unittest
 
@@ -64,7 +65,7 @@ class BaseOptionsTestCase(unittest.TestCase):
     def test_bad_parse(self):
         # Redirect stderr to avoid spewing unhelpful errors to the console
         # during testing.
-        with redirect_stderr(open('/dev/null', 'w')):
+        with redirect_stderr(open(devnull, 'w')):
             self.assertRaises(SystemExit,
                               self.trivial.parseOptions,
                               [f"--bad-arg", self.ARGVALUE])

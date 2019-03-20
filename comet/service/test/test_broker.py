@@ -5,6 +5,7 @@ import os.path
 
 from contextlib import redirect_stderr
 from ipaddress import ip_network
+from os import devnull
 
 from twisted.trial import unittest
 from twisted.python import usage
@@ -25,7 +26,7 @@ class BrokerOptionsTestCase(unittest.TestCase):
     def _check_bad_parse(self, cmd_line):
         # A bad parse will raise `builtins.SystemExit` and spew to stderr.
         # Catch the latter so it doesn't appear in the logs.
-        with redirect_stderr(open('/dev/null', 'w')):
+        with redirect_stderr(open(devnull, 'w')):
             self.assertRaises(SystemExit, self.config.parseOptions, cmd_line)
 
     def _check_server_endpoints(self, option_name, default_port):
