@@ -8,7 +8,6 @@ from ipaddress import ip_network
 from os import devnull
 
 from twisted.trial import unittest
-from twisted.python import usage
 from twisted.internet import reactor
 
 from comet.service.broker import BCAST_TEST_INTERVAL
