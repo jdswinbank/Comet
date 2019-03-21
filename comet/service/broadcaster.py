@@ -38,4 +38,7 @@ def makeBroadcasterService(endpoint, local_ivo, test_interval, whitelist):
 
     service = StreamServerEndpointService(endpoint, whitelisting_factory)
 
+    # Shut down, rather than simply logging an error, if we can't bind.
+    service._raiseSynchronously = True
+
     return service

@@ -9,6 +9,7 @@ from os import devnull
 
 from twisted.trial import unittest
 from twisted.internet import reactor
+from twisted.internet.error import CannotListenError
 
 from comet.service.broker import BCAST_TEST_INTERVAL
 from comet.service.broker import DEFAULT_SUBMIT_PORT
@@ -306,6 +307,31 @@ class BrokerServiceTestCase(unittest.TestCase):
                                       '--subscribe', "tcp:test:12345",
                                       '--subscribe', "tcp:test:54321"])
         self.assertEqual(len(service.services), 6)
+
+    def _check_bind_failure(self, service):
+        # Check that starting the service raises a CannotListenError.
+        try:
+            self.assertRaises(CannotListenError, service.startService)
+        finally:
+            # Necessary to clean the reactor; this is black magic, determined
+            # by trial and error(!).
+            for s in service:
+                if s._waitingForPort:
+                    s.stopService()
+
+    def test_failure_to_bind_receiver(self):
+        # Attempting to bind to the same port twice should fail.
+        service = self._make_service(['--local-ivo', 'ivo://comet/test',
+                                      '--receive', 'tcp:1234',
+                                      '--receive', 'tcp:1234'])
+        self._check_bind_failure(service)
+
+    def test_failure_to_bind_broadcaster(self):
+        # Attempting to bind to the same port twice should fail.
+        service = self._make_service(['--local-ivo', 'ivo://comet/test',
+                                      '--broadcast', 'tcp:1234',
+                                      '--broadcast', 'tcp:1234'])
+        self._check_bind_failure(service)
 
     def test_no_service(self):
         # When we ask for no services on the command line, nothing should be

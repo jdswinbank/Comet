@@ -47,4 +47,7 @@ def makeReceiverService(endpoint, local_ivo, validators, handlers, whitelist):
 
     service = StreamServerEndpointService(endpoint, whitelisting_factory)
 
+    # Shut down, rather than simply logging an error, if we can't bind.
+    service._raiseSynchronously = True
+
     return service
