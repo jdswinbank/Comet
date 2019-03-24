@@ -3,40 +3,17 @@
 # Comet VOEvent Broker.
 # Event sender.
 
-# Python standard library
 import sys
+import argparse
 
-# Twisted
 from twisted.internet import task
 from twisted.internet.endpoints import clientFromString, connectProtocol
-from twisted.python import usage
 from twisted.python.log import startLogging
 from twisted.python.failure import Failure
 
-# VOEvent transport protocol
+from comet.cmdline import Options
 from comet.protocol.sender import VOEventSender
-
-# Encapsulation of event
 from comet.utility import xml_document
-
-class Options(usage.Options):
-    optParameters = [
-        ["target", None, "tcp:localhost:8098"],
-        ["file", "f", "-", "Where to read XML text to send (- is stdin)."]
-    ]
-
-def read_event(filename):
-    # We handle the input data in binary mode, as we don't want to change the
-    # encoding that has already been applied to the event text.
-    if config["file"] == "-":
-        f = sys.stdin.buffer
-    else:
-        f = open(config["file"], 'r+b')
-
-    try:
-        return xml_document(f.read())
-    finally:
-        f.close()
 
 def send_event(reactor, target, event):
     def gotProtocol(p):
@@ -53,5 +30,5 @@ if __name__ == "__main__":
     config = Options()
     config.parseOptions()
     startLogging(sys.stdout)
-    event = read_event(config['file'])
+    event = xml_document.from_stream(config['event'])
     task.react(send_event, (config['target'], event))
