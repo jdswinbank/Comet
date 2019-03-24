@@ -47,58 +47,70 @@ class Options(BaseOptions):
     PROG = "twistd [options] comet"
 
     def _configureParser(self):
-        self.parser.add_argument("--local-ivo",
-                                 type=valid_ivoid,
-                                 help="IVOA identifier for this system."
-                                      "Required if using --receive or --broadcast.")
+        std_group = self.parser.add_argument_group("Standard arguments",
+                                                   "Global options affecting "
+                                                   "broker operation.")
+        std_group.add_argument("--local-ivo",
+                               type=valid_ivoid,
+                               help="IVOA identifier for this system. "
+                                    "Required if using --receive or --broadcast.")
 
         # Note that `Event_DB` fails gracefully(ish) if this isn't an
         # appopriate location, so we don't sanity check it here.
-        self.parser.add_argument("--eventdb", default=gettempdir(),
-                                 help="Event database root.")
+        std_group.add_argument("--eventdb", default=gettempdir(),
+                               help="Event database root [default=%(default)s].")
 
-        self.parser.add_argument("--receive",
-                                 default=None,
-                                 const=f"tcp:{DEFAULT_SUBMIT_PORT}",
-                                 nargs="?",
-                                 action="append",
-                                 type=lambda ep: coerce_to_server_endpoint(reactor, ep),
-                                 help="Add an endpoint for receiving events.")
-        self.parser.add_argument("--receive-whitelist",
-                                 default=[ip_network("0.0.0.0/0")],
-                                 nargs="*",
-                                 type=ip_network,
-                                 help="Networks from which to accept "
-                                      "event submissions.")
+        rcv_group = self.parser.add_argument_group("Event Receiver",
+                                                   "Receive events submitted "
+                                                   "by remote authors.")
+        rcv_group.add_argument("--receive",
+                               default=None,
+                               const=f"tcp:{DEFAULT_SUBMIT_PORT}",
+                               nargs="?",
+                               action="append",
+                               type=lambda ep: coerce_to_server_endpoint(reactor, ep),
+                               help="Add an endpoint for receiving events.")
+        rcv_group.add_argument("--receive-whitelist",
+                               default=[ip_network("0.0.0.0/0")],
+                               nargs="*",
+                               type=ip_network,
+                               help="Networks from which to accept "
+                                    "event submissions [default=accept from "
+                                    "everywhere].")
 
-        self.parser.add_argument("--broadcast",
+        bcast_group = self.parser.add_argument_group("Event Broadcaster",
+                                                     "Broadcast events to "
+                                                     "remote subscribers.")
+        bcast_group.add_argument("--broadcast",
                                  default=None,
                                  const=f"tcp:{DEFAULT_SUBSCRIBE_PORT}",
                                  nargs="?",
                                  action="append",
                                  type=lambda ep: coerce_to_server_endpoint(reactor, ep),
                                  help="Add an endpoint for broadcasting events.")
-        self.parser.add_argument("--broadcast-test-interval",
+        bcast_group.add_argument("--broadcast-test-interval",
                                  default=BCAST_TEST_INTERVAL,
                                  type=int,
-                                 help="Interval between test event "
-                                      "broadcasts (seconds).")
-        self.parser.add_argument("--broadcast-whitelist",
+                                 help="Interval between test event broadcasts "
+                                      "(seconds) [default=%(default)s].")
+        bcast_group.add_argument("--broadcast-whitelist",
                                  default=[ip_network("0.0.0.0/0")],
                                  nargs="*",
                                  type=ip_network,
                                  help="Networks from which to accept "
-                                      "subscription requests.")
+                                      "subscription requests [default=accept "
+                                      "from everywhere].")
 
-        self.parser.add_argument("--subscribe",
-                                 default=None,
-                                 action="append",
-                                 type=lambda ep:
-                                 coerce_to_client_endpoint(reactor, ep, DEFAULT_SUBSCRIBE_PORT),
-                                 help="Add a remote broker to which "
-                                      "to subscribe.")
-
-        self.parser.add_argument("--filter",
+        sub_group = self.parser.add_argument_group("Event Subscriber",
+                                                   "Subscribe to event streams"
+                                                   " from remote brokers.")
+        sub_group.add_argument("--subscribe",
+                               default=None,
+                               action="append",
+                               type=lambda ep: coerce_to_client_endpoint(reactor, ep, DEFAULT_SUBSCRIBE_PORT),
+                               help="Add a remote broker to which "
+                                    "to subscribe.")
+        sub_group.add_argument("--filter",
                                  default=None,
                                  action="append",
                                  dest="filters",
@@ -106,25 +118,30 @@ class Options(BaseOptions):
                                  help="XPath filter to be applied to events "
                                       "received from remote brokers.")
 
-        self.parser.add_argument("--cmd",
-                                 default=None,
-                                 action="append",
-                                 dest="handlers",
-                                 type=SpawnCommand,
-                                 help="External command to spawn when an "
-                                      "event is received.")
+        proc_group = self.parser.add_argument_group("Event Processors",
+                                                    "Define 'event handlers' "
+                                                    "which are applied to all "
+                                                    "events processed by this "
+                                                    "system.")
+        proc_group.add_argument("--cmd",
+                                default=None,
+                                action="append",
+                                dest="handlers",
+                                type=SpawnCommand,
+                                help="External command to spawn when an "
+                                     "event is received.")
 
         for plugin in getPlugins(IHandler, comet.plugins):
-            self.parser.add_argument(f"--{plugin.name}",
-                                     help=f"Enable the {plugin.name} plugin.",
-                                     action="append_const",
-                                     const=plugin.name,
-                                     dest="plugins")
+            proc_group.add_argument(f"--{plugin.name}",
+                                    help=f"Enable the {plugin.name} plugin.",
+                                    action="append_const",
+                                    const=plugin.name,
+                                    dest="plugins")
             if IHasOptions.providedBy(plugin):
                 for name, default, description in plugin.get_options():
-                    self.parser.add_argument(f"--{plugin.name}-{name}",
-                                             default=default,
-                                             help=description)
+                    proc_group.add_argument(f"--{plugin.name}-{name}",
+                                            default=default,
+                                            help=description)
 
     def _checkOptions(self):
         self._check_for_ivoid()
