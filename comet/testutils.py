@@ -4,9 +4,13 @@
 import shutil
 import tempfile
 import textwrap
-from contextlib import contextmanager
+
+from contextlib import contextmanager, redirect_stderr
 from functools import partial
+from os import devnull
+
 import lxml.etree as etree
+
 from comet.protocol import TransportMessage
 
 # All dummy event text should be RAW BYTES, as received over the network.
@@ -117,3 +121,12 @@ class DummyLogObserver(object):
 
     def __call__(self, logentry):
         self.messages.append(logentry['message'])
+
+class OptionTestUtils(object):
+    """Convenience methods for testing `comet.utility.BaseOptions` subclasses.
+    """
+    def _check_bad_parse(self, cmd_line):
+        # A bad parse will raise `builtins.SystemExit` and spew to stderr.
+        # Catch the latter so it doesn't appear in the logs.
+        with redirect_stderr(open(devnull, 'w')):
+            self.assertRaises(SystemExit, self.config.parseOptions, cmd_line)

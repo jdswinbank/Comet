@@ -3,9 +3,7 @@
 
 import os.path
 
-from contextlib import redirect_stderr
 from ipaddress import ip_network
-from os import devnull
 
 from twisted.trial import unittest
 from twisted.internet import reactor
@@ -16,18 +14,12 @@ from comet.service.broker import DEFAULT_SUBMIT_PORT
 from comet.service.broker import DEFAULT_SUBSCRIBE_PORT
 from comet.service.broker import Options
 from comet.service.broker import makeService
-from comet.testutils import DUMMY_SERVICE_IVOID
+from comet.testutils import DUMMY_SERVICE_IVOID, OptionTestUtils
 
-class BrokerOptionsTestCase(unittest.TestCase):
+class BrokerOptionsTestCase(unittest.TestCase, OptionTestUtils):
     def setUp(self):
         self.config = Options()
         self.cmd_line = ["--local-ivo", DUMMY_SERVICE_IVOID.decode()]
-
-    def _check_bad_parse(self, cmd_line):
-        # A bad parse will raise `builtins.SystemExit` and spew to stderr.
-        # Catch the latter so it doesn't appear in the logs.
-        with redirect_stderr(open(devnull, 'w')):
-            self.assertRaises(SystemExit, self.config.parseOptions, cmd_line)
 
     def _check_server_endpoints(self, option_name, default_port):
         # Check for a set of server endpoints specifed by ``--option_name``.

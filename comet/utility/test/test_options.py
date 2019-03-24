@@ -2,13 +2,12 @@
 # Tests for standard options.
 
 from argparse import ArgumentTypeError
-from contextlib import redirect_stderr
-from os import devnull
 
 from twisted.trial import unittest
 
 import comet.log as log
 from comet.utility import valid_ivoid, valid_xpath, BaseOptions
+from comet.testutils import OptionTestUtils
 
 class valid_TestCaseBase(object):
     def test_valid(self):
@@ -34,7 +33,7 @@ class valid_ivoroidTestCase(valid_TestCaseBase, unittest.TestCase):
         self.invalid_expression = "invalid"
 
 
-class BaseOptionsTestCase(unittest.TestCase):
+class BaseOptionsTestCase(unittest.TestCase, OptionTestUtils):
     ARGNAME, ARGVALUE = "test-argument", "test-value"
     PROGNAME="BaseOptionsTestCase-ProgName"
 
@@ -52,31 +51,28 @@ class BaseOptionsTestCase(unittest.TestCase):
                 # superclass.
                 self.has_been_checked = True
 
-        self.trivial = TrivialOptions()
+        self.config = TrivialOptions()
 
     def test_good_parse(self):
-        self.assertFalse(self.trivial.has_been_checked)
-        self.trivial.parseOptions([f"--{self.ARGNAME}", self.ARGVALUE])
-        self.assertIn(self.ARGNAME.replace("-", "_"), self.trivial)
-        self.assertEqual(self.trivial[self.ARGNAME.replace("-", "_")],
+        self.assertFalse(self.config.has_been_checked)
+        self.config.parseOptions([f"--{self.ARGNAME}", self.ARGVALUE])
+        self.assertIn(self.ARGNAME.replace("-", "_"), self.config)
+        self.assertEqual(self.config[self.ARGNAME.replace("-", "_")],
                          self.ARGVALUE)
-        self.assertTrue(self.trivial.has_been_checked)
+        self.assertTrue(self.config.has_been_checked)
 
     def test_bad_parse(self):
         # Redirect stderr to avoid spewing unhelpful errors to the console
         # during testing.
-        with redirect_stderr(open(devnull, 'w')):
-            self.assertRaises(SystemExit,
-                              self.trivial.parseOptions,
-                              [f"--bad-arg", self.ARGVALUE])
+        self._check_bad_parse([f"--bad-arg", self.ARGVALUE])
 
     def test_missing_option(self):
         with self.assertRaises(KeyError):
-            self.trivial['no-such-option']
+            self.config['no-such-option']
 
     def test_prog(self):
         # TrivialOptions sets its progname.
-        self.assertEqual(self.trivial.parser.prog, self.PROGNAME)
+        self.assertEqual(self.config.parser.prog, self.PROGNAME)
 
         # But a parser which doesn't is equally valid.
         class NoProgOptions(BaseOptions):
@@ -85,16 +81,16 @@ class BaseOptionsTestCase(unittest.TestCase):
 
     def test_verbose(self):
         # By default, verbosity is not set.
-        self.trivial.parseOptions([])
-        self.assertEqual(self.trivial['verbose'], None)
+        self.config.parseOptions([])
+        self.assertEqual(self.config['verbose'], None)
         self.assertEqual(log.LEVEL, log.Levels.WARNING)
 
         # But it can be set once...
-        self.trivial.parseOptions(["--verbose"])
-        self.assertEqual(self.trivial['verbose'], 1)
+        self.config.parseOptions(["--verbose"])
+        self.assertEqual(self.config['verbose'], 1)
         self.assertEqual(log.LEVEL, log.Levels.INFO)
 
         # ...or more.
-        self.trivial.parseOptions(["--verbose", "-v"])
-        self.assertEqual(self.trivial['verbose'], 2)
+        self.config.parseOptions(["--verbose", "-v"])
+        self.assertEqual(self.config['verbose'], 2)
         self.assertEqual(log.LEVEL, log.Levels.DEBUG)
