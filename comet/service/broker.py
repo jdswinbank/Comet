@@ -22,6 +22,7 @@ from twisted.python import usage
 # Comet broker routines
 import comet
 import comet.log as log
+from comet.constants import DEFAULT_SUBMIT_PORT, DEFAULT_SUBSCRIBE_PORT
 from comet.service.broadcaster import makeBroadcasterService
 from comet.service.subscriber import makeSubscriberService
 from comet.service.receiver import makeReceiverService
@@ -39,9 +40,6 @@ __all__ = ["makeService", "Options"]
 # Constants
 MAX_AGE = 30.0 * 24 * 60 * 60 # Forget events after 30 days
 PRUNE_INTERVAL = 6 * 60 * 60  # Prune the event db every 6 hours
-
-DEFAULT_SUBMIT_PORT = 8098
-DEFAULT_SUBSCRIBE_PORT = 8099
 
 # By default, we brodcast a test event every BCAST_TEST_INTERVAL seconds.
 BCAST_TEST_INTERVAL = 3600

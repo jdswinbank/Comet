@@ -9,9 +9,8 @@ from twisted.trial import unittest
 from twisted.internet import reactor
 from twisted.internet.error import CannotListenError
 
+from comet.constants import DEFAULT_SUBMIT_PORT, DEFAULT_SUBSCRIBE_PORT
 from comet.service.broker import BCAST_TEST_INTERVAL
-from comet.service.broker import DEFAULT_SUBMIT_PORT
-from comet.service.broker import DEFAULT_SUBSCRIBE_PORT
 from comet.service.broker import Options
 from comet.service.broker import makeService
 from comet.testutils import DUMMY_SERVICE_IVOID, OptionTestUtils
