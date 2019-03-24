@@ -125,8 +125,8 @@ Version 2.0.x
       databases has been dropped. It is necessary to use a previous Comet
       release to update the database format before upgrading to this version.
 
-    - Refactor the codebase caused a minor API change: logging facilities are
-      now available from the ``comet.log`` module. End user code — notably
+    - Refactoring the codebase caused a minor API change: logging facilities
+      are now available from the ``comet.log`` module. End user code — notably
       event handling plugins — should replace statements to the effect of
       ``from comet.utility import log`` with ``import comet.log as log``. The
       convenience aliases ``log.msg`` and ``log.warning`` have been removed:
