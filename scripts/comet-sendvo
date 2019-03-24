@@ -7,13 +7,14 @@ import sys
 import argparse
 
 from twisted.internet import task
-from twisted.internet.endpoints import clientFromString, connectProtocol
+from twisted.internet.endpoints import connectProtocol
 from twisted.python.log import startLogging
 from twisted.python.failure import Failure
 
 from comet.cmdline import Options
+from comet.constants import DEFAULT_SUBMIT_PORT
 from comet.protocol.sender import VOEventSender
-from comet.utility import xml_document
+from comet.utility import xml_document, coerce_to_client_endpoint
 
 def send_event(reactor, target, event):
     def gotProtocol(p):
@@ -22,7 +23,7 @@ def send_event(reactor, target, event):
                 return Failure(Exception("Remote refused event."))
         return p.send_event(event).addCallback(fail_on_nak)
 
-    ep = clientFromString(reactor, target)
+    ep = coerce_to_client_endpoint(reactor, target, DEFAULT_SUBMIT_PORT)
     d = connectProtocol(ep, VOEventSender())
     return d.addCallback(gotProtocol)
 
