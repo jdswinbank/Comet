@@ -118,14 +118,3 @@ class DummyLogObserver(object):
 
     def __call__(self, logentry):
         self.messages.append(logentry['message'])
-
-@contextmanager
-def temp_dir():
-    """
-    Provide a context with a temporary directory. Clean it up when done.
-    """
-    tmpdir = tempfile.mkdtemp()
-    try:
-        yield tmpdir
-    finally:
-        shutil.rmtree(tmpdir)

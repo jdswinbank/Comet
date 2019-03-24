@@ -3,13 +3,14 @@
 
 import os
 import shutil
+from tempfile import TemporaryDirectory
 
 from twisted.trial import unittest
 from twisted.plugin import IPlugin
 
 from comet.icomet import IHandler, IHasOptions
 from comet.utility import xml_document
-from comet.testutils import DUMMY_VOEVENT, temp_dir
+from comet.testutils import DUMMY_VOEVENT
 from comet.plugins.eventwriter import EventWriter
 from comet.plugins.eventwriter import string_to_filename
 from comet.plugins.eventwriter import event_file
@@ -55,7 +56,7 @@ class EventFileTestCase(unittest.TestCase):
             self.assertEqual(f.name, self.filename + FILENAME_PAD)
 
     def test_temp_dir(self):
-        with temp_dir() as tmpdir:
+        with TemporaryDirectory() as tmpdir:
             with event_file(self.ivoid, dirname=tmpdir) as f:
                 self.assertEqual(os.path.dirname(f.name), tmpdir)
 
@@ -82,7 +83,7 @@ class EventWriterTestCase(unittest.TestCase):
 
     def test_custom_directory(self):
         self.assertEqual(self.event_writer.get_options()[0][1], os.getcwd())
-        with temp_dir() as tmpdir:
+        with TemporaryDirectory() as tmpdir:
             self.event_writer.set_option("directory", tmpdir)
             self.test_save_event(tmpdir)
 
@@ -90,7 +91,7 @@ class EventWriterTestCase(unittest.TestCase):
         # Demonstrate that the output directory will be created if it doesn't
         # exist.
         self.assertEqual(self.event_writer.get_options()[0][1], os.getcwd())
-        with temp_dir() as tmpdir:
+        with TemporaryDirectory() as tmpdir:
             output_dir = os.path.join(tmpdir, "comet-test")
             self.event_writer.set_option("directory", output_dir)
             self.test_save_event(output_dir)
