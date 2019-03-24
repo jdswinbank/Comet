@@ -14,6 +14,8 @@ setup(
     url=comet.__url__,
     packages=[
         'comet',
+        'comet.cmdline',
+        'comet.cmdline.test',
         'comet.handler',
         'comet.handler.test',
         'comet.log',
