@@ -19,10 +19,10 @@ Manual installation
 Requirements
 ^^^^^^^^^^^^
 
-Comet is developed targeting Python 3.4 and later. It depends upon:
+Comet is developed targeting Python 3.6 and later. It depends upon:
 
-* `Twisted <http://twistedmatrix.com/>`_ (version 16.0 or later);
-* `lxml <http://lxml.de/>`_ (version 2.3 or later);
+* `Twisted <http://twistedmatrix.com/>`_ (version 16.1.0 or later);
+* `lxml <http://lxml.de/>`_ (version 3.4.0 or later);
 * `zope.interface <http://docs.zope.org/zope.interface/>`_ (version 4.1.1 or
   later);
 
