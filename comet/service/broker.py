@@ -14,8 +14,6 @@ from twisted.application.internet import TCPServer
 from twisted.application.service import MultiService
 from twisted.internet import reactor
 from twisted.internet.task import LoopingCall
-from twisted.internet.endpoints import clientFromString
-from twisted.internet.endpoints import serverFromString
 from twisted.plugin import getPlugins
 from twisted.python import usage
 
@@ -27,6 +25,7 @@ from comet.service.broadcaster import makeBroadcasterService
 from comet.service.subscriber import makeSubscriberService
 from comet.service.receiver import makeReceiverService
 from comet.utility import Event_DB, BaseOptions, valid_ivoid, valid_xpath
+from comet.utility import coerce_to_client_endpoint, coerce_to_server_endpoint
 from comet.validator import CheckIVOID, CheckPreviouslySeen, CheckSchema
 
 # Handlers and plugins
@@ -63,7 +62,7 @@ class Options(BaseOptions):
                                  const=f"tcp:{DEFAULT_SUBMIT_PORT}",
                                  nargs="?",
                                  action="append",
-                                 type=lambda ep: serverFromString(reactor, ep),
+                                 type=lambda ep: coerce_to_server_endpoint(reactor, ep),
                                  help="Add an endpoint for receiving events.")
         self.parser.add_argument("--receive-whitelist",
                                  default=[ip_network("0.0.0.0/0")],
@@ -77,7 +76,7 @@ class Options(BaseOptions):
                                  const=f"tcp:{DEFAULT_SUBSCRIBE_PORT}",
                                  nargs="?",
                                  action="append",
-                                 type=lambda ep: serverFromString(reactor, ep),
+                                 type=lambda ep: coerce_to_server_endpoint(reactor, ep),
                                  help="Add an endpoint for broadcasting events.")
         self.parser.add_argument("--broadcast-test-interval",
                                  default=BCAST_TEST_INTERVAL,
@@ -91,12 +90,11 @@ class Options(BaseOptions):
                                  help="Networks from which to accept "
                                       "subscription requests.")
 
-        # TODO: We should be able to specify a subscription target with just a
-        # hostname, rather than a full endpoint description.
         self.parser.add_argument("--subscribe",
                                  default=None,
                                  action="append",
-                                 type=lambda ep: clientFromString(reactor, ep),
+                                 type=lambda ep:
+                                 coerce_to_client_endpoint(reactor, ep, DEFAULT_SUBSCRIBE_PORT),
                                  help="Add a remote broker to which "
                                       "to subscribe.")
 

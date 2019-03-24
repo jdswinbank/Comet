@@ -37,6 +37,11 @@ class BrokerOptionsTestCase(unittest.TestCase, OptionTestUtils):
         self.assertEqual(len(self.config[option_name]), 1)
         self.assertEqual(self.config[option_name][0]._port, 1)
 
+        # If specified without a protocol type, default to TCP.
+        self.config.parseOptions(self.cmd_line + [f"--{option_name}", "1"])
+        self.assertEqual(len(self.config[option_name]), 1)
+        self.assertEqual(self.config[option_name][0]._port, 1)
+
         # If specified with an argument AND without, do both.
         self.config.parseOptions(self.cmd_line +
                                  [f"--{option_name}",
@@ -168,6 +173,23 @@ class BrokerOptionsTestCase(unittest.TestCase, OptionTestUtils):
         self.assertEqual(self.config['subscribe'][0]._port,
                          DEFAULT_SUBSCRIBE_PORT)
         self.assertEqual(self.config['subscribe'][0]._host, "test")
+
+        # If a protocol isn't specified, assume TCP.
+        self.config.parseOptions(self.cmd_line +
+                                 ["--subscribe",
+                                  f"test:{DEFAULT_SUBSCRIBE_PORT}"])
+        self.assertEqual(len(self.config['subscribe']), 1)
+        self.assertEqual(self.config['subscribe'][0]._port,
+                         DEFAULT_SUBSCRIBE_PORT)
+        self.assertEqual(self.config['subscribe'][0]._host, "test")
+
+        # If a port isn't specified, use the default.
+        self.config.parseOptions(self.cmd_line + ["--subscribe", f"test"])
+        self.assertEqual(len(self.config['subscribe']), 1)
+        self.assertEqual(self.config['subscribe'][0]._port,
+                         DEFAULT_SUBSCRIBE_PORT)
+        self.assertEqual(self.config['subscribe'][0]._host, "test")
+
 
         # Specifying multiple endpoints to a single --subscribe option should
         # fail to parse.
