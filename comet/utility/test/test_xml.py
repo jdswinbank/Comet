@@ -3,6 +3,7 @@
 
 import textwrap
 import lxml.etree as etree
+from io import BytesIO
 
 from twisted.trial import unittest
 
@@ -131,3 +132,10 @@ class xml_document_infer_type_TestCase(unittest.TestCase):
 
     def test_bad_parse(self):
         self.assertRaises(ParseError, xml_document.infer_type, EXAMPLE_XML)
+
+    def test_from_stream(self):
+        b = BytesIO()
+        b.write(DUMMY_VOEVENT)
+        b.seek(0)
+        msg = xml_document.from_stream(b)
+        self._assertVOEvent(msg, "test", DUMMY_EVENT_IVOID.decode())

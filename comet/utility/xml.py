@@ -93,3 +93,9 @@ class xml_document(object):
             return TransportMessage(raw_bytes)
         else:
             raise ParseError(f"Unknown role: {xmldoc.role}")
+
+    @staticmethod
+    def from_stream(stream):
+        """Give an IO stream, return an appropriate xml_document subclass.
+        """
+        return xml_document.infer_type(stream.read())
