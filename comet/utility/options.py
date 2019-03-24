@@ -21,13 +21,14 @@ class BaseOptions(object):
                                       "more than once).")
         self._configureParser()
 
-    def parseOptions(self, argv):
+    def parseOptions(self, argv=None):
         """Parse argument list and set option values.
 
         Parameters
         ----------
-        argv : iterable of `str`
-            Set of arguments to parse.
+        argv : iterable of `str`, optional
+            Set of arguments to parse. If unspecified, we rely on argparse to
+            pull appropriate values from `sys.argv`.
 
         Returns
         -------
