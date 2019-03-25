@@ -72,7 +72,10 @@ class BaseOptions(object):
         raise KeyError(key)
 
     def __contains__(self, key):
-        return hasattr(self._config, key)
+        if hasattr(self, "_config"):
+            return hasattr(self._config, key)
+        else:
+            return False
 
 def valid_ivoid(expression):
     """Check for a valid IVOID.

@@ -67,6 +67,7 @@ class BaseOptionsTestCase(unittest.TestCase, OptionTestUtils):
         self._check_bad_parse([f"--bad-arg", self.ARGVALUE])
 
     def test_missing_option(self):
+        self.assertFalse('no-such-option' in self.config)
         with self.assertRaises(KeyError):
             self.config['no-such-option']
 
