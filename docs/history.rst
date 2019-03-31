@@ -61,7 +61,7 @@ Version 3.0.x
 
 3.0.0 (2018-05-30) [`Download <//github.com/jdswinbank/Comet/tarball/3.0.0>`__]
 
-- This is the last major relase of Comet to support Python 2.7. Future major
+- This is the last major release of Comet to support Python 2.7. Future major
   (4.0.0) and minor (3.1.0) releases will only run on Python 3. Critical
   bugfixes to this version of Comet will be provided as patch releases (3.0.x)
   until the next major release.
