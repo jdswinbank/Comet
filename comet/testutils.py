@@ -4,10 +4,14 @@
 import shutil
 import tempfile
 import textwrap
-from contextlib import contextmanager
+
+from contextlib import contextmanager, redirect_stderr
 from functools import partial
+from os import devnull
+
 import lxml.etree as etree
-from comet.protocol.messages import authenticateresponse
+
+from comet.protocol import TransportMessage
 
 # All dummy event text should be RAW BYTES, as received over the network.
 
@@ -66,7 +70,7 @@ DUMMY_ACK = u"""
         <Response>%s</Response>
         <TimeStamp>2012-01-01T00:00:00Z</TimeStamp>
     </trn:Transport>
-""" % (DUMMY_SERVICE_IVOID.decode(), DUMMY_SERVICE_IVOID.decode())
+""" % (DUMMY_EVENT_IVOID.decode(), DUMMY_SERVICE_IVOID.decode())
 DUMMY_ACK = textwrap.dedent(DUMMY_ACK).strip().encode('UTF-8')
 
 DUMMY_NAK = u"""
@@ -80,7 +84,7 @@ DUMMY_NAK = u"""
         <Response>%s</Response>
         <TimeStamp>2012-01-01T00:00:00Z</TimeStamp>
     </trn:Transport>
-""" % (DUMMY_SERVICE_IVOID.decode(), DUMMY_SERVICE_IVOID.decode())
+""" % (DUMMY_EVENT_IVOID.decode(), DUMMY_SERVICE_IVOID.decode())
 DUMMY_NAK = textwrap.dedent(DUMMY_NAK).strip().encode('UTF-8')
 
 DUMMY_AUTHENTICATE_RESPONSE_LEGACY = u"""
@@ -102,9 +106,8 @@ DUMMY_AUTHENTICATE_RESPONSE_LEGACY = textwrap.dedent(
     DUMMY_AUTHENTICATE_RESPONSE_LEGACY
 ).strip().encode('UTF-8')
 
-DUMMY_AUTHENTICATE_RESPONSE = partial(
-    authenticateresponse, DUMMY_SERVICE_IVOID, DUMMY_SERVICE_IVOID
-)
+DUMMY_AUTHENTICATE_RESPONSE = partial(TransportMessage.authenticateresponse,
+                                      DUMMY_SERVICE_IVOID, DUMMY_SERVICE_IVOID)
 
 class DummyEvent(object):
     def __init__(self, ivoid=DUMMY_EVENT_IVOID):
@@ -118,3 +121,12 @@ class DummyLogObserver(object):
 
     def __call__(self, logentry):
         self.messages.append(logentry['message'])
+
+class OptionTestUtils(object):
+    """Convenience methods for testing `comet.utility.BaseOptions` subclasses.
+    """
+    def _check_bad_parse(self, cmd_line):
+        # A bad parse will raise `builtins.SystemExit` and spew to stderr.
+        # Catch the latter so it doesn't appear in the logs.
+        with redirect_stderr(open(devnull, 'w')):
+            self.assertRaises(SystemExit, self.config.parseOptions, cmd_line)

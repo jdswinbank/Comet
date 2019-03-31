@@ -8,13 +8,12 @@ import lxml.etree as etree
 from twisted.trial import unittest
 
 import comet
-from comet.utility import broker_test_message
-from comet.utility import parse_ivoid
+from comet.utility import VOEventMessage, parse_ivoid, BadIvoidError
 from comet.testutils import DUMMY_SERVICE_IVOID
 
 class broker_test_messageTestCase(unittest.TestCase):
     def setUp(self):
-        self.message = broker_test_message(DUMMY_SERVICE_IVOID.decode())
+        self.message = VOEventMessage.broker_test(DUMMY_SERVICE_IVOID.decode())
 
     def test_valid(self):
         schema = etree.XMLSchema(
@@ -23,6 +22,8 @@ class broker_test_messageTestCase(unittest.TestCase):
             )
         )
         self.assertTrue(schema.validate(self.message.element))
+        self.assertEqual(self.message.role, "test")
+        self.assertTrue(self.message.ivoid.startswith(DUMMY_SERVICE_IVOID.decode()))
 
 class parse_ivoidTestCase(unittest.TestCase):
     # Character classes as defined by the IVOA Identifiers spec, 1.12
@@ -39,7 +40,7 @@ class parse_ivoidTestCase(unittest.TestCase):
     def _bad_parse(self, auth, rsrc, local):
         # IVOID parsing should fail: parse_ivoid() raises.
         ivoid = self._build_ivoid(auth, rsrc, local)
-        self.assertRaises(Exception, parse_ivoid, ivoid)
+        self.assertRaises(BadIvoidError, parse_ivoid, ivoid)
 
     def _good_parse(self, auth, rsrc, local):
         # IVOID should be parsed and inputs recovered.
@@ -67,7 +68,7 @@ class parse_ivoidTestCase(unittest.TestCase):
             "ivo:///resourceKey#",
             "ivo://"
         ]:
-            self.assertRaises(Exception, parse_ivoid, ivoid)
+            self.assertRaises(BadIvoidError, parse_ivoid, ivoid)
 
     def test_authority_id(self):
         # Per IVOA Identifiers spec:

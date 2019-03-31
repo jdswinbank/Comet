@@ -7,7 +7,35 @@ on version numbering and how releases are made.
 Development Version
 -------------------
 
-- Python 2.7 support has been removed.
+- Python 3.6 or later is now required. Support for versions 2.7, 3.4 and 3.5
+  has been removed.
+
+- Revised command line interface.
+
+  The new interface is more straightforward and more flexible than the old
+  one, and makes it easier to catch — and provide helpful messages — in the
+  case of errors. However, it is incompatible; scripts will have to be updated
+  for the new version.
+
+- More flexible interface “endpoints”.
+
+  Rather than simply specifying a port to listen on, or the combination of a
+  hostname and a port to connect to, connections in Comet are now specified in
+  terms of `Twisted endpoints`_. This makes it possible to run, or connect to,
+  Comet services over any data transport supported by Twisted, rather than
+  just using TCP. For example, Comet can now operate using `Unix domain
+  sockets`_ rather than TCP/IP networking.
+
+- Event receiver and broadcaster can listen on multiple endpoints.
+
+  Comet's event subscriber has long been able to connect to multiple remote
+  brokers (“subscribe to *that* one and *this* one simultaneously”). This
+  capability is now extended to the receiver and broadcaster, which can
+  simultaneously listen for connections on multiple interfaces (e.g., a TCP
+  port and a Unix domain socket).
+
+.. _Twisted endpoints: https://twistedmatrix.com/documents/current/core/howto/endpoints.html
+.. _Unix domain sockets: https://en.wikipedia.org/wiki/Unix_domain_socket
 
 Version 3.1.x
 -------------

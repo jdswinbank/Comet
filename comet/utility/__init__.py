@@ -1,6 +1,7 @@
 # Comet VOEvent Broker.
 # Utility routines.
 
+from comet.utility.endpoint import *
 from comet.utility.event_db import *
 from comet.utility.options import *
 from comet.utility.voevent import *

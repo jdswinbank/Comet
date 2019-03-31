@@ -2,30 +2,30 @@
 # Master broker service.
 
 # Python standard library
-import os
+import os.path
+from argparse import ArgumentTypeError
+from tempfile import gettempdir
 
 # Used for building IP whitelist
 from ipaddress import ip_network
 
-# lxml XML handling
-from lxml.etree import XPath, XPathSyntaxError
-
 # Twisted
-from twisted.internet import reactor
-from twisted.python import usage
-from twisted.plugin import getPlugins
-from twisted.internet.task import LoopingCall
-from twisted.application.service import MultiService
-from twisted.application.internet import TCPClient
 from twisted.application.internet import TCPServer
+from twisted.application.service import MultiService
+from twisted.internet import reactor
+from twisted.internet.task import LoopingCall
+from twisted.plugin import getPlugins
+from twisted.python import usage
 
 # Comet broker routines
 import comet
 import comet.log as log
-from comet.protocol import VOEventBroadcasterFactory
-from comet.protocol import VOEventReceiverFactory
-from comet.protocol import VOEventSubscriberFactory
-from comet.utility import Event_DB, BaseOptions, WhitelistingFactory
+from comet.constants import DEFAULT_SUBMIT_PORT, DEFAULT_SUBSCRIBE_PORT
+from comet.service.broadcaster import makeBroadcasterService
+from comet.service.subscriber import makeSubscriberService
+from comet.service.receiver import makeReceiverService
+from comet.utility import Event_DB, BaseOptions, valid_ivoid, valid_xpath
+from comet.utility import coerce_to_client_endpoint, coerce_to_server_endpoint
 from comet.validator import CheckIVOID, CheckPreviouslySeen, CheckSchema
 
 # Handlers and plugins
@@ -39,177 +39,167 @@ __all__ = ["makeService", "Options"]
 # Constants
 MAX_AGE = 30.0 * 24 * 60 * 60 # Forget events after 30 days
 PRUNE_INTERVAL = 6 * 60 * 60  # Prune the event db every 6 hours
-DEFAULT_REMOTE_PORT = 8099    # If the user doesn't specify
 
 # By default, we brodcast a test event every BCAST_TEST_INTERVAL seconds.
 BCAST_TEST_INTERVAL = 3600
 
 class Options(BaseOptions):
-    optFlags = [
-        ["receive", "r", "Listen for TCP connections from authors."],
-        ["broadcast", "b", "Re-broadcast VOEvents received."],
-        ["verbose", "v", "Increase verbosity."],
-        ["quiet", "q", "Decrease verbosity."]
-    ]
+    PROG = "twistd [options] comet"
 
-    optParameters = [
-        ["eventdb", None, os.environ.get("TMPDIR", "/tmp"), "Event database root."],
-        ["receive-port", None, 8098, "TCP port for receiving events.", int],
-        ["broadcast-port", None, DEFAULT_REMOTE_PORT, "TCP port for broadcasting events.", int],
-        ["broadcast-test-interval", None, BCAST_TEST_INTERVAL, "Interval between test event brodcasts (in seconds; 0 to disable).", int],
-        ["author-whitelist", None, "0.0.0.0/0", "Network to be included in author whitelist."],
-        ["subscriber-whitelist", None, "0.0.0.0/0", "Network to be included in subscriber whitelist."],
-        ["remote", None, None, "Remote broadcaster to subscribe to (host[:port])."],
-        ["filter", None, None, "XPath filter applied to events broadcast by remote."],
-        ["cmd", None, None, "Spawn external command on event receipt."]
-    ]
+    def _configureParser(self):
+        std_group = self.parser.add_argument_group("Standard arguments",
+                                                   "Global options affecting "
+                                                   "broker operation.")
+        std_group.add_argument("--local-ivo",
+                               type=valid_ivoid,
+                               help="IVOA identifier for this system. "
+                                    "Required if using --receive or --broadcast.")
 
-    def __init__(self):
-        BaseOptions.__init__(self)
-        self['remotes'] = []
-        self['running_author-whitelist'] = []
-        self['running_subscriber-whitelist'] = []
-        self['filters'] = []
-        self['handlers'] = []
-        self['verbosity'] = 1
+        # Note that `Event_DB` fails gracefully(ish) if this isn't an
+        # appopriate location, so we don't sanity check it here.
+        std_group.add_argument("--eventdb", default=gettempdir(),
+                               help="Event database root [default=%(default)s].")
 
-    def opt_quiet(self):
-        self['verbosity'] -= 1
-    opt_q = opt_quiet
+        rcv_group = self.parser.add_argument_group("Event Receiver",
+                                                   "Receive events submitted "
+                                                   "by remote authors.")
+        rcv_group.add_argument("--receive",
+                               default=None,
+                               const=f"tcp:{DEFAULT_SUBMIT_PORT}",
+                               nargs="?",
+                               action="append",
+                               type=lambda ep: coerce_to_server_endpoint(reactor, ep),
+                               help="Add an endpoint for receiving events.")
+        rcv_group.add_argument("--receive-whitelist",
+                               default=[ip_network("0.0.0.0/0")],
+                               nargs="*",
+                               type=ip_network,
+                               help="Networks from which to accept "
+                                    "event submissions [default=accept from "
+                                    "everywhere].")
 
-    def opt_verbose(self):
-        self['verbosity'] += 1
-    opt_v = opt_verbose
+        bcast_group = self.parser.add_argument_group("Event Broadcaster",
+                                                     "Broadcast events to "
+                                                     "remote subscribers.")
+        bcast_group.add_argument("--broadcast",
+                                 default=None,
+                                 const=f"tcp:{DEFAULT_SUBSCRIBE_PORT}",
+                                 nargs="?",
+                                 action="append",
+                                 type=lambda ep: coerce_to_server_endpoint(reactor, ep),
+                                 help="Add an endpoint for broadcasting events.")
+        bcast_group.add_argument("--broadcast-test-interval",
+                                 default=BCAST_TEST_INTERVAL,
+                                 type=int,
+                                 help="Interval between test event broadcasts "
+                                      "(seconds) [default=%(default)s].")
+        bcast_group.add_argument("--broadcast-whitelist",
+                                 default=[ip_network("0.0.0.0/0")],
+                                 nargs="*",
+                                 type=ip_network,
+                                 help="Networks from which to accept "
+                                      "subscription requests [default=accept "
+                                      "from everywhere].")
 
-    def opt_cmd(self, cmd):
-        self["handlers"].append(SpawnCommand(cmd))
+        sub_group = self.parser.add_argument_group("Event Subscriber",
+                                                   "Subscribe to event streams"
+                                                   " from remote brokers.")
+        sub_group.add_argument("--subscribe",
+                               default=None,
+                               action="append",
+                               type=lambda ep: coerce_to_client_endpoint(reactor, ep, DEFAULT_SUBSCRIBE_PORT),
+                               help="Add a remote broker to which "
+                                    "to subscribe.")
+        sub_group.add_argument("--filter",
+                                 default=None,
+                                 action="append",
+                                 dest="filters",
+                                 type=valid_xpath,
+                                 help="XPath filter to be applied to events "
+                                      "received from remote brokers.")
 
-    def opt_filter(self, my_filter):
-        try:
-            # Weed out invalid filters
-            XPath(my_filter)
-        except XPathSyntaxError:
-            raise usage.UsageError("Invalid XPath expression: %s" % my_filter)
-        self['filters'].append(my_filter)
+        proc_group = self.parser.add_argument_group("Event Processors",
+                                                    "Define 'event handlers' "
+                                                    "which are applied to all "
+                                                    "events processed by this "
+                                                    "system.")
+        proc_group.add_argument("--cmd",
+                                default=None,
+                                action="append",
+                                dest="handlers",
+                                type=SpawnCommand,
+                                help="External command to spawn when an "
+                                     "event is received.")
 
-    def opt_remote(self, remote):
-        try:
-            host, port = remote.split(":")
-        except ValueError:
-            host, port = remote, DEFAULT_REMOTE_PORT
-        reactor.callWhenRunning(
-            log.info,
-            "Subscribing to remote broker %s:%d" % (host, int(port))
-        )
-        self['remotes'].append((host, int(port)))
-
-    def opt_author_whitelist(self, network):
-        reactor.callWhenRunning(log.info, "Whitelisting %s for submission" % network)
-        self['running_author-whitelist'].append(ip_network(network, strict=False))
-
-    def opt_subscriber_whitelist(self, network):
-        reactor.callWhenRunning(log.info, "Whitelisting %s for subscription" % network)
-        self['running_subscriber-whitelist'].append(ip_network(network, strict=False))
-
-    def postOptions(self):
-        BaseOptions.postOptions(self)
-        if self['running_author-whitelist']:
-            self['author-whitelist'] = self['running_author-whitelist']
-        else:
-            self['author-whitelist'] = [ip_network(self['author-whitelist'], strict=False)]
-
-        if self['running_subscriber-whitelist']:
-            self['subscriber-whitelist'] = self['running_subscriber-whitelist']
-        else:
-            self['subscriber-whitelist'] = [ip_network(self['subscriber-whitelist'], strict=False)]
-
-        if self['verbosity'] >= 2:
-            log.LEVEL = log.Levels.DEBUG
-        elif self['verbosity'] == 1:
-            log.LEVEL = log.Levels.INFO
-        else:
-            log.LEVEL = log.Levels.WARNING
-
-        # Now enable plugins if requested.
-        # We loop over all plugins, checking if the user supplied their name
-        # on the command line and adding them to our list of handlers if so.
         for plugin in getPlugins(IHandler, comet.plugins):
-            if self[plugin.name]:
-                if IHasOptions.providedBy(plugin):
-                    for name, _, _ in plugin.get_options():
-                        plugin.set_option(name, self["%s-%s" % (plugin.name, name)])
-                self['handlers'].append(plugin)
+            proc_group.add_argument(f"--{plugin.name}",
+                                    help=f"Enable the {plugin.name} plugin.",
+                                    action="append_const",
+                                    const=plugin.name,
+                                    dest="plugins")
+            if IHasOptions.providedBy(plugin):
+                for name, default, description in plugin.get_options():
+                    proc_group.add_argument(f"--{plugin.name}-{name}",
+                                            default=default,
+                                            help=description)
 
+    def _checkOptions(self):
+        self._check_for_ivoid()
+        self._configure_plugins()
 
-# Stub the options for all our plugins into the option handler
-for plugin in getPlugins(IHandler, comet.plugins):
-    Options.optFlags.append(
-        [plugin.name, None, "Enable the %s plugin." % (plugin.name,)]
-    )
-    if IHasOptions.providedBy(plugin):
-        for name, default, description in plugin.get_options():
-            Options.optParameters.append(
-                ["%s-%s" % (plugin.name, name), None, default, description]
-            )
+    def _configure_plugins(self):
+        """Internal-use method to configure any plugins requested.
+        """
+        if self._config.handlers is None:
+            self._config.handlers = []
+        if self._config.plugins:
+            for plugin in getPlugins(IHandler, comet.plugins):
+                if plugin.name in self._config.plugins:
+                    if IHasOptions.providedBy(plugin):
+                        for name, _, _ in plugin.get_options():
+                            plugin.set_option(name,
+                                              getattr(self._config,
+                                                      f"{plugin.name}-{name}".replace("-", "_")))
+                    self._config.handlers.append(plugin)
 
+    def _check_for_ivoid(self):
+        """Ensure that an IVOID has been supplied if broadcasting or receiving.
+        """
+        if not self['local_ivo'] and (self['receive'] or self['broadcast']):
+            self.parser.error("IVOA identifier required (--local-ivo).")
 
 def makeService(config):
     event_db = Event_DB(config['eventdb'])
     LoopingCall(event_db.prune, MAX_AGE).start(PRUNE_INTERVAL)
 
     broker_service = MultiService()
-    if config['broadcast']:
-        broadcaster_factory = VOEventBroadcasterFactory(
-            config["local-ivo"], config['broadcast-test-interval']
-        )
-        if log.LEVEL >= log.Levels.INFO: broadcaster_factory.noisy = False
-        broadcaster_whitelisting_factory = WhitelistingFactory(
-            broadcaster_factory, config['subscriber-whitelist'], "subscription"
-        )
-        if log.LEVEL >= log.Levels.INFO: broadcaster_whitelisting_factory.noisy = False
-        broadcaster_service = TCPServer(
-            config['broadcast-port'],
-            broadcaster_whitelisting_factory
-        )
-        broadcaster_service.setName("Broadcaster")
-        broadcaster_service.setServiceParent(broker_service)
+    for ep in config['broadcast'] if config['broadcast'] else []:
+        bcast = makeBroadcasterService(ep, config['local_ivo'],
+                                       config['broadcast_test_interval'],
+                                       config['broadcast_whitelist'])
+        bcast.setServiceParent(broker_service)
 
         # If we're running a broadcast, we will rebroadcast any events we
         # receive to it.
-        config['handlers'].append(EventRelay(broadcaster_factory))
+        config['handlers'].append(EventRelay(bcast.factory))
 
     if config['receive']:
-        receiver_factory = VOEventReceiverFactory(
-            local_ivo=config['local-ivo'],
-            validators=[
-                CheckPreviouslySeen(event_db),
-                CheckSchema(
-                    os.path.join(comet.__path__[0], "schema/VOEvent-v2.0.xsd")
-                ),
-                CheckIVOID()
-            ],
-            handlers=config['handlers']
-        )
-        if log.LEVEL >= log.Levels.INFO: receiver_factory.noisy = False
-        author_whitelisting_factory = WhitelistingFactory(
-            receiver_factory, config['author-whitelist'], "submission"
-        )
-        if log.LEVEL >= log.Levels.INFO: author_whitelisting_factory.noisy = False
-        receiver_service = TCPServer(config['receive-port'], author_whitelisting_factory)
-        receiver_service.setName("Receiver")
-        receiver_service.setServiceParent(broker_service)
+        validators = [CheckPreviouslySeen(event_db),
+                      CheckSchema(os.path.join(comet.__path__[0],
+                                               "schema/VOEvent-v2.0.xsd")),
+                      CheckIVOID()]
+        for ep in config['receive']:
+            recv = makeReceiverService(ep, config['local_ivo'], validators,
+                                       config['handlers'],
+                                       config['receive_whitelist'])
+            recv.setServiceParent(broker_service)
 
-    for host, port in config["remotes"]:
-        subscriber_factory = VOEventSubscriberFactory(
-            local_ivo=config["local-ivo"],
-            validators=[CheckPreviouslySeen(event_db)],
-            handlers=config['handlers'],
-            filters=config['filters']
-        )
-        if log.LEVEL >= log.Levels.INFO: subscriber_factory.noisy = False
-        remote_service = TCPClient(host, port, subscriber_factory)
-        remote_service.setName("Remote %s:%d" % (host, port))
-        remote_service.setServiceParent(broker_service)
+    for ep in config['subscribe'] if config['subscribe'] else []:
+        sub = makeSubscriberService(ep, config['local_ivo'],
+                                    [CheckPreviouslySeen(event_db)],
+                                    config['handlers'],
+                                    config['filters'])
+        sub.setServiceParent(broker_service)
 
     if not broker_service.services:
         reactor.callWhenRunning(log.warn, "No services requested; stopping.")

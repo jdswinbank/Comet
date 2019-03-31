@@ -18,11 +18,11 @@ from twisted.internet.protocol import ServerFactory
 from comet.protocol.base import ElementSender
 
 # Constructors for transport protocol messages
-from comet.protocol.messages import iamalive, authenticate
+from comet.protocol.messages import TransportMessage
 
 # Comet utility routines
 import comet.log as log
-from comet.utility import broker_test_message, xml_document, ParseError
+from comet.utility import ParseError, VOEventMessage
 
 __all__ = ["VOEventBroadcasterFactory"]
 
@@ -37,7 +37,7 @@ class VOEventBroadcaster(ElementSender):
         log.info("New subscriber at %s" % str(self.transport.getPeer()))
         self.factory.broadcasters.append(self)
         self.alive_count = 0
-        self.send_xml(authenticate(self.factory.local_ivo))
+        self.send_xml(TransportMessage.authenticate(self.factory.local_ivo))
         self.outstanding_ack = 0
 
     def connectionLost(self, *args):
@@ -53,26 +53,26 @@ class VOEventBroadcaster(ElementSender):
             log.info("Peer is not acknowledging events; dropping connection")
             self.transport.loseConnection()
         else:
-            self.send_xml(iamalive(self.factory.local_ivo))
+            self.send_xml(TransportMessage.iamalive(self.factory.local_ivo))
             self.alive_count += 1
 
     def stringReceived(self, data):
         try:
-            incoming = xml_document(data)
+            incoming = TransportMessage(data)
         except ParseError:
             log.warn("Unparsable message received")
             return
 
-        if incoming.element.get('role') == "iamalive":
+        if incoming.role == "iamalive":
             log.debug("IAmAlive received from %s" % str(self.transport.getPeer()))
             self.alive_count -= 1
-        elif incoming.element.get('role') == "ack":
+        elif incoming.role == "ack":
             log.debug("Ack received from %s" % str(self.transport.getPeer()))
             self.outstanding_ack -= 1
-        elif incoming.element.get('role') == "nak":
+        elif incoming.role == "nak":
             log.info("Nak received from %s; terminating" % str(self.transport.getPeer()))
             self.transport.loseConnection()
-        elif incoming.element.get('role') == "authenticate":
+        elif incoming.role == "authenticate":
             log.debug("Authentication received from %s" % str(self.transport.getPeer()))
             self.filters = []
             # Accept both "new-style" (<Param type="xpath-filter" />) and
@@ -90,10 +90,8 @@ class VOEventBroadcaster(ElementSender):
                 except ElementTree.XPathSyntaxError:
                     log.info("Filter %s is not valid XPath" % (xpath,))
         else:
-            log.warn(
-                "Incomprehensible data received from %s (role=%s)" %
-                (self.transport.getPeer(), incoming.element.get("role"))
-            )
+            log.warn("Incomprehensible data received from %s (role=%s)" %
+                     (self.transport.getPeer(), incoming.role))
 
     def send_event(self, event):
         # Check the event against our filters and, if one or more pass, then
@@ -147,6 +145,6 @@ class VOEventBroadcasterFactory(ServerFactory):
 
     def sendTestEvent(self):
         log.debug("Broadcasting test event")
-        test_event = broker_test_message(self.local_ivo)
+        test_event = VOEventMessage.broker_test(self.local_ivo)
         for broadcaster in self.broadcasters:
             broadcaster.send_event(test_event)

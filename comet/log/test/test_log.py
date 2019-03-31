@@ -83,6 +83,3 @@ class test_comet_logging(unittest.TestCase):
         d = log.warn(DUMMY_MESSAGE)
         self.assertTrue(self.observer.messages)
         return d.addCallback(self._check_log_full)
-
-    def test_default_level(self):
-        self.assertEqual(log.DEFAULT_LEVEL, log.Levels.INFO)

@@ -3,9 +3,14 @@
 
 import textwrap
 import lxml.etree as etree
+from io import BytesIO
 
 from twisted.trial import unittest
+
+from comet.testutils import DUMMY_IAMALIVE, DUMMY_VOEVENT, DUMMY_EVENT_IVOID
 from comet.utility import xml_document, ParseError
+from comet.utility import VOEventMessage
+from comet.protocol import TransportMessage
 
 EXAMPLE_XML = b"""<xml></xml>"""
 
@@ -106,3 +111,31 @@ class xml_security_TestCase(unittest.TestCase):
         <bomb>&a;&a;&a;&a;&a;</bomb>
         """).strip().encode('utf-8')
         self.assertRaises(ParseError, xml_document, xml_str)
+
+class xml_document_infer_type_TestCase(unittest.TestCase):
+    def _assertTransport(self, doc, role):
+        self.assertIsInstance(doc, TransportMessage)
+        self.assertEqual(doc.role, role)
+
+    def _assertVOEvent(self, doc, role, ivoid):
+        self.assertIsInstance(doc, VOEventMessage)
+        self.assertEqual(doc.role, role)
+        self.assertEqual(doc.ivoid, ivoid)
+
+    def test_dummyEvent(self):
+        msg = xml_document.infer_type(DUMMY_VOEVENT)
+        self._assertVOEvent(msg, "test", DUMMY_EVENT_IVOID.decode())
+
+    def test_iamalive(self):
+        msg = xml_document.infer_type(DUMMY_IAMALIVE)
+        self._assertTransport(msg, "iamalive")
+
+    def test_bad_parse(self):
+        self.assertRaises(ParseError, xml_document.infer_type, EXAMPLE_XML)
+
+    def test_from_stream(self):
+        b = BytesIO()
+        b.write(DUMMY_VOEVENT)
+        b.seek(0)
+        msg = xml_document.from_stream(b)
+        self._assertVOEvent(msg, "test", DUMMY_EVENT_IVOID.decode())

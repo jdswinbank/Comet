@@ -7,10 +7,7 @@ from twisted.protocols.basic import Int32StringReceiver
 
 # Comet
 import comet.log as log
-from comet.protocol.messages import ack, nak
-
-# Constants
-VOEVENT_ROLES = ('observation', 'prediction', 'utility', 'test')
+from comet.protocol.messages import TransportMessage
 
 class ElementSender(Int32StringReceiver):
     """
@@ -81,9 +78,8 @@ class EventHandler(ElementSender):
         """
         def handle_valid(status):
             log.debug("Event accepted; sending ACK to %s" % (self.transport.getPeer()))
-            self.send_xml(
-                ack(self.factory.local_ivo, event.element.attrib['ivorn'])
-            )
+            self.send_xml(TransportMessage.ack(self.factory.local_ivo,
+                                               event.element.attrib['ivorn']))
             self.handle_event(event).addCallbacks(
                 lambda x: log.debug("Event processed"),
                 lambda x: log.warn("Event handlers failed")
@@ -93,15 +89,11 @@ class EventHandler(ElementSender):
             log.info("Event rejected (%s); discarding" % (failure.value.subFailure.getErrorMessage(),))
             if can_nak:
                 log.debug("Sending NAK to %s" % (self.transport.getPeer()))
-                self.send_xml(
-                    nak(
-                        self.factory.local_ivo, event.element.attrib['ivorn'],
-                        "Event rejected: %s" % (failure.value.subFailure.getErrorMessage(),)
-                    )
-                )
+                self.send_xml(TransportMessage.nak(self.factory.local_ivo,
+                                                   event.element.attrib['ivorn'],
+                                                   "Event rejected: %s" % (failure.value.subFailure.getErrorMessage(),)))
             else:
                 log.debug("Sending ACK to %s" % (self.transport.getPeer()))
-                self.send_xml(
-                    ack(self.factory.local_ivo, event.element.attrib['ivorn'])
-                )
+                self.send_xml(TransportMessage.ack(self.factory.local_ivo,
+                                                   event.element.attrib['ivorn']))
         return self.validate_event(event).addCallbacks(handle_valid, handle_invalid)
