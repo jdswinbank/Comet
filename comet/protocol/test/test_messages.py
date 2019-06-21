@@ -16,7 +16,7 @@ class TransportTestCase(unittest.TestCase):
     def setUp(self):
         self.schema = etree.XMLSchema(
             etree.parse(
-                os.path.join(comet.__path__[0], "schema/transport-1.1.xsd")
+                os.path.join(comet.__path__[0], "schema/transport-2.0.xsd")
             )
         )
 

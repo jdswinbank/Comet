@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xs:schema xmlns="http://www.telescope-networks.org/xml/Transport/v2.0"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://www.telescope-networks.org/xml/Transport/v2.0"
+           version="2.0">
+ <xs:element name="Transport">
+  <xs:complexType>
+   <xs:sequence>
+    <xs:element minOccurs="1" name="Origin" type="xs:anyURI" />
+    <xs:element minOccurs="0" maxOccurs="1" name="Response" type="xs:anyURI" />
+    <xs:element minOccurs="1" name="TimeStamp" type="xs:dateTime" />
+    <xs:element minOccurs="0" maxOccurs="1" name="Meta">
+     <xs:complexType>
+      <xs:sequence minOccurs="1" maxOccurs="1">
+       <xs:element minOccurs="0" maxOccurs="unbounded" name="Param">
+        <xs:complexType>
+         <xs:attribute name="name" type="xs:string" use="required" />
+         <xs:attribute name="value" type="xs:string" use="required" />
+        </xs:complexType>
+       </xs:element>
+       <xs:element minOccurs="0" maxOccurs="1" name="Result" type="xs:string" />
+      </xs:sequence>
+     </xs:complexType>
+    </xs:element>
+   </xs:sequence>
+   <xs:attribute name="role" type="roleType" use="required" />
+   <xs:attribute name="version" type="xs:string" use="required" />
+  </xs:complexType>
+ </xs:element>
+ <xs:simpleType name="roleType">
+  <xs:restriction base="xs:string">
+   <xs:enumeration value="iamalive" />
+   <xs:enumeration value="authenticate" />
+   <xs:enumeration value="ack" />
+   <xs:enumeration value="nak" />
+  </xs:restriction>
+ </xs:simpleType>
+</xs:schema>
