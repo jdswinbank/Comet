@@ -1,10 +1,12 @@
 # Comet VOEvent Broker.
 # Base class for command line options.
 
+import os
 from argparse import ArgumentParser, ArgumentTypeError
 
 from lxml.etree import XPath, XPathSyntaxError
 
+import comet.plugins
 import comet.log as log
 from comet.utility.voevent import parse_ivoid, BadIvoidError
 
@@ -16,6 +18,10 @@ class BaseOptions(object):
             self.parser = ArgumentParser(prog=self.PROG)
         else:
             self.parser = ArgumentParser()
+        if "COMET_PLUGINPATH" in os.environ:
+            comet.plugins.__path__.extend(
+                os.environ.get("COMET_PLUGINPATH").split(":"))
+
         self.parser.add_argument("--verbose", "-v", action="count",
                                  help="Increase verbosity (may be specified "
                                       "more than once).")

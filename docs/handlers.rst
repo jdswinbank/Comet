@@ -13,11 +13,13 @@ In order to make use of this facility, the developer should be familiar with
 Twisted's `component architecture
 <http://twistedmatrix.com/documents/current/core/howto/components.html>`_.
 Handlers may then be written to follow Comet's :class:`comet.icomet.IHandler`
-interface, and then installed into the ``comet/plugins directory``. A simple
-example is provided in :class:`comet.plugins.eventprinter`. Note that the
-plugin class defines a ``__call__()`` method which is invoked with the event
-being received as its argument. To be more specific, ``__call__()`` is handed
-an instance of :class:`comet.utility.xml.xml_document`.
+interface, and then installed either into the :file:`comet/plugins` directory or
+into a path specified by the :envvar:`COMET_PLUGINPATH` environment variable.
+
+A simple example is provided in :class:`comet.plugins.eventprinter`. Note that
+the plugin class defines a ``__call__()`` method which is invoked with the
+event being received as its argument. To be more specific, ``__call__()`` is
+handed an instance of :class:`comet.utility.xml.xml_document`.
 
 Each handler must provide a name attribute (e.g. ``print-event``). The user
 may specify that a particular plugin be loaded by specifying its name as a

@@ -127,6 +127,17 @@ provide a brief usage message::
 When asked to provide ``--help``, the application exits immediately after
 printing this message: further configuration is required put Comet to work.
 
+Environment Variables
++++++++++++++++++++++
+
+.. envvar:: COMET_PLUGINPATH
+
+  By default, Comet will search the :file:`comet/plugins` directory in its own
+  source tree for :ref:`plugins <Plugins>`. This search path may be augmented
+  by setting :envvar:`COMET_PLUGINPATH` in the environment::
+
+    COMET_PLUGINPATH=/path/to/plugins twistd comet ...
+
 Configuration
 -------------
 
@@ -308,6 +319,8 @@ The same set of event processors are applied to *all* events received by the
 broker, whether they come through direct submission by an author to the Event
 Receiver, or by broadcast from an upstream broker to the Event Subscriber.
 
+.. _plugins:
+
 Plugins
 """""""
 
@@ -329,6 +342,10 @@ invoked Comet): this may be customized using the ``--save-event-directory=``
 option. The filename under which an event is saved is based on its IVOID, but
 modified to avoid characters which are awkard to work with on standard
 filesystems.
+
+Additional, user-defined, plugins may be added by placing them either in the
+:file:`comet/plugins` directory, or in the location specified by
+:envvar:`COMET_PLUGINPATH`.
 
 .. _spawn:
 
