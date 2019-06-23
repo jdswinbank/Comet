@@ -34,6 +34,8 @@ Development Version
   simultaneously listen for connections on multiple interfaces (e.g., a TCP
   port and a Unix domain socket).
 
+- Use the :envvar:`COMET_PLUGINPATH` environment to set the plugin search path.
+
 .. _Twisted endpoints: https://twistedmatrix.com/documents/current/core/howto/endpoints.html
 .. _Unix domain sockets: https://en.wikipedia.org/wiki/Unix_domain_socket
 
