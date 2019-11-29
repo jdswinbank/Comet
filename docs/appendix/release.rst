@@ -17,7 +17,7 @@ There is no formal end-of-life for Comet releases, but generally only critical
 bugs will be fixed in major or minor versions earlier than the most recent
 release.
 
-.. _Semantic Versioning: http://semver.org/
+.. _Semantic Versioning: https://semver.org/
 
 Making a Release
 ----------------
@@ -57,7 +57,7 @@ release branch is marked as active (i.e. that documentation for that branch
 will be built). Normally, the most recent release should be marked as the
 "default version".
 
-Push an update to `PyPI <http://pypi.python.org>`_::
+Push an update to `PyPI <https://pypi.org>`_::
 
   $ python setup.py sdist
   $ pip install twine  # If it's not already installed.

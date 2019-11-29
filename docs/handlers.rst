@@ -11,7 +11,7 @@ One way in which the Comet's capabilties may be developed is by providing
 "event handlers": Python code which is executed when a new event is received.
 In order to make use of this facility, the developer should be familiar with
 Twisted's `component architecture
-<http://twistedmatrix.com/documents/current/core/howto/components.html>`_.
+<https://twistedmatrix.com/documents/current/core/howto/components.html>`_.
 Handlers may then be written to follow Comet's :class:`comet.icomet.IHandler`
 interface, and then installed either into the :file:`comet/plugins` directory or
 into a path specified by the :envvar:`COMET_PLUGINPATH` environment variable.

@@ -1,5 +1,5 @@
 __description__ = "VOEvent Broker"
-__url__ = "http://comet.transientskp.org/"
+__url__ = "https://comet.transientskp.org/"
 __author__ = "John Swinbank"
 __contact__ = "john@swinbank.org"
 __version__ = "3.2.0-pre"

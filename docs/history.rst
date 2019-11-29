@@ -113,7 +113,7 @@ Version 3.0.x
   VOEvent packets will need to stick to that terminology. (`GitHub #51`_)
 
 .. _does not fully support Python 3: https://twistedmatrix.com/trac/milestone/Python-3.x
-.. _Twisted 16.0: http://labs.twistedmatrix.com/2016/03/twisted-160-released.html
+.. _Twisted 16.0: https://labs.twistedmatrix.com/2016/03/twisted-160-released.html
 .. _IVOA Identifiers Version 2.0: http://www.ivoa.net/documents/IVOAIdentifiers/20160523/index.html
 .. _GitHub #10: https://github.com/jdswinbank/Comet/issues/10
 .. _GitHub #39: https://github.com/jdswinbank/Comet/issues/39
@@ -199,7 +199,7 @@ Version 1.2.x
 
     - Require that events submitted to the broker by authors have valid IVORNs.
 
-.. _paper: http://adsabs.harvard.edu/abs/2014A%26C.....7...12S
+.. _paper: https://adsabs.harvard.edu/abs/2014A%26C.....7...12S
 .. _GitHub #29: https://github.com/jdswinbank/Comet/issues/29
 .. _GitHub #31: https://github.com/jdswinbank/Comet/issues/31
 .. _GitHub #33: https://github.com/jdswinbank/Comet/issues/33

@@ -244,7 +244,7 @@ imagine that this time would be substantially reduced.
 .. _GNU General Public License: https://www.gnu.org/copyleft/gpl.html
 .. _Dakota VOEvent Tools: http://voevent.dc3.com/
 .. _earlier proposal by Denny: Denny_
-.. _Comet: http://comet.transientskp.org/
+.. _Comet: https://comet.transientskp.org/
 .. _by design: http://www.gnupg.org/faq/GnuPG-FAQ.html#cant-we-have-a-gpg-library
 .. _OS X: https://www.apple.com/osx/
 .. _VOEvent schema: http://www.ivoa.net/xml/VOEvent/VOEvent-v2.0.xsd
