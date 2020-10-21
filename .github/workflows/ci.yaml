@@ -9,6 +9,11 @@ jobs:
         python-version: [3.6, 3.7, 3.8, 3.9]
         os: [windows-2019, ubuntu-20.04]
 
+        # Twisted doesn't currently install using pip on Windows/Py3.9: skip.
+        exclude:
+          - os: windows-2019
+            python-version: 3.9
+
     runs-on: ${{ matrix.os }}
 
     steps:
