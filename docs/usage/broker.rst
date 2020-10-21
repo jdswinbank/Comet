@@ -136,7 +136,10 @@ Environment Variables
   source tree for :ref:`plugins <Plugins>`. This search path may be augmented
   by setting :envvar:`COMET_PLUGINPATH` in the environment::
 
-    COMET_PLUGINPATH=/path/to/plugins twistd comet ...
+    COMET_PLUGINPATH=/path/to/plugins:/path/to/more/plugins twistd comet ...
+
+  Multiple paths may be specified, as shown above; use ``;`` to separate them
+  on Windows, or ``:`` on other platforms.
 
 Configuration
 -------------

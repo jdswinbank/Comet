@@ -2,6 +2,7 @@
 # Base class for command line options.
 
 import os
+import sys
 from argparse import ArgumentParser, ArgumentTypeError
 
 from lxml.etree import XPath, XPathSyntaxError
@@ -19,8 +20,9 @@ class BaseOptions(object):
         else:
             self.parser = ArgumentParser()
         if "COMET_PLUGINPATH" in os.environ:
+            split_on = ";" if sys.platform == "win32" else ":"
             comet.plugins.__path__.extend(
-                os.environ.get("COMET_PLUGINPATH").split(":"))
+                os.environ.get("COMET_PLUGINPATH").split(split_on))
 
         self.parser.add_argument("--verbose", "-v", action="count",
                                  help="Increase verbosity (may be specified "
