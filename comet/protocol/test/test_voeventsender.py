@@ -7,9 +7,9 @@ from twisted.test import proto_helpers
 from twisted.trial import unittest
 
 from comet.protocol.sender import VOEventSender
-from comet.testutils import (DUMMY_VOEVENT, DUMMY_ACK,
-                             DUMMY_NAK, DUMMY_EVENT_IVOID)
+from comet.testutils import DUMMY_VOEVENT, DUMMY_ACK, DUMMY_NAK, DUMMY_EVENT_IVOID
 from comet.utility import VOEventMessage
+
 
 class VOEventSenderTestCase(unittest.TestCase):
     def setUp(self):
@@ -21,7 +21,7 @@ class VOEventSenderTestCase(unittest.TestCase):
 
     def test_connectionMade(self):
         # Initiating a connection sends nothing.
-        self.assertEqual(self.tr.value(), b'')
+        self.assertEqual(self.tr.value(), b"")
 
     def test_send_event(self):
         # Sending an event should cause the event to appear on the transport.
@@ -36,7 +36,7 @@ class VOEventSenderTestCase(unittest.TestCase):
         self.assertRaises(etree.ParseError, etree.fromstring, unparsable)
         self.proto.stringReceived(unparsable)
         self.assertEqual(self.tr.connected, True)
-        self.assertEqual(self.tr.value(), b'')
+        self.assertEqual(self.tr.value(), b"")
 
     def test_receive_incomprehensible(self):
         # A message that is XML but is meaningless should be ignored: no
@@ -45,31 +45,28 @@ class VOEventSenderTestCase(unittest.TestCase):
         etree.fromstring(incomprehensible)  # Should not raise an error
         self.proto.stringReceived(incomprehensible)
         self.assertEqual(self.tr.connected, True)
-        self.assertEqual(self.tr.value(), b'')
+        self.assertEqual(self.tr.value(), b"")
 
     def test_receive_unknown_ack(self):
         # An ACK for a message that we didn't sent should be ignored: no data
         # is sent, and the transport is not disconnected.
-        self.assertNotIn(DUMMY_EVENT_IVOID.decode(),
-                         self.proto._sent_ivoids.keys())
+        self.assertNotIn(DUMMY_EVENT_IVOID.decode(), self.proto._sent_ivoids.keys())
         self.proto.stringReceived(DUMMY_ACK)
         self.assertEqual(self.tr.connected, True)
-        self.assertEqual(self.tr.value(), b'')
+        self.assertEqual(self.tr.value(), b"")
 
     def test_receive_known_ack(self):
         # An ACK for a message that we did send causes us to shut down the
         # connection.
         self.proto.send_event(self.event)
-        self.assertIn(DUMMY_EVENT_IVOID.decode(),
-                      self.proto._sent_ivoids.keys())
+        self.assertIn(DUMMY_EVENT_IVOID.decode(), self.proto._sent_ivoids.keys())
         self.proto.stringReceived(DUMMY_ACK)
         self.assertEqual(self.tr.connected, False)
 
     def test_receive_unknown_nak(self):
         # A NAK for a message that we did send causes us to shut down the
         # connection.
-        self.assertNotIn(DUMMY_EVENT_IVOID.decode(),
-                         self.proto._sent_ivoids.keys())
+        self.assertNotIn(DUMMY_EVENT_IVOID.decode(), self.proto._sent_ivoids.keys())
         self.proto.stringReceived(DUMMY_NAK)
         self.assertEqual(self.tr.connected, True)
 
@@ -77,8 +74,7 @@ class VOEventSenderTestCase(unittest.TestCase):
         # A NAK for a message that we did send causes us to shut down the
         # connection.
         self.proto.send_event(self.event)
-        self.assertIn(DUMMY_EVENT_IVOID.decode(),
-                      self.proto._sent_ivoids.keys())
+        self.assertIn(DUMMY_EVENT_IVOID.decode(), self.proto._sent_ivoids.keys())
         self.proto.stringReceived(DUMMY_NAK)
         self.assertEqual(self.tr.connected, False)
 

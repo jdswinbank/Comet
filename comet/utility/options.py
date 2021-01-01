@@ -13,6 +13,7 @@ from comet.utility.voevent import parse_ivoid, BadIvoidError
 
 __all__ = ["BaseOptions", "valid_ivoid", "valid_xpath"]
 
+
 class BaseOptions(object):
     def __init__(self):
         if hasattr(self, "PROG"):
@@ -22,11 +23,15 @@ class BaseOptions(object):
         if "COMET_PLUGINPATH" in os.environ:
             split_on = ";" if sys.platform == "win32" else ":"
             comet.plugins.__path__.extend(
-                os.environ.get("COMET_PLUGINPATH").split(split_on))
+                os.environ.get("COMET_PLUGINPATH").split(split_on)
+            )
 
-        self.parser.add_argument("--verbose", "-v", action="count",
-                                 help="Increase verbosity (may be specified "
-                                      "more than once).")
+        self.parser.add_argument(
+            "--verbose",
+            "-v",
+            action="count",
+            help="Increase verbosity (may be specified " "more than once).",
+        )
         self._configureParser()
 
     def parseOptions(self, argv=None):
@@ -49,9 +54,9 @@ class BaseOptions(object):
         can also be used to add clean-up actions, etc.
         """
         self._config = self.parser.parse_args(argv)
-        if self['verbose'] and self['verbose'] >= 2:
+        if self["verbose"] and self["verbose"] >= 2:
             log.LEVEL = log.Levels.DEBUG
-        elif self['verbose'] and self['verbose'] >= 1:
+        elif self["verbose"] and self["verbose"] >= 1:
             log.LEVEL = log.Levels.INFO
         else:
             log.LEVEL = log.Levels.WARNING
@@ -73,8 +78,7 @@ class BaseOptions(object):
         pass
 
     def __getitem__(self, key):
-        """Delegate item lookup to the associated `argparse.Namespace`.
-        """
+        """Delegate item lookup to the associated `argparse.Namespace`."""
         if hasattr(self, "_config") and hasattr(self._config, key):
             return getattr(self._config, key)
         raise KeyError(key)
@@ -84,6 +88,7 @@ class BaseOptions(object):
             return hasattr(self._config, key)
         else:
             return False
+
 
 def valid_ivoid(expression):
     """Check for a valid IVOID.
@@ -106,10 +111,13 @@ def valid_ivoid(expression):
     try:
         parse_ivoid(expression)
     except BadIvoidError as e:
-        raise ArgumentTypeError(f"Invalid IVOA identifier: {expression}; "
-                                f"Required format: "
-                                f"ivo://authorityID/resourceKey#local_ID") from e
+        raise ArgumentTypeError(
+            f"Invalid IVOA identifier: {expression}; "
+            f"Required format: "
+            f"ivo://authorityID/resourceKey#local_ID"
+        ) from e
     return expression
+
 
 def valid_xpath(expression):
     """Check for a valid XPath filter.
@@ -132,6 +140,5 @@ def valid_xpath(expression):
     try:
         XPath(expression)
     except XPathSyntaxError as e:
-        raise ArgumentTypeError(f"Invalid XPath expression: "
-                                f"{expression}") from e
+        raise ArgumentTypeError(f"Invalid XPath expression: " f"{expression}") from e
     return expression

@@ -9,6 +9,7 @@ import comet.log as log
 
 __all__ = ["CheckPreviouslySeen"]
 
+
 @implementer(IValidator)
 class CheckPreviouslySeen(object):
     def __init__(self, event_db):

@@ -13,6 +13,7 @@ from comet.utility import xml_document, ParseError
 
 __all__ = ["VOEventSender"]
 
+
 class VOEventSender(ElementSender):
     """
     Implements the VOEvent Transport Protocol; see
@@ -25,6 +26,7 @@ class VOEventSender(ElementSender):
     The sender connects to a remote host, sends a message, waits for an
     acknowledgement, and disconnects.
     """
+
     def __init__(self):
         ElementSender.__init__(self)
         self._sent_ivoids = {}
@@ -43,6 +45,7 @@ class VOEventSender(ElementSender):
             A `~twisted.interet.defer.Deferred` which will be fired when the
             event is acknowledged by the recipient.
         """
+
         def log_response(incoming):
             """Default action to take on receiving an acknowledgement.
 
@@ -65,18 +68,22 @@ class VOEventSender(ElementSender):
             A NAK is not considered a failure (we do not call an errback).
             """
             if incoming.role == "ack":
-                log.info(f"ACK received: "
-                         f"{self.transport.getPeer()} accepted VOEvent")
+                log.info(
+                    f"ACK received: " f"{self.transport.getPeer()} accepted VOEvent"
+                )
             elif incoming.role == "nak":
-                reason = incoming.element.findtext("Meta/Result",
-                                                   default="no reason given")
-                log.warn(f"NAK received: "
-                         f"{self.transport.getPeer()} refused to accept VOEvent "
-                         f"({reason})")
+                reason = incoming.element.findtext(
+                    "Meta/Result", default="no reason given"
+                )
+                log.warn(
+                    f"NAK received: "
+                    f"{self.transport.getPeer()} refused to accept VOEvent "
+                    f"({reason})"
+                )
             self.transport.loseConnection()
             return incoming
 
-        outgoing_ivoid = event.element.attrib['ivorn']
+        outgoing_ivoid = event.element.attrib["ivorn"]
         self.send_xml(event)
         d = Deferred().addCallback(log_response)
         self._sent_ivoids[outgoing_ivoid] = d
@@ -93,20 +100,22 @@ class VOEventSender(ElementSender):
         try:
             incoming = xml_document.infer_type(data)
         except ParseError:
-            log.warn(f"Unparsable message received from "
-                     f"{self.transport.getPeer()}")
+            log.warn(f"Unparsable message received from " f"{self.transport.getPeer()}")
             return
 
         if incoming.role not in ("ack", "nak"):
-            log.warn(f"Unexpected {incoming.role} received "
-                     f"from {self.transport.getPeer()}")
+            log.warn(
+                f"Unexpected {incoming.role} received "
+                f"from {self.transport.getPeer()}"
+            )
             return
 
         try:
             d = self._sent_ivoids.pop(incoming.origin)
         except KeyError:
-            log.warn(f"Received a receipt for {incoming.origin}, "
-                     f"which is unknown to us")
+            log.warn(
+                f"Received a receipt for {incoming.origin}, " f"which is unknown to us"
+            )
             return
 
         d.callback(incoming)

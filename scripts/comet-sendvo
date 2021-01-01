@@ -4,7 +4,6 @@
 # Event sender.
 
 import sys
-import argparse
 
 from twisted.internet import task
 from twisted.internet.endpoints import connectProtocol
@@ -16,20 +15,23 @@ from comet.constants import DEFAULT_SUBMIT_PORT
 from comet.protocol.sender import VOEventSender
 from comet.utility import xml_document, coerce_to_client_endpoint
 
+
 def send_event(reactor, target, event):
     def gotProtocol(p):
         def fail_on_nak(incoming):
-            if incoming.element.get('role') == 'nak':
+            if incoming.element.get("role") == "nak":
                 return Failure(Exception("Remote refused event."))
+
         return p.send_event(event).addCallback(fail_on_nak)
 
     ep = coerce_to_client_endpoint(reactor, target, DEFAULT_SUBMIT_PORT)
     d = connectProtocol(ep, VOEventSender())
     return d.addCallback(gotProtocol)
 
+
 if __name__ == "__main__":
     config = Options()
     config.parseOptions()
     startLogging(sys.stdout)
-    event = xml_document.from_stream(config['event'])
-    task.react(send_event, (config['target'], event))
+    event = xml_document.from_stream(config["event"])
+    task.react(send_event, (config["target"], event))

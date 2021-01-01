@@ -13,6 +13,7 @@ from comet.testutils import DUMMY_VOEVENT
 
 BAD_EVENT_TEXT = b"""<xml></xml>"""
 
+
 class CheckSchemaTestCase(unittest.TestCase):
     def setUp(self):
         self.validator = CheckSchema(

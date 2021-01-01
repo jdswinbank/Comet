@@ -11,19 +11,19 @@ import comet
 from comet.utility import VOEventMessage, parse_ivoid, BadIvoidError
 from comet.testutils import DUMMY_SERVICE_IVOID
 
+
 class broker_test_messageTestCase(unittest.TestCase):
     def setUp(self):
         self.message = VOEventMessage.broker_test(DUMMY_SERVICE_IVOID.decode())
 
     def test_valid(self):
         schema = etree.XMLSchema(
-            etree.parse(
-                os.path.join(comet.__path__[0], "schema/VOEvent-v2.0.xsd")
-            )
+            etree.parse(os.path.join(comet.__path__[0], "schema/VOEvent-v2.0.xsd"))
         )
         self.assertTrue(schema.validate(self.message.element))
         self.assertEqual(self.message.role, "test")
         self.assertTrue(self.message.ivoid.startswith(DUMMY_SERVICE_IVOID.decode()))
+
 
 class parse_ivoidTestCase(unittest.TestCase):
     # Character classes as defined by the IVOA Identifiers spec, 1.12
@@ -32,7 +32,7 @@ class parse_ivoidTestCase(unittest.TestCase):
     DISCOURAGED = "~*'()"
     UNRESERVED = ALPHANUM + MARK + DISCOURAGED
     RESERVED = "?;:@!&$,"
-    DISALLOWED = "<>#%\"`?{}|\\^[]+="
+    DISALLOWED = '<>#%"`?{}|\\^[]+='
 
     def _build_ivoid(self, auth, rsrc, local):
         return "ivo://%s%s#%s" % (auth, rsrc, local)
@@ -53,21 +53,17 @@ class parse_ivoidTestCase(unittest.TestCase):
             ("authorityID", "/rsrc/with/slashes", "local/ID/with/slashes"),
             ("authorityID", "/resourceKey", ""),
             ("authorityID", "", "local_ID"),
-            ("authorityID", "", "")
+            ("authorityID", "", ""),
         ]:
             self._good_parse(auth, rsrc, local)
 
     def test_no_fragment(self):
         auth, rsrc = "authorityID", "/resourceKey"
         ivoid = "ivo://%s%s" % (auth, rsrc)
-        self.assertEqual((auth, rsrc, ''), parse_ivoid(ivoid))
+        self.assertEqual((auth, rsrc, ""), parse_ivoid(ivoid))
 
     def test_partial_ivoid(self):
-        for ivoid in [
-            "ivo://#localID",
-            "ivo:///resourceKey#",
-            "ivo://"
-        ]:
+        for ivoid in ["ivo://#localID", "ivo:///resourceKey#", "ivo://"]:
             self.assertRaises(BadIvoidError, parse_ivoid, ivoid)
 
     def test_authority_id(self):
@@ -147,11 +143,19 @@ class parse_ivoidTestCase(unittest.TestCase):
 
         for rsrc in ["", "/reskey", "/user/STScI_1/1a-7z.u"]:
             self._good_parse("auth", rsrc, "local")
-        for rsrc in ["/", "/data/", "/data//other", "/data/c/../d", "/data!g-vo.org", "/user/M%fcller"]:
+        for rsrc in [
+            "/",
+            "/data/",
+            "/data//other",
+            "/data/c/../d",
+            "/data!g-vo.org",
+            "/user/M%fcller",
+        ]:
             self._bad_parse("auth", rsrc, "local")
 
         # This one is special, because we have no way to tell that
         # "ivo://authreskey#local" isn't a valid IVOID with no resource key.
         # We expect the parse to be wrong, and we can't do anything about it!
-        self.assertNotEqual(parse_ivoid("ivo://authreskey#local"),
-                                       ("auth", "reskey", "local"))
+        self.assertNotEqual(
+            parse_ivoid("ivo://authreskey#local"), ("auth", "reskey", "local")
+        )

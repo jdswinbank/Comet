@@ -8,13 +8,19 @@ from twisted.internet import task
 from twisted.trial import unittest
 from twisted.test import proto_helpers
 
-from comet.testutils import (DUMMY_IAMALIVE, DUMMY_ACK, DUMMY_NAK,
-                             DUMMY_AUTHENTICATE_RESPONSE,
-                             DUMMY_AUTHENTICATE_RESPONSE_LEGACY,
-                             DUMMY_SERVICE_IVOID, DummyEvent)
+from comet.testutils import (
+    DUMMY_IAMALIVE,
+    DUMMY_ACK,
+    DUMMY_NAK,
+    DUMMY_AUTHENTICATE_RESPONSE,
+    DUMMY_AUTHENTICATE_RESPONSE_LEGACY,
+    DUMMY_SERVICE_IVOID,
+    DummyEvent,
+)
 from comet.service.broker import BCAST_TEST_INTERVAL
 
 from comet.protocol.broadcaster import VOEventBroadcaster, VOEventBroadcasterFactory
+
 
 class DummyBroadcaster(object):
     def __init__(self):
@@ -59,7 +65,9 @@ class VOEventBroadcasterFactoryTestCase(VOEventBroadcasterFactoryTestCaseBase):
             self.assertEqual(broadcaster.received_event, True)
 
 
-class VOEventBroadcasterFactoryNoTestEventsTestCase(VOEventBroadcasterFactoryTestCaseBase):
+class VOEventBroadcasterFactoryNoTestEventsTestCase(
+    VOEventBroadcasterFactoryTestCaseBase
+):
     # In this special case, we cause the factory not to broadcast test events
     # to the network.
     def setUp(self):
@@ -80,7 +88,7 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
         self.factory.alive_loop.clock = task.Clock()
         self.factory.test_loop.clock = task.Clock()
         self.connector = reactor.listenTCP(0, self.factory)
-        self.proto = self.factory.buildProtocol(('127.0.0.1', 0))
+        self.proto = self.factory.buildProtocol(("127.0.0.1", 0))
         self.tr = proto_helpers.StringTransportWithDisconnection()
         self.proto.makeConnection(self.tr)
         self.tr.protocol = self.proto
@@ -94,16 +102,20 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
 
     def test_sent_authenticate(self):
         received_element = etree.fromstring(self.tr.value()[4:])
-        self.assertEqual("authenticate", received_element.attrib['role'])
-        self.assertEqual(DUMMY_SERVICE_IVOID.decode(), received_element.find('Origin').text)
+        self.assertEqual("authenticate", received_element.attrib["role"])
+        self.assertEqual(
+            DUMMY_SERVICE_IVOID.decode(), received_element.find("Origin").text
+        )
 
     def test_sendIAmAlive(self):
         self.tr.clear()
         init_alive_count = self.proto.alive_count
         self.factory.alive_loop.clock.advance(self.factory.IAMALIVE_INTERVAL)
         received_element = etree.fromstring(self.tr.value()[4:])
-        self.assertEqual("iamalive", received_element.attrib['role'])
-        self.assertEqual(DUMMY_SERVICE_IVOID.decode(), received_element.find('Origin').text)
+        self.assertEqual("iamalive", received_element.attrib["role"])
+        self.assertEqual(
+            DUMMY_SERVICE_IVOID.decode(), received_element.find("Origin").text
+        )
         self.assertEqual(self.proto.alive_count - init_alive_count, 1)
 
     def test_alive_timeout(self):
@@ -129,13 +141,16 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
     def test_send_event_with_filter_reject(self):
         def check_output(result):
             self.assertEqual(self.tr.value(), b"")
+
         init_outstanding_ack = self.proto.outstanding_ack
+
         def check_ack_increment(result):
             self.assertEqual(self.proto.outstanding_ack - init_outstanding_ack, 0)
+
         self.tr.clear()
         self.proto.filters.append(
-            etree.XPath("/*[local-name()=\"VOEvent\" and @role!=\"test\"]")
-        ) # Will reject dummy event with role "test"
+            etree.XPath('/*[local-name()="VOEvent" and @role!="test"]')
+        )  # Will reject dummy event with role "test"
         d = self.proto.send_event(DummyEvent())
         d.addCallback(check_output)
         d.addCallback(check_ack_increment)
@@ -144,13 +159,16 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
     def test_send_event_with_filter_accept(self):
         def check_output(result):
             self.assertEqual(self.tr.value()[4:], DummyEvent().raw_bytes)
+
         init_outstanding_ack = self.proto.outstanding_ack
+
         def check_ack_increment(result):
             self.assertEqual(self.proto.outstanding_ack - init_outstanding_ack, 1)
+
         self.tr.clear()
         self.proto.filters.append(
-            etree.XPath("/*[local-name()=\"VOEvent\" and @role=\"test\"]")
-        ) # Will accept dummy event with role "test"
+            etree.XPath('/*[local-name()="VOEvent" and @role="test"]')
+        )  # Will accept dummy event with role "test"
         d = self.proto.send_event(DummyEvent())
         d.addCallback(check_output)
         d.addCallback(check_ack_increment)
@@ -171,7 +189,7 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
         # transport should not disconnect.
         self.tr.clear()
         incomprehensible = b"<xml/>"
-        etree.fromstring(incomprehensible) # Should not raise an error
+        etree.fromstring(incomprehensible)  # Should not raise an error
         self.proto.stringReceived(incomprehensible)
         self.assertEqual(self.tr.value(), b"")
         self.assertEqual(self.tr.connected, True)
@@ -205,18 +223,21 @@ class VOEventBroadcasterTestCase(unittest.TestCase):
         self.assertEqual(len(self.proto.filters), len(filter_list))
 
     def test_receive_authenticateresponse_with_filters(self):
-        self._test_sets_filter([
-            "/*[local-name()=\"VOEvent\" and @role=\"test\"]",
-            "//Param[@name=\"SC_Lat\" and @value<600]"
-        ])
+        self._test_sets_filter(
+            [
+                '/*[local-name()="VOEvent" and @role="test"]',
+                '//Param[@name="SC_Lat" and @value<600]',
+            ]
+        )
 
     def test_receive_authenticateresponse_legacy(self):
         # The legacy form is in violation of the Transport schema. We no
         # longer generate packets that look like this, but the broker still
         # recognizes them.
-        demo_filter =  "//Param[@name=\"SC_Lat\" and @value&lt;600]"
-        received = (DUMMY_AUTHENTICATE_RESPONSE_LEGACY.decode()
-                    % demo_filter).encode('UTF-8')
+        demo_filter = '//Param[@name="SC_Lat" and @value&lt;600]'
+        received = (DUMMY_AUTHENTICATE_RESPONSE_LEGACY.decode() % demo_filter).encode(
+            "UTF-8"
+        )
         self.tr.clear()
         self.assertEqual(len(self.proto.filters), 0)
         self.proto.stringReceived(received)

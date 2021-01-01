@@ -9,6 +9,7 @@ from twisted.trial import unittest
 
 from comet.service import makeReceiverService
 
+
 class ReceiverServiceTestCase(unittest.TestCase):
     """Check for correct operation of the VOEvent receiver service."""
 
@@ -20,8 +21,9 @@ class ReceiverServiceTestCase(unittest.TestCase):
         self.assertEqual(len(self.reactor.tcpServers), 0)
         port = 12345
         ep = serverFromString(self.reactor, f"tcp:{port}")
-        service = makeReceiverService(ep, "ivo://foo/bar", [], [],
-                                      [ip_network("0.0.0.0/0")])
+        service = makeReceiverService(
+            ep, "ivo://foo/bar", [], [], [ip_network("0.0.0.0/0")]
+        )
         service.startService()
         self.assertEqual(len(self.reactor.tcpServers), 1)
         self.assertEqual(self.reactor.tcpServers[0][0], port)

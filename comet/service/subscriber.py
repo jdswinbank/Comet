@@ -1,11 +1,11 @@
 # Comet VOEvent Broker.
 
 from twisted.application.internet import ClientService
-from twisted.internet.endpoints import clientFromString
 
 from comet.protocol.subscriber import VOEventSubscriberFactory
 
 __all__ = ["makeSubscriberService"]
+
 
 def makeSubscriberService(endpoint, local_ivo, validators, handlers, filters):
     """Create a reconnecting VOEvent subscriber service.
@@ -33,7 +33,7 @@ def makeSubscriberService(endpoint, local_ivo, validators, handlers, filters):
     Reconnection is handled according to the default policies of
     `twisted.application.internet.ClientService`.
     """
-    factory = VOEventSubscriberFactory(local_ivo, validators,handlers, filters)
+    factory = VOEventSubscriberFactory(local_ivo, validators, handlers, filters)
     service = ClientService(endpoint, factory)
 
     return service

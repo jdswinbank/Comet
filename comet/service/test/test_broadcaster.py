@@ -9,6 +9,7 @@ from twisted.trial import unittest
 
 from comet.service import makeBroadcasterService
 
+
 class BroadcasterServiceTestCase(unittest.TestCase):
     """Check for correct operation of the VOEvent broadcaster service."""
 
@@ -20,12 +21,12 @@ class BroadcasterServiceTestCase(unittest.TestCase):
         self.assertEqual(len(self.reactor.tcpServers), 0)
         port = 12345
         ep = serverFromString(self.reactor, f"tcp:{port}")
-        service = makeBroadcasterService(ep, "ivo://foo/bar", 0,
-                                         [ip_network("0.0.0.0/0")])
+        service = makeBroadcasterService(
+            ep, "ivo://foo/bar", 0, [ip_network("0.0.0.0/0")]
+        )
         service.startService()
         self.assertEqual(len(self.reactor.tcpServers), 1)
         self.assertEqual(self.reactor.tcpServers[0][0], port)
-
 
     def test_unix_listen(self):
         """Demonstrate that the service listens on a Unix domain socket."""

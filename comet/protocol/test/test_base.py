@@ -12,6 +12,7 @@ from twisted.internet.protocol import ServerFactory
 from comet.testutils import DummyEvent, DUMMY_EVENT_IVOID
 from comet.protocol.base import ElementSender, EventHandler
 
+
 class ElementSenderFactory(ServerFactory):
     protocol = ElementSender
 
@@ -19,7 +20,7 @@ class ElementSenderFactory(ServerFactory):
 class ElementSenderTestCase(unittest.TestCase):
     def setUp(self):
         factory = ElementSenderFactory()
-        self.proto = factory.buildProtocol(('127.0.0.1', 0))
+        self.proto = factory.buildProtocol(("127.0.0.1", 0))
         self.tr = proto_helpers.StringTransport()
         self.proto.makeConnection(self.tr)
 
@@ -28,7 +29,7 @@ class ElementSenderTestCase(unittest.TestCase):
         self.proto.send_xml(dummy_element)
         self.assertEqual(
             self.tr.value(),
-            struct.pack("!i", len(dummy_element.raw_bytes)) + dummy_element.raw_bytes
+            struct.pack("!i", len(dummy_element.raw_bytes)) + dummy_element.raw_bytes,
         )
 
     def test_lengthLimitExceeded(self):
@@ -47,6 +48,7 @@ class EventHandlerFactory(ServerFactory):
 
 class Succeeds(object):
     has_run = False
+
     def __call__(self, event):
         self.has_run = True
         return self.has_run
@@ -54,6 +56,7 @@ class Succeeds(object):
 
 class Fails(object):
     has_run = False
+
     def __call__(self, event):
         self.has_run = True
         raise Exception(self.has_run)
@@ -62,7 +65,7 @@ class Fails(object):
 class EventHandlerTestCase(unittest.TestCase):
     def setUp(self):
         factory = EventHandlerFactory()
-        self.proto = factory.buildProtocol(('127.0.0.1', 0))
+        self.proto = factory.buildProtocol(("127.0.0.1", 0))
         self.tr = proto_helpers.StringTransport()
         self.proto.makeConnection(self.tr)
 
@@ -87,10 +90,7 @@ class EventHandlerTestCase(unittest.TestCase):
         return self.assertFailure(self.proto.handle_event(True), defer.FirstError)
 
     def _check_for_role(self, result, role):
-        self.assertEqual(
-            etree.fromstring(self.tr.value()[4:]).attrib['role'],
-            role
-        )
+        self.assertEqual(etree.fromstring(self.tr.value()[4:]).attrib["role"], role)
 
     def _check_for_handler_runs(self, result, should_run):
         for handler in self.proto.factory.handlers:

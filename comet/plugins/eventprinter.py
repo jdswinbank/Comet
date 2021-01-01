@@ -6,6 +6,7 @@ from zope.interface import implementer
 from twisted.plugin import IPlugin
 from comet.icomet import IHandler
 
+
 # Event handlers must implement IPlugin and IHandler.
 @implementer(IPlugin, IHandler)
 class EventPrinter(object):
@@ -23,6 +24,7 @@ class EventPrinter(object):
         Print an event to standard output.
         """
         print(ElementTree.tounicode(event.element))
+
 
 # This instance of the handler is what actually constitutes our plugin.
 print_event = EventPrinter()

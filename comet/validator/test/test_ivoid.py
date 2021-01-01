@@ -18,7 +18,10 @@ BAD_EVENT_TEXT = u"""
     <AuthorIVORN>ivo://comet.broker/test</AuthorIVORN>
   </Who>
 </voe:VOEvent>
-""".encode("utf-8")
+""".encode(
+    "utf-8"
+)
+
 
 class CheckSchemaTestCase(unittest.TestCase):
     def setUp(self):
@@ -29,8 +32,10 @@ class CheckSchemaTestCase(unittest.TestCase):
         self.validator(xml_document(DUMMY_VOEVENT))
 
     def test_invalid(self):
-        self.assertRaises(Exception, self.validator,
-            xml_document(BAD_EVENT_TEXT.replace(DUMMY_EVENT_IVOID, b"bad_ivoid"))
+        self.assertRaises(
+            Exception,
+            self.validator,
+            xml_document(BAD_EVENT_TEXT.replace(DUMMY_EVENT_IVOID, b"bad_ivoid")),
         )
 
     def test_interface(self):

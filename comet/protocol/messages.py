@@ -11,24 +11,30 @@ from comet.utility import xml_document
 
 __all__ = ["TransportMessage"]
 
-ElementTree.register_namespace("trn", "http://www.telescope-networks.org/xml/Transport/v1.1")
+ElementTree.register_namespace(
+    "trn", "http://www.telescope-networks.org/xml/Transport/v1.1"
+)
+
 
 class TransportMessage(xml_document):
 
-   # NB: ordering within packet must be per schema --
-   # Origin, Response, Timestamp, Meta.
+    # NB: ordering within packet must be per schema --
+    # Origin, Response, Timestamp, Meta.
 
     @property
     def origin(self):
-        return self.element.find('Origin').text
+        return self.element.find("Origin").text
 
     @staticmethod
     def _root_element():
-        return ElementTree.Element("{http://www.telescope-networks.org/xml/Transport/v1.1}Transport",
+        return ElementTree.Element(
+            "{http://www.telescope-networks.org/xml/Transport/v1.1}Transport",
             attrib={
                 "version": "1.0",
-                "{http://www.w3.org/2001/XMLSchema-instance}schemaLocation": "http://telescope-networks.org/schema/Transport/v1.1 http://www.telescope-networks.org/schema/Transport-v1.1.xsd"
-            }
+                "{http://www.w3.org/2001/XMLSchema-instance}schemaLocation":
+                "http://telescope-networks.org/schema/Transport/v1.1 "
+                "http://www.telescope-networks.org/schema/Transport-v1.1.xsd",
+            },
         )
 
     @classmethod

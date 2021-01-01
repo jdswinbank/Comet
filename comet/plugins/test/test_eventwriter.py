@@ -2,7 +2,6 @@
 # Tests for EventWriter plugin.
 
 import os
-import shutil
 from tempfile import TemporaryDirectory
 
 from twisted.trial import unittest
@@ -16,6 +15,7 @@ from comet.plugins.eventwriter import string_to_filename
 from comet.plugins.eventwriter import event_file
 from comet.plugins.eventwriter import FILENAME_PAD
 
+
 class StringToFilenameTestCase(unittest.TestCase):
     def test_characters(self):
         test_data = [
@@ -27,7 +27,7 @@ class StringToFilenameTestCase(unittest.TestCase):
             ("ab/c", "ab_c"),
             ("a*bc", "abc"),
             ("a||b", "ab"),
-            ("a\/b", "a__b")
+            (r"a\/b", "a__b"),
         ]
         for in_str, out_str in test_data:
             self.assertEqual(string_to_filename(in_str), out_str)
@@ -38,8 +38,7 @@ class EventFileTestCase(unittest.TestCase):
         self.ivoid = "ivo://test.ivoid/1234#5678"
         with event_file(self.ivoid) as f:
             f.write("Test data")
-        self.filename = os.path.join(os.getcwd(),
-                                     string_to_filename(self.ivoid))
+        self.filename = os.path.join(os.getcwd(), string_to_filename(self.ivoid))
 
     def tearDown(self):
         os.unlink(self.filename)
@@ -48,7 +47,7 @@ class EventFileTestCase(unittest.TestCase):
         self.assertTrue(os.path.exists(self.filename))
 
     def test_file_contents(self):
-        with open(self.filename, 'r') as f:
+        with open(self.filename, "r") as f:
             self.assertEqual(f.read(), "Test data")
 
     def test_dup_file(self):
@@ -74,12 +73,13 @@ class EventWriterTestCase(unittest.TestCase):
     def test_name(self):
         self.assertEqual(EventWriter.name, "save-event")
 
-    def test_save_event(self, root=''):
+    def test_save_event(self, root=""):
         self.event_writer(self.event)
-        with open(os.path.join(
-            root, string_to_filename(self.event.element.attrib['ivorn'])
-        ), 'r') as f:
-            self.assertEqual(f.read(), DUMMY_VOEVENT.decode('utf-8'))
+        with open(
+            os.path.join(root, string_to_filename(self.event.element.attrib["ivorn"])),
+            "r",
+        ) as f:
+            self.assertEqual(f.read(), DUMMY_VOEVENT.decode("utf-8"))
 
     def test_custom_directory(self):
         self.assertEqual(self.event_writer.get_options()[0][1], os.getcwd())

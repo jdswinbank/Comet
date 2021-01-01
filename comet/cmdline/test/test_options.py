@@ -9,6 +9,7 @@ from twisted.trial import unittest
 from comet.cmdline import Options
 from comet.testutils import DummyEvent, OptionTestUtils
 
+
 class SenderOptionsTestCase(unittest.TestCase, OptionTestUtils):
     def setUp(self):
         self.config = Options()
@@ -21,14 +22,14 @@ class SenderOptionsTestCase(unittest.TestCase, OptionTestUtils):
         # Necessary to enable test cleanup on Win32; otherwise, Windows
         # refuses to remove an open file.
         if "event" in self.config:
-            self.config['event'].close()
+            self.config["event"].close()
         self.tempdir.cleanup()
 
     def test_good_parse(self):
         test_target = "test"
         self.config.parseOptions([test_target, self.event_filename])
-        self.assertEqual(self.config['target'], test_target)
-        self.assertEqual(self.config['event'].read(), DummyEvent().raw_bytes)
+        self.assertEqual(self.config["target"], test_target)
+        self.assertEqual(self.config["event"].read(), DummyEvent().raw_bytes)
 
     def test_non_extant_file(self):
         test_target = "test"

@@ -3,10 +3,12 @@
 
 from zope.interface import Interface, Attribute
 
+
 class IHandler(Interface):
     """
     Called to process VOEvents which have been received.
     """
+
     def __call__(event):
         """
         Process the event.
@@ -27,10 +29,12 @@ class IHasOptions(Interface):
         Set the option named name to the value value.
         """
 
+
 class IValidator(Interface):
     """
     Called to validate VOEvents before handling.
     """
+
     def __call__(event):
         """
         Process the event.
