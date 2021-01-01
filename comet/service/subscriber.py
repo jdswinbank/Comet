@@ -1,7 +1,6 @@
 # Comet VOEvent Broker.
 
 from twisted.application.internet import ClientService
-from twisted.internet.endpoints import clientFromString
 
 from comet.protocol.subscriber import VOEventSubscriberFactory
 

@@ -1,11 +1,9 @@
 # Comet VOEvent Broker.
 # Utilities in support of broker tests.
 
-import shutil
-import tempfile
 import textwrap
 
-from contextlib import contextmanager, redirect_stderr
+from contextlib import redirect_stderr
 from functools import partial
 from os import devnull
 

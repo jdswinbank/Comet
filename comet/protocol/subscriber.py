@@ -20,8 +20,10 @@ __all__ = ["VOEventSubscriberFactory"]
 
 
 class VOEventSubscriber(EventHandler, TimeoutMixin):
-    ALIVE_INTERVAL = 120  # If we get no traffic for ALIVE_INTERVAL seconds,
+    # If we get no traffic for ALIVE_INTERVAL seconds,
     # assume our peer forgot us.
+    ALIVE_INTERVAL = 120
+
     def __init__(self, filters=[]):
         self.filters = filters
 

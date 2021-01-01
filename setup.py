@@ -1,5 +1,4 @@
 from distutils.core import setup
-import sys
 import comet
 
 with open('requirements.txt') as f:

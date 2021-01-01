@@ -2,7 +2,6 @@
 # Tests for EventWriter plugin.
 
 import os
-import shutil
 from tempfile import TemporaryDirectory
 
 from twisted.trial import unittest
@@ -28,7 +27,7 @@ class StringToFilenameTestCase(unittest.TestCase):
             ("ab/c", "ab_c"),
             ("a*bc", "abc"),
             ("a||b", "ab"),
-            ("a\/b", "a__b"),
+            (r"a\/b", "a__b"),
         ]
         for in_str, out_str in test_data:
             self.assertEqual(string_to_filename(in_str), out_str)

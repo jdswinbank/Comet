@@ -13,10 +13,7 @@ __all__ = ["Levels", "LEVEL", "warn", "info", "debug", "err"]
 
 
 class Levels(object):
-    """
-    Log levels available.
-    """
-
+    """Defined logging levels."""
     DEBUG = 100
     INFO = 200
     WARNING = 300
@@ -28,11 +25,10 @@ try:
 except NameError:
     LEVEL = Levels.WARNING
 
-# The basic logging function.
+
 def log(level, message, system=None):
-    """
-    Write a message to the Twisted log with an appropriate prefix, assuming it
-    meets our verbosity criteria.
+    """Write a message to the Twisted log with an appropriate prefix, assuming
+    it meets our verbosity criteria.
     """
     if not system:
         system = context.get(twisted_log.ILogContext)["system"]
@@ -46,8 +42,7 @@ def log(level, message, system=None):
 
 
 class LogWithDeferred(object):
-    """
-    Forward a message to log(), above, and return a Deferred which we can
+    """Forward a message to log(), above, and return a Deferred which we can
     chain off.
     """
 

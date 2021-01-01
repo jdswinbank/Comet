@@ -180,7 +180,7 @@ class BrokerOptionsTestCase(unittest.TestCase, OptionTestUtils):
         self.assertEqual(self.config["subscribe"][0]._host, "test")
 
         # If a port isn't specified, use the default.
-        self.config.parseOptions(self.cmd_line + ["--subscribe", f"test"])
+        self.config.parseOptions(self.cmd_line + ["--subscribe", "test"])
         self.assertEqual(len(self.config["subscribe"]), 1)
         self.assertEqual(self.config["subscribe"][0]._port, DEFAULT_SUBSCRIBE_PORT)
         self.assertEqual(self.config["subscribe"][0]._host, "test")
@@ -190,7 +190,7 @@ class BrokerOptionsTestCase(unittest.TestCase, OptionTestUtils):
         self._check_bad_parse(
             self.cmd_line
             + [
-                f"--subscribe",
+                "--subscribe",
                 f"tcp:test:{DEFAULT_SUBSCRIBE_PORT}",
                 f"tcp:test2:{DEFAULT_SUBSCRIBE_PORT}",
             ]
@@ -201,9 +201,9 @@ class BrokerOptionsTestCase(unittest.TestCase, OptionTestUtils):
         self.config.parseOptions(
             self.cmd_line
             + [
-                f"--subscribe",
+                "--subscribe",
                 f"tcp:test:{DEFAULT_SUBSCRIBE_PORT}",
-                f"--subscribe",
+                "--subscribe",
                 f"tcp:test2:{DEFAULT_SUBSCRIBE_PORT+1}",
             ]
         )
@@ -233,7 +233,7 @@ class BrokerOptionsTestCase(unittest.TestCase, OptionTestUtils):
         self._check_bad_parse(self.cmd_line + ["--filter", "foo", "bar"])
 
         # An invalid filter should be rejected.
-        self._check_bad_parse(self.cmd_line + ["--filter", "\/\/\/\/"])
+        self._check_bad_parse(self.cmd_line + ["--filter", r"\/\/\/\/"])
 
     def test_cmd(self):
         # By default, no handlers are specified.

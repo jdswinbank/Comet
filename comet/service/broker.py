@@ -3,19 +3,16 @@
 
 # Python standard library
 import os.path
-from argparse import ArgumentTypeError
 from tempfile import gettempdir
 
 # Used for building IP whitelist
 from ipaddress import ip_network
 
 # Twisted
-from twisted.application.internet import TCPServer
 from twisted.application.service import MultiService
 from twisted.internet import reactor
 from twisted.internet.task import LoopingCall
 from twisted.plugin import getPlugins
-from twisted.python import usage
 
 # Comet broker routines
 import comet

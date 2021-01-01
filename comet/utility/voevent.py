@@ -17,11 +17,10 @@ __all__ = ["parse_ivoid", "VOEventMessage", "BadIvoidError"]
 ElementTree.register_namespace("voe", "http://www.ivoa.net/xml/VOEvent/v2.0")
 
 IVOID_RE = re.compile(
-    """ivo://
-                         (?P<auth>[a-zA-Z0-9][\w\-.~*'()]{2,})       # Authority
-                         (?P<rsrc>/[\w\-\.~\*'()/]*)? \#?            # Resource name
-                         (?P<localID>[\w\-\.~\*'()\+=/%!$&,;:@?]*) $ # Fragment
-                      """,
+    r"""ivo://
+        (?P<auth>[a-zA-Z0-9][\w\-.~*'()]{2,})       # Authority
+        (?P<rsrc>/[\w\-\.~\*'()/]*)? \#?            # Resource name
+        (?P<localID>[\w\-\.~\*'()\+=/%!$&,;:@?]*) $ # Fragment""",
     re.VERBOSE,
 )
 
@@ -79,7 +78,9 @@ class VOEventMessage(xml_document):
                 + "#TestEvent-%s" % datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
                 "role": "test",
                 "version": "2.0",
-                "{http://www.w3.org/2001/XMLSchema-instance}schemaLocation": "http://www.ivoa.net/xml/VOEvent/v2.0 http://www.ivoa.net/xml/VOEvent/VOEvent-v2.0.xsd",
+                "{http://www.w3.org/2001/XMLSchema-instance}schemaLocation":
+                "http://www.ivoa.net/xml/VOEvent/v2.0 "
+                "http://www.ivoa.net/xml/VOEvent/VOEvent-v2.0.xsd",
             },
         )
         who = ElementTree.SubElement(root_element, "Who")

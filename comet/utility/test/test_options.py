@@ -28,7 +28,7 @@ class valid_xpathTestCase(valid_TestCaseBase, unittest.TestCase):
     def setUp(self):
         self.validator = valid_xpath
         self.valid_expression = '/*[local-name()="VOEvent" and @role="test"]'
-        self.invalid_expression = "\/\/\/\/\/"
+        self.invalid_expression = r"/////"
 
 
 class valid_ivoroidTestCase(valid_TestCaseBase, unittest.TestCase):
@@ -69,7 +69,7 @@ class BaseOptionsTestCase(unittest.TestCase, OptionTestUtils):
     def test_bad_parse(self):
         # Redirect stderr to avoid spewing unhelpful errors to the console
         # during testing.
-        self._check_bad_parse([f"--bad-arg", self.ARGVALUE])
+        self._check_bad_parse(["--bad-arg", self.ARGVALUE])
 
     def test_missing_option(self):
         self.assertFalse("no-such-option" in self.config)

@@ -31,7 +31,9 @@ class TransportMessage(xml_document):
             "{http://www.telescope-networks.org/xml/Transport/v1.1}Transport",
             attrib={
                 "version": "1.0",
-                "{http://www.w3.org/2001/XMLSchema-instance}schemaLocation": "http://telescope-networks.org/schema/Transport/v1.1 http://www.telescope-networks.org/schema/Transport-v1.1.xsd",
+                "{http://www.w3.org/2001/XMLSchema-instance}schemaLocation":
+                "http://telescope-networks.org/schema/Transport/v1.1 "
+                "http://www.telescope-networks.org/schema/Transport-v1.1.xsd",
             },
         )
 

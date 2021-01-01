@@ -4,7 +4,6 @@
 # Event sender.
 
 import sys
-import argparse
 
 from twisted.internet import task
 from twisted.internet.endpoints import connectProtocol

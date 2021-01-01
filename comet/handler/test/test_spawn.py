@@ -27,9 +27,9 @@ SHELL = "/bin/sh"
 # whatever we squirt into its stdin. Other than that, it doesn't matter what
 # it does.
 if sys.platform == "win32":
-    EXECUTABLE = "C:\Windows\System32\CMD.EXE"
+    EXECUTABLE = r"C:\Windows\System32\CMD.EXE"
 else:
-    EXECUTABLE = "/bin/ls"
+    EXECUTABLE = r"/bin/ls"
 
 
 class SpawnCommandProtocolTestCase(unittest.TestCase):

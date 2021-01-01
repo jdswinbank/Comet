@@ -57,18 +57,17 @@ class Event_DB(object):
         return path
 
     def check_event(self, event):
-        """
-        Returns True if event is unseen (and hence good to forward), False
+        """Returns True if event is unseen (and hence good to forward), False
         otherwise.
         """
         try:
             db_path, key = self._get_event_details(event)
         except Exception as e:
-            log.warn("Unparseable IVOID; failing eventdb lookup")
+            log.warn("Failed eventdb lookup")
         else:
             with self.databases[db_path]:  # Acquire lock
                 with closing(anydbm.open(os.path.join(self.root, db_path), "c")) as db:
-                    if not key in db:
+                    if key not in db:
                         db[key] = str(time.time())
                         return True
         return False
