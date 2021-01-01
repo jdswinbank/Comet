@@ -17,6 +17,7 @@ from twisted.trial import unittest
 
 from comet.testutils import DummyEvent
 from comet.utility.event_db import Event_DB
+from comet.utility.voevent import BadIvoidError
 
 
 class Event_DB_TestCase(unittest.TestCase):
@@ -85,13 +86,15 @@ class Event_DB_TestCase(unittest.TestCase):
 
     def test_bad_ivoid(self):
         bad_event = DummyEvent(b"ivo://#")
-        self.assertFalse(self.event_db.check_event(bad_event))
+        with self.assertRaises(BadIvoidError):
+            self.event_db.check_event(bad_event)
 
     def test_prune_bad_event(self):
         bad_event = DummyEvent(ivoid=b"ivo://")
         self.assertNotIn("", self.event_db.databases)
-        # This event doesn't validate and is rejected.
-        self.assertFalse(self.event_db.check_event(bad_event))
+        # This event doesn't validate; attempting to check it will raise.
+        with self.assertRaises(BadIvoidError):
+            self.event_db.check_event(bad_event)
         # The hostname shouldn't event be stored in our list of databases.
         self.assertNotIn("", self.event_db.databases)
         d = self.event_db.prune(0)
@@ -100,7 +103,8 @@ class Event_DB_TestCase(unittest.TestCase):
             # After pruning, everything in the database should be unlocked.
             for lock in self.event_db.databases.values():
                 self.assertFalse(lock.locked())
-            self.assertFalse(self.event_db.check_event(bad_event))
+            with self.assertRaises(BadIvoidError):
+                self.event_db.check_event(bad_event)
             self.assertTrue(self.event_db.check_event(self.event))
 
         d.addCallback(done_prune)

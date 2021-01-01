@@ -57,20 +57,17 @@ class Event_DB(object):
         return path
 
     def check_event(self, event):
-        """Returns True if event is unseen (and hence good to forward), False
+        """Return True if event is unseen (and hence good to forward), False
         otherwise.
         """
-        try:
-            db_path, key = self._get_event_details(event)
-        except Exception as e:
-            log.warn("Failed eventdb lookup")
-        else:
-            with self.databases[db_path]:  # Acquire lock
-                with closing(anydbm.open(os.path.join(self.root, db_path), "c")) as db:
-                    if key not in db:
-                        db[key] = str(time.time())
-                        return True
-        return False
+        db_path, key = self._get_event_details(event)
+        with self.databases[db_path]:  # Acquire lock
+            with closing(anydbm.open(os.path.join(self.root, db_path), "c")) as db:
+                if key in db:
+                    return False
+                else:
+                    db[key] = str(time.time())
+                    return True
 
     def prune(self, expiry_time):
         """
