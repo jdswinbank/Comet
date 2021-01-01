@@ -9,11 +9,13 @@ from twisted.protocols.basic import Int32StringReceiver
 import comet.log as log
 from comet.protocol.messages import TransportMessage
 
+
 class ElementSender(Int32StringReceiver):
     """
     Superclass for protocols which will send XML messages which must be
     deserialized from ET elements.
     """
+
     def send_xml(self, document):
         """
         Takes an xml_document and sends it as text.
@@ -36,6 +38,7 @@ class EventHandler(ElementSender):
     Superclass for protocols which will receive events (ie, Subscriber and
     Receiver) providing event handling support.
     """
+
     def validate_event(self, event):
         """
         Call a set of event validators on a given event (an xml_document).
@@ -48,7 +51,7 @@ class EventHandler(ElementSender):
                 defer.maybeDeferred(validator, event)
                 for validator in self.factory.validators
             ],
-            consumeErrors=True
+            consumeErrors=True,
         )
 
     def handle_event(self, event):
@@ -57,11 +60,8 @@ class EventHandler(ElementSender):
         element).
         """
         return defer.gatherResults(
-            [
-                defer.maybeDeferred(handler, event)
-                for handler in self.factory.handlers
-            ],
-            consumeErrors=True
+            [defer.maybeDeferred(handler, event) for handler in self.factory.handlers],
+            consumeErrors=True,
         )
 
     def process_event(self, event, can_nak=True):
@@ -76,24 +76,40 @@ class EventHandler(ElementSender):
         -- "If there is an error (nak received...) [...] this would result in
         the broker removing the subscriber from its distribution list.
         """
+
         def handle_valid(status):
             log.debug("Event accepted; sending ACK to %s" % (self.transport.getPeer()))
-            self.send_xml(TransportMessage.ack(self.factory.local_ivo,
-                                               event.element.attrib['ivorn']))
+            self.send_xml(
+                TransportMessage.ack(
+                    self.factory.local_ivo, event.element.attrib["ivorn"]
+                )
+            )
             self.handle_event(event).addCallbacks(
                 lambda x: log.debug("Event processed"),
-                lambda x: log.warn("Event handlers failed")
+                lambda x: log.warn("Event handlers failed"),
             )
 
         def handle_invalid(failure):
-            log.info("Event rejected (%s); discarding" % (failure.value.subFailure.getErrorMessage(),))
+            log.info(
+                "Event rejected (%s); discarding"
+                % (failure.value.subFailure.getErrorMessage(),)
+            )
             if can_nak:
                 log.debug("Sending NAK to %s" % (self.transport.getPeer()))
-                self.send_xml(TransportMessage.nak(self.factory.local_ivo,
-                                                   event.element.attrib['ivorn'],
-                                                   "Event rejected: %s" % (failure.value.subFailure.getErrorMessage(),)))
+                self.send_xml(
+                    TransportMessage.nak(
+                        self.factory.local_ivo,
+                        event.element.attrib["ivorn"],
+                        "Event rejected: %s"
+                        % (failure.value.subFailure.getErrorMessage(),),
+                    )
+                )
             else:
                 log.debug("Sending ACK to %s" % (self.transport.getPeer()))
-                self.send_xml(TransportMessage.ack(self.factory.local_ivo,
-                                                   event.element.attrib['ivorn']))
+                self.send_xml(
+                    TransportMessage.ack(
+                        self.factory.local_ivo, event.element.attrib["ivorn"]
+                    )
+                )
+
         return self.validate_event(event).addCallbacks(handle_valid, handle_invalid)

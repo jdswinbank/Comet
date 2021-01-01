@@ -7,6 +7,7 @@ from twisted.test import proto_helpers
 
 from comet.service import makeSubscriberService
 
+
 class SubscriberServiceTestCase(unittest.TestCase):
     """Check for correct operation of the VOEvent subscriber service."""
 

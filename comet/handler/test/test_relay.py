@@ -8,13 +8,17 @@ from comet.handler import EventRelay
 
 DUMMY_EVENT = "Dummy Event Text"
 
+
 class DummyBroadcaster(object):
     received_event = None
+
     def send_event(self, event):
         self.received_event = event
 
+
 class DummyFactory(object):
     broadcasters = [DummyBroadcaster(), DummyBroadcaster()]
+
 
 class EventRelayTestCase(unittest.TestCase):
     def test_interface(self):

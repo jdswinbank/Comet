@@ -6,11 +6,13 @@ import lxml.etree as ElementTree
 __all__ = ["ParseError", "xml_document"]
 
 # Used to infer incoming message type
-VOEVENT_ROLES = ('observation', 'prediction', 'utility', 'test')
-TRANSPORT_ROLES = ('iamalive', 'ack', 'nak', 'authenticate')
+VOEVENT_ROLES = ("observation", "prediction", "utility", "test")
+TRANSPORT_ROLES = ("iamalive", "ack", "nak", "authenticate")
+
 
 class ParseError(Exception):
     pass
+
 
 class xml_document(object):
     """
@@ -23,11 +25,12 @@ class xml_document(object):
     declaration, but if it is not available we will rely on lxml to take its
     best guess.
     """
+
     __slots__ = ["_element", "_raw_bytes"]
 
     @property
     def role(self):
-        return self.element.get('role')
+        return self.element.get("role")
 
     def __init__(self, document):
         if isinstance(document, ElementTree._Element):
@@ -37,6 +40,7 @@ class xml_document(object):
 
     def get_raw_bytes(self):
         return self._raw_bytes
+
     def set_raw_bytes(self, value):
         if not isinstance(value, bytes):
             raise ParseError("Raw bytes required.")
@@ -54,18 +58,18 @@ class xml_document(object):
             raise ParseError("Entity expansion not supported")
         else:
             self._element = element
+
     raw_bytes = property(get_raw_bytes, set_raw_bytes)
 
     def get_element(self):
         return self._element
+
     def set_element(self, value):
         self._element = value
         self._raw_bytes = ElementTree.tostring(
-            self._element,
-            xml_declaration=True,
-            encoding="UTF-8",
-            pretty_print=True
+            self._element, xml_declaration=True, encoding="UTF-8", pretty_print=True
         )
+
     element = property(get_element, set_element)
 
     @property
@@ -81,21 +85,21 @@ class xml_document(object):
 
     @staticmethod
     def infer_type(raw_bytes):
-        """Given a payload, attempt to infer its message type.
-        """
+        """Given a payload, attempt to infer its message type."""
         # The double-parse is unfortunate.
         xmldoc = xml_document(raw_bytes)
         if xmldoc.role in VOEVENT_ROLES:
             from comet.utility.voevent import VOEventMessage
+
             return VOEventMessage(raw_bytes)
         elif xmldoc.role in TRANSPORT_ROLES:
             from comet.protocol import TransportMessage
+
             return TransportMessage(raw_bytes)
         else:
             raise ParseError(f"Unknown role: {xmldoc.role}")
 
     @staticmethod
     def from_stream(stream):
-        """Give an IO stream, return an appropriate xml_document subclass.
-        """
+        """Give an IO stream, return an appropriate xml_document subclass."""
         return xml_document.infer_type(stream.read())

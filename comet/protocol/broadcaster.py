@@ -26,9 +26,10 @@ from comet.utility import ParseError, VOEventMessage
 
 __all__ = ["VOEventBroadcasterFactory"]
 
+
 class VOEventBroadcaster(ElementSender):
-    MAX_ALIVE_COUNT = 1      # Drop connection if peer misses too many iamalives
-    MAX_OUTSTANDING_ACK = 10 # Drop connection if peer misses too many acks
+    MAX_ALIVE_COUNT = 1  # Drop connection if peer misses too many iamalives
+    MAX_OUTSTANDING_ACK = 10  # Drop connection if peer misses too many acks
 
     def __init__(self):
         self.filters = []
@@ -70,7 +71,9 @@ class VOEventBroadcaster(ElementSender):
             log.debug("Ack received from %s" % str(self.transport.getPeer()))
             self.outstanding_ack -= 1
         elif incoming.role == "nak":
-            log.info("Nak received from %s; terminating" % str(self.transport.getPeer()))
+            log.info(
+                "Nak received from %s; terminating" % str(self.transport.getPeer())
+            )
             self.transport.loseConnection()
         elif incoming.role == "authenticate":
             log.debug("Authentication received from %s" % str(self.transport.getPeer()))
@@ -78,43 +81,53 @@ class VOEventBroadcaster(ElementSender):
             # Accept both "new-style" (<Param type="xpath-filter" />) and
             # old-style (<filter type="xpath" />) filters.
             for xpath in chain(
-                [elem.get('value') for elem in incoming.element.findall("Meta/Param[@name=\"xpath-filter\"]")],
-                [elem.text for elem in incoming.element.findall("Meta/filter[@type=\"xpath\"]")]
+                [
+                    elem.get("value")
+                    for elem in incoming.element.findall(
+                        'Meta/Param[@name="xpath-filter"]'
+                    )
+                ],
+                [
+                    elem.text
+                    for elem in incoming.element.findall('Meta/filter[@type="xpath"]')
+                ],
             ):
                 log.info(
-                    "Installing filter %s for %s" %
-                    (xpath, str(self.transport.getPeer()))
+                    "Installing filter %s for %s"
+                    % (xpath, str(self.transport.getPeer()))
                 )
                 try:
                     self.filters.append(ElementTree.XPath(xpath))
                 except ElementTree.XPathSyntaxError:
                     log.info("Filter %s is not valid XPath" % (xpath,))
         else:
-            log.warn("Incomprehensible data received from %s (role=%s)" %
-                     (self.transport.getPeer(), incoming.role))
+            log.warn(
+                "Incomprehensible data received from %s (role=%s)"
+                % (self.transport.getPeer(), incoming.role)
+            )
 
     def send_event(self, event):
         # Check the event against our filters and, if one or more pass, then
         # we send the event to our subscriber.
         def check_filters(result):
             if not self.filters or any([value for success, value in result if success]):
-                log.info("Event matches filter criteria: forwarding to %s" % (str(self.transport.getPeer()),))
+                log.info(
+                    "Event matches filter criteria: forwarding to %s"
+                    % (str(self.transport.getPeer()),)
+                )
                 self.send_xml(event)
                 self.outstanding_ack += 1
             else:
                 log.info("Event rejected by filter")
 
         return defer.DeferredList(
-            [
-                deferToThread(xpath, event.element)
-                for xpath in self.filters
-            ],
+            [deferToThread(xpath, event.element) for xpath in self.filters],
             consumeErrors=True,
         ).addCallback(check_filters)
 
 
 class VOEventBroadcasterFactory(ServerFactory):
-    IAMALIVE_INTERVAL = 60 # Sent iamalive every IAMALIVE_INTERVAL seconds
+    IAMALIVE_INTERVAL = 60  # Sent iamalive every IAMALIVE_INTERVAL seconds
     protocol = VOEventBroadcaster
 
     def __init__(self, local_ivo, test_interval):

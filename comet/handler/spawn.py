@@ -13,6 +13,7 @@ import comet.log as log
 
 __all__ = ["SpawnCommand"]
 
+
 class SpawnCommandProtocol(ProcessProtocol):
     # Assume that all external processes write a UTF-8 bytestream to STDOUT.
     # This is obviously a questionable assumption, but it's not clear what a
@@ -31,8 +32,7 @@ class SpawnCommandProtocol(ProcessProtocol):
         self.transport.closeStdin()
 
     def outReceived(self, data):
-        log.debug("External process said: %s" %
-                  (data.decode(self.STDOUT_ENCODING),))
+        log.debug("External process said: %s" % (data.decode(self.STDOUT_ENCODING),))
 
     def errReceived(self, data):
         self.outReceived(data)
@@ -40,13 +40,16 @@ class SpawnCommandProtocol(ProcessProtocol):
     def processEnded(self, reason):
         if reason.value.exitCode:
             self.deferred.errback(reason)
-        else: self.deferred.callback(True)
+        else:
+            self.deferred.callback(True)
+
 
 @implementer(IHandler)
 class SpawnCommand(object):
     """
     Send a VOEvent to standard input of an external command.
     """
+
     name = "spawn-command"
 
     def __init__(self, cmd, *args):
@@ -63,13 +66,13 @@ class SpawnCommand(object):
             d.errback(Exception(msg))
 
         else:
+
             def log_reason(reason):
                 """
                 Catch a Failure returned from an unsuccessful process execution
                 and log the return value, then re-raise the error.
                 """
-                msg = "%s returned non-zero (%d)" % (self.cmd,
-                                                     reason.value.exitCode)
+                msg = "%s returned non-zero (%d)" % (self.cmd, reason.value.exitCode)
                 log.warn(msg)
                 return reason
 
@@ -79,6 +82,6 @@ class SpawnCommand(object):
                 SpawnCommandProtocol(d, event.raw_bytes),
                 self.cmd,
                 args=self.args,
-                env=os.environ
+                env=os.environ,
             )
         return d

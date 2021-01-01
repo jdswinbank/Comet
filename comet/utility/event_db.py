@@ -2,6 +2,7 @@
 # Event database.
 
 import os
+
 try:
     import anydbm
 except ImportError:
@@ -20,6 +21,7 @@ from comet.utility.voevent import parse_ivoid
 
 __all__ = ["Event_DB"]
 
+
 class Event_DB(object):
     def __init__(self, root):
         self.root = self._ensure_dir(root)
@@ -27,15 +29,11 @@ class Event_DB(object):
 
     @staticmethod
     def _get_event_details(event):
-        auth, rsrc, local = parse_ivoid(event.element.attrib['ivorn'])
+        auth, rsrc, local = parse_ivoid(event.element.attrib["ivorn"])
 
         # Although "/" isn't the path separator on Windows, it os.path.join()
         # still gets confused if it appears in a filename.
-        db_path = (
-            os.path.join(auth, rsrc)
-            .replace(os.path.sep, "_")
-            .replace("/", "_")
-        )
+        db_path = os.path.join(auth, rsrc).replace(os.path.sep, "_").replace("/", "_")
 
         key = sha1(event.raw_bytes).hexdigest()
         return db_path, key
@@ -66,10 +64,10 @@ class Event_DB(object):
         try:
             db_path, key = self._get_event_details(event)
         except Exception as e:
-            log.warn("Unparseable IVOID; failing eventdb lookup");
+            log.warn("Unparseable IVOID; failing eventdb lookup")
         else:
-            with self.databases[db_path]: # Acquire lock
-                with closing(anydbm.open(os.path.join(self.root, db_path), 'c')) as db:
+            with self.databases[db_path]:  # Acquire lock
+                with closing(anydbm.open(os.path.join(self.root, db_path), "c")) as db:
                     if not key in db:
                         db[key] = str(time.time())
                         return True
@@ -79,10 +77,11 @@ class Event_DB(object):
         """
         Remove entries with age at least expiry_time seconds from the database.
         """
+
         def expire_db(db_path, lock):
             remove = []
             with lock:
-                db = anydbm.open(os.path.join(self.root, db_path), 'c')
+                db = anydbm.open(os.path.join(self.root, db_path), "c")
                 # The database returned by anydbm is guaranteed to have a
                 # .keys() method, but not necessarily .(iter)items().
                 for key in db.keys():
@@ -92,7 +91,8 @@ class Event_DB(object):
                         # get hit by floating point weirdness.
                         remove.append(key)
                 log.info("Expiring %d events from %s" % (len(remove), db_path))
-                for key in remove: del db[key]
+                for key in remove:
+                    del db[key]
                 db.close()
 
         return DeferredList(

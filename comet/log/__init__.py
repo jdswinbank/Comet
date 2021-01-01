@@ -11,13 +11,16 @@ from twisted.internet import defer
 
 __all__ = ["Levels", "LEVEL", "warn", "info", "debug", "err"]
 
+
 class Levels(object):
     """
     Log levels available.
     """
+
     DEBUG = 100
-    INFO  = 200
+    INFO = 200
     WARNING = 300
+
 
 # Levels.WARNING is the default level.
 try:
@@ -32,7 +35,7 @@ def log(level, message, system=None):
     meets our verbosity criteria.
     """
     if not system:
-        system = context.get(twisted_log.ILogContext)['system']
+        system = context.get(twisted_log.ILogContext)["system"]
     if level >= LEVEL:
         if level >= Levels.WARNING:
             twisted_log.msg(message, system="WARNING %s" % (system,))
@@ -41,17 +44,20 @@ def log(level, message, system=None):
         else:
             twisted_log.msg(message, system="DEBUG %s" % (system,))
 
+
 class LogWithDeferred(object):
     """
     Forward a message to log(), above, and return a Deferred which we can
     chain off.
     """
+
     def __init__(self, level):
         self.level = level
 
     def __call__(self, message, system=None):
         log(self.level, message, system)
         return defer.succeed(None)
+
 
 # Shortcuts to enable easy logging at the given level.
 warn = LogWithDeferred(Levels.WARNING)

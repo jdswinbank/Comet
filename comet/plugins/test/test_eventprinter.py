@@ -2,6 +2,7 @@
 # Tests for EventPrinter plugin.
 
 import sys
+
 try:
     from cStringIO import StringIO
 except ImportError:
@@ -15,10 +16,12 @@ from twisted.plugin import IPlugin
 from comet.icomet import IHandler
 from comet.plugins.eventprinter import EventPrinter
 
-DUMMY_XML = u'<xml/>'
+DUMMY_XML = u"<xml/>"
+
 
 class DummyEvent(object):
     element = etree.fromstring(DUMMY_XML)
+
 
 class EventPrinterTestCase(unittest.TestCase):
     def test_interface(self):

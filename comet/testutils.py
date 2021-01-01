@@ -15,8 +15,8 @@ from comet.protocol import TransportMessage
 
 # All dummy event text should be RAW BYTES, as received over the network.
 
-DUMMY_EVENT_IVOID = u"ivo://comet.broker/test#1234567890".encode('UTF-8')
-DUMMY_SERVICE_IVOID = u"ivo://comet.broker/test".encode('UTF-8')
+DUMMY_EVENT_IVOID = u"ivo://comet.broker/test#1234567890".encode("UTF-8")
+DUMMY_SERVICE_IVOID = u"ivo://comet.broker/test".encode("UTF-8")
 
 DUMMY_IAMALIVE = u"""
     <?xml version=\'1.0\' encoding=\'UTF-8\'?>
@@ -28,8 +28,10 @@ DUMMY_IAMALIVE = u"""
         <Origin>%s</Origin>
         <TimeStamp>2012-01-01T00:00:00Z</TimeStamp>
     </trn:Transport>
-""" % (DUMMY_EVENT_IVOID.decode(),)
-DUMMY_IAMALIVE = textwrap.dedent(DUMMY_IAMALIVE).strip().encode('UTF-8')
+""" % (
+    DUMMY_EVENT_IVOID.decode(),
+)
+DUMMY_IAMALIVE = textwrap.dedent(DUMMY_IAMALIVE).strip().encode("UTF-8")
 
 DUMMY_AUTHENTICATE = u"""
     <?xml version='1.0' encoding='UTF-8'?>
@@ -41,8 +43,10 @@ DUMMY_AUTHENTICATE = u"""
         <Origin>%s</Origin>
         <TimeStamp>2012-01-01T00:00:00Z</TimeStamp>
     </trn:Transport>
-""" % (DUMMY_EVENT_IVOID.decode(),)
-DUMMY_AUTHENTICATE = textwrap.dedent(DUMMY_AUTHENTICATE).strip().encode('UTF-8')
+""" % (
+    DUMMY_EVENT_IVOID.decode(),
+)
+DUMMY_AUTHENTICATE = textwrap.dedent(DUMMY_AUTHENTICATE).strip().encode("UTF-8")
 
 DUMMY_VOEVENT = u"""
     <?xml version='1.0' encoding='UTF-8'?>
@@ -56,8 +60,11 @@ DUMMY_VOEVENT = u"""
             <Date>2012-01-01T00:00:00</Date>
         </Who>
     </voe:VOEvent>
-""" % (DUMMY_EVENT_IVOID.decode(), DUMMY_SERVICE_IVOID.decode())
-DUMMY_VOEVENT = textwrap.dedent(DUMMY_VOEVENT).strip().encode('UTF-8')
+""" % (
+    DUMMY_EVENT_IVOID.decode(),
+    DUMMY_SERVICE_IVOID.decode(),
+)
+DUMMY_VOEVENT = textwrap.dedent(DUMMY_VOEVENT).strip().encode("UTF-8")
 
 DUMMY_ACK = u"""
     <?xml version='1.0' encoding='UTF-8'?>
@@ -70,8 +77,11 @@ DUMMY_ACK = u"""
         <Response>%s</Response>
         <TimeStamp>2012-01-01T00:00:00Z</TimeStamp>
     </trn:Transport>
-""" % (DUMMY_EVENT_IVOID.decode(), DUMMY_SERVICE_IVOID.decode())
-DUMMY_ACK = textwrap.dedent(DUMMY_ACK).strip().encode('UTF-8')
+""" % (
+    DUMMY_EVENT_IVOID.decode(),
+    DUMMY_SERVICE_IVOID.decode(),
+)
+DUMMY_ACK = textwrap.dedent(DUMMY_ACK).strip().encode("UTF-8")
 
 DUMMY_NAK = u"""
     <?xml version='1.0' encoding='UTF-8'?>
@@ -84,8 +94,11 @@ DUMMY_NAK = u"""
         <Response>%s</Response>
         <TimeStamp>2012-01-01T00:00:00Z</TimeStamp>
     </trn:Transport>
-""" % (DUMMY_EVENT_IVOID.decode(), DUMMY_SERVICE_IVOID.decode())
-DUMMY_NAK = textwrap.dedent(DUMMY_NAK).strip().encode('UTF-8')
+""" % (
+    DUMMY_EVENT_IVOID.decode(),
+    DUMMY_SERVICE_IVOID.decode(),
+)
+DUMMY_NAK = textwrap.dedent(DUMMY_NAK).strip().encode("UTF-8")
 
 DUMMY_AUTHENTICATE_RESPONSE_LEGACY = u"""
     <?xml version='1.0' encoding='UTF-8'?>
@@ -101,32 +114,40 @@ DUMMY_AUTHENTICATE_RESPONSE_LEGACY = u"""
             <filter type="xpath">%s</filter>
         </Meta>
     </trn:Transport>
-""" % (DUMMY_SERVICE_IVOID.decode(), DUMMY_SERVICE_IVOID.decode(), "%s")
-DUMMY_AUTHENTICATE_RESPONSE_LEGACY = textwrap.dedent(
-    DUMMY_AUTHENTICATE_RESPONSE_LEGACY
-).strip().encode('UTF-8')
+""" % (
+    DUMMY_SERVICE_IVOID.decode(),
+    DUMMY_SERVICE_IVOID.decode(),
+    "%s",
+)
+DUMMY_AUTHENTICATE_RESPONSE_LEGACY = (
+    textwrap.dedent(DUMMY_AUTHENTICATE_RESPONSE_LEGACY).strip().encode("UTF-8")
+)
 
-DUMMY_AUTHENTICATE_RESPONSE = partial(TransportMessage.authenticateresponse,
-                                      DUMMY_SERVICE_IVOID, DUMMY_SERVICE_IVOID)
+DUMMY_AUTHENTICATE_RESPONSE = partial(
+    TransportMessage.authenticateresponse, DUMMY_SERVICE_IVOID, DUMMY_SERVICE_IVOID
+)
+
 
 class DummyEvent(object):
     def __init__(self, ivoid=DUMMY_EVENT_IVOID):
-        self.attrib = {'ivorn': ivoid}
+        self.attrib = {"ivorn": ivoid}
         self.raw_bytes = DUMMY_VOEVENT.replace(DUMMY_EVENT_IVOID, ivoid)
         self.element = etree.fromstring(self.raw_bytes)
+
 
 class DummyLogObserver(object):
     def __init__(self):
         self.messages = []
 
     def __call__(self, logentry):
-        self.messages.append(logentry['message'])
+        self.messages.append(logentry["message"])
+
 
 class OptionTestUtils(object):
-    """Convenience methods for testing `comet.utility.BaseOptions` subclasses.
-    """
+    """Convenience methods for testing `comet.utility.BaseOptions` subclasses."""
+
     def _check_bad_parse(self, cmd_line):
         # A bad parse will raise `builtins.SystemExit` and spew to stderr.
         # Catch the latter so it doesn't appear in the logs.
-        with redirect_stderr(open(devnull, 'w')):
+        with redirect_stderr(open(devnull, "w")):
             self.assertRaises(SystemExit, self.config.parseOptions, cmd_line)

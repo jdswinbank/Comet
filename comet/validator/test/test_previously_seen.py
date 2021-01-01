@@ -11,6 +11,7 @@ from comet.icomet import IValidator
 from comet.utility import Event_DB
 from comet.validator import CheckPreviouslySeen
 
+
 class CheckPreviouslySeenTestCase(unittest.TestCase):
     def setUp(self):
         self.event_db_dir = tempfile.mkdtemp()
@@ -30,7 +31,8 @@ class CheckPreviouslySeenTestCase(unittest.TestCase):
         # Simulate a database exception by causing the check_event() method to
         # raise an exception.
         def mock_check_event(*args, **kwargs):
-            raise LookupError('Simulated DB failure.')
+            raise LookupError("Simulated DB failure.")
+
         old_check_event = self.checker.event_db.check_event
 
         # Catch only the simulated LookupError: other exceptions will

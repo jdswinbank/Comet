@@ -7,18 +7,22 @@ from twisted.internet import task
 from twisted.trial import unittest
 from twisted.test import proto_helpers
 
-from comet.testutils import (DUMMY_EVENT_IVOID, DUMMY_SERVICE_IVOID,
-                             DUMMY_IAMALIVE, DUMMY_AUTHENTICATE,
-                             DUMMY_VOEVENT)
+from comet.testutils import (
+    DUMMY_EVENT_IVOID,
+    DUMMY_SERVICE_IVOID,
+    DUMMY_IAMALIVE,
+    DUMMY_AUTHENTICATE,
+    DUMMY_VOEVENT,
+)
 
-from comet.protocol.subscriber import (VOEventSubscriber,
-                                       VOEventSubscriberFactory)
+from comet.protocol.subscriber import VOEventSubscriber, VOEventSubscriberFactory
+
 
 class VOEventSubscriberFactoryTestCase(unittest.TestCase):
     def setUp(self):
         self.factory = VOEventSubscriberFactory(DUMMY_EVENT_IVOID)
         self.transport = proto_helpers.StringTransportWithDisconnection()
-        self.proto = self.factory.buildProtocol(('127.0.0.1', 0))
+        self.proto = self.factory.buildProtocol(("127.0.0.1", 0))
 
     def tearDown(self):
         self.proto.connectionLost()
@@ -32,8 +36,8 @@ class VOEventSubscriberTimeoutTestCase(unittest.TestCase):
         factory = VOEventSubscriberFactory(DUMMY_EVENT_IVOID)
         self.clock = task.Clock()
         factory.callLater = self.clock.callLater
-        self.proto = factory.buildProtocol(('127.0.0.1', 0))
-        self.proto.callLater = self.clock.callLater # Original in TimeoutMixin
+        self.proto = factory.buildProtocol(("127.0.0.1", 0))
+        self.proto.callLater = self.clock.callLater  # Original in TimeoutMixin
         self.tr = proto_helpers.StringTransportWithDisconnection()
         self.proto.makeConnection(self.tr)
         self.tr.protocol = self.proto
@@ -47,13 +51,14 @@ class VOEventSubscriberTimeoutTestCase(unittest.TestCase):
 # IVOIDs. If they do have them, though, they must be used properly. We run the
 # same set of tests for both cases.
 
+
 class VOEventSubscriberTestCase(object):
     # Abstract base for the with and without ID test cases, below.
 
     def setUp(self):
         factory = VOEventSubscriberFactory(self.IVOID)
         factory.callLater = task.Clock().callLater
-        self.proto = factory.buildProtocol(('127.0.0.1', 0))
+        self.proto = factory.buildProtocol(("127.0.0.1", 0))
         self.tr = proto_helpers.StringTransport()
         self.proto.makeConnection(self.tr)
 
@@ -73,7 +78,7 @@ class VOEventSubscriberTestCase(object):
         # An incomprehensible message should generate no response, but the
         # transport should not disconnect.
         incomprehensible = b"<xml/>"
-        etree.fromstring(incomprehensible) # Should not raise an error
+        etree.fromstring(incomprehensible)  # Should not raise an error
         self.proto.stringReceived(incomprehensible)
         self.assertEqual(self.tr.value(), b"")
         self.assertEqual(self.tr.disconnecting, False)
@@ -81,44 +86,54 @@ class VOEventSubscriberTestCase(object):
     def test_receive_iamalive(self):
         self.proto.stringReceived(DUMMY_IAMALIVE)
         received_element = etree.fromstring(self.tr.value()[4:])
-        self.assertEqual("iamalive", received_element.attrib['role'])
+        self.assertEqual("iamalive", received_element.attrib["role"])
         if self.IVOID:
-            self.assertEqual(DUMMY_SERVICE_IVOID.decode(),
-                             received_element.find('Response').text)
+            self.assertEqual(
+                DUMMY_SERVICE_IVOID.decode(), received_element.find("Response").text
+            )
 
     def test_receive_authenticate(self):
         self.proto.stringReceived(DUMMY_AUTHENTICATE)
         received_element = etree.fromstring(self.tr.value()[4:])
-        self.assertEqual("authenticate", received_element.attrib['role'])
+        self.assertEqual("authenticate", received_element.attrib["role"])
         if self.IVOID:
-            self.assertEqual(DUMMY_SERVICE_IVOID.decode(),
-                             received_element.find('Response').text)
+            self.assertEqual(
+                DUMMY_SERVICE_IVOID.decode(), received_element.find("Response").text
+            )
 
     def test_receive_valid_voevent(self):
         self.proto.stringReceived(DUMMY_VOEVENT)
         received_element = etree.fromstring(self.tr.value()[4:])
-        self.assertEqual("ack", received_element.attrib['role'])
+        self.assertEqual("ack", received_element.attrib["role"])
         if self.IVOID:
-            self.assertEqual(DUMMY_SERVICE_IVOID.decode(),
-                             received_element.find('Response').text)
-        self.assertEqual(DUMMY_EVENT_IVOID.decode(),
-                         received_element.find('Origin').text)
+            self.assertEqual(
+                DUMMY_SERVICE_IVOID.decode(), received_element.find("Response").text
+            )
+        self.assertEqual(
+            DUMMY_EVENT_IVOID.decode(), received_element.find("Origin").text
+        )
 
     def test_receive_invalid_voevent(self):
         # This should not be accepted, but *should not* generate a NAK.
-        def invalid(event): raise Exception("Failed")
+        def invalid(event):
+            raise Exception("Failed")
+
         self.proto.factory.validators.append(invalid)
         self.proto.stringReceived(DUMMY_VOEVENT)
         received_element = etree.fromstring(self.tr.value()[4:])
-        self.assertEqual("ack", received_element.attrib['role'])
+        self.assertEqual("ack", received_element.attrib["role"])
         if self.IVOID:
-            self.assertEqual(DUMMY_SERVICE_IVOID.decode(),
-                             received_element.find('Response').text)
-        self.assertEqual(DUMMY_EVENT_IVOID.decode(),
-                         received_element.find('Origin').text)
+            self.assertEqual(
+                DUMMY_SERVICE_IVOID.decode(), received_element.find("Response").text
+            )
+        self.assertEqual(
+            DUMMY_EVENT_IVOID.decode(), received_element.find("Origin").text
+        )
+
 
 class VOEventSubscriberWithID(VOEventSubscriberTestCase, unittest.TestCase):
     IVOID = DUMMY_SERVICE_IVOID
+
 
 class VOEventSubscriberWithoutID(VOEventSubscriberTestCase, unittest.TestCase):
     IVOID = None

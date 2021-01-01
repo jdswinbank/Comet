@@ -8,6 +8,7 @@ from comet.protocol import VOEventBroadcasterFactory
 
 __all__ = ["makeBroadcasterService"]
 
+
 def makeBroadcasterService(endpoint, local_ivo, test_interval, whitelist):
     """Create a VOEvent receiver service.
 
@@ -31,8 +32,7 @@ def makeBroadcasterService(endpoint, local_ivo, test_interval, whitelist):
     if log.LEVEL >= log.Levels.INFO:
         factory.noisy = False
 
-    whitelisting_factory = WhitelistingFactory(factory, whitelist,
-                                               "subscription")
+    whitelisting_factory = WhitelistingFactory(factory, whitelist, "subscription")
     if log.LEVEL >= log.Levels.INFO:
         whitelisting_factory.noisy = False
 

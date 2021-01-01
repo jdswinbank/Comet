@@ -14,6 +14,7 @@ from comet.protocol import TransportMessage
 
 EXAMPLE_XML = b"""<xml></xml>"""
 
+
 class mutable_element_tests(unittest.TestCase):
     def setUp(self):
         self.doc = xml_document(b"<foo>bar</foo>")
@@ -31,6 +32,7 @@ class mutable_element_tests(unittest.TestCase):
         self.doc.element = etree.fromstring("<foo>baz</foo>")
         self.assertNotEqual(self.doc.raw_bytes.find(b"<foo>baz</foo>"), -1)
 
+
 class xml_document_encoding(unittest.TestCase):
     def test_from_unicode(self):
         # It should not be possible to initalize an XML document from a
@@ -43,8 +45,9 @@ class xml_document_encoding(unittest.TestCase):
         self.assertEqual(doc.encoding, "UTF-8")
 
         # Something more exotic!
-        doc = xml_document(b"<?xml version=\'1.0\' encoding=\'BIG5\'?><foo>bar</foo>")
+        doc = xml_document(b"<?xml version='1.0' encoding='BIG5'?><foo>bar</foo>")
         self.assertEqual(doc.encoding, "BIG5")
+
 
 class xml_document_tests(object):
     def test_signature(self):
@@ -56,13 +59,16 @@ class xml_document_tests(object):
     def test_text(self):
         self.assertIsInstance(self.doc.raw_bytes, bytes)
 
+
 class xml_document_from_string_TestCase(unittest.TestCase, xml_document_tests):
     def setUp(self):
         self.doc = xml_document(EXAMPLE_XML)
 
+
 class xml_document_from_element_TestCase(unittest.TestCase, xml_document_tests):
     def setUp(self):
         self.doc = xml_document(etree.fromstring(EXAMPLE_XML))
+
 
 class xml_security_TestCase(unittest.TestCase):
     """
@@ -72,13 +78,16 @@ class xml_security_TestCase(unittest.TestCase):
     to a range of exploits: see https://bitbucket.org/tiran/defusedxml for
     details.
     """
+
     def test_billion_laughs(self):
         """
         Exponential entity expansion.
 
         http://en.wikipedia.org/wiki/Billion_laughs
         """
-        xml_str = textwrap.dedent(u"""
+        xml_str = (
+            textwrap.dedent(
+                u"""
         <?xml version="1.0"?>
         <!DOCTYPE lolz [
          <!ENTITY lol "lol">
@@ -94,7 +103,11 @@ class xml_security_TestCase(unittest.TestCase):
          <!ENTITY lol9 "&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;">
         ]>
         <lolz>&lol9;</lolz>
-        """).strip().encode('utf-8')
+        """
+            )
+            .strip()
+            .encode("utf-8")
+        )
         self.assertRaises(ParseError, xml_document, xml_str)
 
     def test_quadratic_blowup(self):
@@ -103,14 +116,21 @@ class xml_security_TestCase(unittest.TestCase):
 
         To avoid this, we'll have to disable entity expansion altogether.
         """
-        xml_str = textwrap.dedent(u"""
+        xml_str = (
+            textwrap.dedent(
+                u"""
         <?xml version="1.0"?>
         <!DOCTYPE bomb [
         <!ENTITY a "xxxxxxx">
         ]>
         <bomb>&a;&a;&a;&a;&a;</bomb>
-        """).strip().encode('utf-8')
+        """
+            )
+            .strip()
+            .encode("utf-8")
+        )
         self.assertRaises(ParseError, xml_document, xml_str)
+
 
 class xml_document_infer_type_TestCase(unittest.TestCase):
     def _assertTransport(self, doc, role):

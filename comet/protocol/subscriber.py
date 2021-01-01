@@ -9,7 +9,7 @@ from twisted.internet.protocol import Factory
 from comet.protocol.base import EventHandler
 
 # Constructors for transport protocol messages
-#from comet.protocol.messages import iamaliveresponse, authenticateresponse
+# from comet.protocol.messages import iamaliveresponse, authenticateresponse
 from comet.protocol.messages import TransportMessage
 
 # Comet utility routines
@@ -18,9 +18,10 @@ from comet.utility import xml_document, ParseError
 
 __all__ = ["VOEventSubscriberFactory"]
 
+
 class VOEventSubscriber(EventHandler, TimeoutMixin):
-    ALIVE_INTERVAL = 120 # If we get no traffic for ALIVE_INTERVAL seconds,
-                         # assume our peer forgot us.
+    ALIVE_INTERVAL = 120  # If we get no traffic for ALIVE_INTERVAL seconds,
+    # assume our peer forgot us.
     def __init__(self, filters=[]):
         self.filters = filters
 
@@ -35,9 +36,9 @@ class VOEventSubscriber(EventHandler, TimeoutMixin):
 
     def timeoutConnection(self):
         log.info(
-            "No iamalive received from %s for %d seconds; disconecting" %
-            (self.transport.getPeer(), self.ALIVE_INTERVAL),
-            system="VOEventSubscriber"
+            "No iamalive received from %s for %d seconds; disconecting"
+            % (self.transport.getPeer(), self.ALIVE_INTERVAL),
+            system="VOEventSubscriber",
         )
         return TimeoutMixin.timeoutConnection(self)
 
@@ -60,30 +61,42 @@ class VOEventSubscriber(EventHandler, TimeoutMixin):
         # have received.
         if incoming.role == "iamalive":
             log.debug("IAmAlive received from %s" % str(self.transport.getPeer()))
-            self.send_xml(TransportMessage.iamaliveresponse(self.factory.local_ivo,
-                                                            incoming.origin))
+            self.send_xml(
+                TransportMessage.iamaliveresponse(
+                    self.factory.local_ivo, incoming.origin
+                )
+            )
         elif incoming.role == "authenticate":
             log.debug("Authenticate received from %s" % str(self.transport.getPeer()))
-            self.send_xml(TransportMessage.authenticateresponse(self.factory.local_ivo,
-                                                                incoming.origin,
-                                                                self.filters))
+            self.send_xml(
+                TransportMessage.authenticateresponse(
+                    self.factory.local_ivo, incoming.origin, self.filters
+                )
+            )
         elif hasattr(incoming, "ivoid"):
-            log.info("VOEvent %s received from %s" % (incoming.ivoid,
-                                                      str(self.transport.getPeer())))
+            log.info(
+                "VOEvent %s received from %s"
+                % (incoming.ivoid, str(self.transport.getPeer()))
+            )
             # We don't send a NAK even if the event is invalid since we don't
             # want to be removed from upstream's distribution list.
             self.process_event(incoming, can_nak=False)
         else:
             log.warn(
-                "Incomprehensible data received from %s (role=%s)" %
-                (self.transport.getPeer(), incoming.element.get("role"))
+                "Incomprehensible data received from %s (role=%s)"
+                % (self.transport.getPeer(), incoming.element.get("role"))
             )
 
 
 class VOEventSubscriberFactory(Factory):
     protocol = VOEventSubscriber
-    def __init__(self,
-        local_ivo=None, validators=None, handlers=None, filters=None,
+
+    def __init__(
+        self,
+        local_ivo=None,
+        validators=None,
+        handlers=None,
+        filters=None,
     ):
         self.local_ivo = local_ivo
         self.handlers = handlers or []

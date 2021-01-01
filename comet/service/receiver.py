@@ -8,6 +8,7 @@ from comet.protocol import VOEventReceiverFactory
 
 __all__ = ["makeReceiverService"]
 
+
 def makeReceiverService(endpoint, local_ivo, validators, handlers, whitelist):
     """Create a VOEvent receiver service.
 
@@ -35,9 +36,9 @@ def makeReceiverService(endpoint, local_ivo, validators, handlers, whitelist):
     example), the whitelist won't be applied to it correctly (indeed, it will
     probably break horribly).
     """
-    factory = VOEventReceiverFactory(local_ivo=local_ivo,
-                                     validators=validators,
-                                     handlers=handlers)
+    factory = VOEventReceiverFactory(
+        local_ivo=local_ivo, validators=validators, handlers=handlers
+    )
     if log.LEVEL >= log.Levels.INFO:
         factory.noisy = False
 

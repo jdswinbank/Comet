@@ -5,6 +5,7 @@ from twisted.internet.endpoints import clientFromString, serverFromString
 
 __all__ = ["coerce_to_client_endpoint", "coerce_to_server_endpoint"]
 
+
 def coerce_to_client_endpoint(reactor, ep_descr, default_port):
     """Given a string, attempt to produce a client endpoint.
 
@@ -43,6 +44,7 @@ def coerce_to_client_endpoint(reactor, ep_descr, default_port):
     except (ValueError, TypeError):
         # At this point, we'll give up, and go back to the original bad parse.
         clientFromString(reactor, ep_descr)
+
 
 def coerce_to_server_endpoint(reactor, ep_descr):
     """Given a string, attempt to produce a server endpoint.

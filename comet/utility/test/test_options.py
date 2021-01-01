@@ -15,20 +15,19 @@ from comet.icomet import IHandler
 from comet.utility import valid_ivoid, valid_xpath, BaseOptions
 from comet.testutils import OptionTestUtils
 
+
 class valid_TestCaseBase(object):
     def test_valid(self):
-        self.assertEqual(self.validator(self.valid_expression),
-                         self.valid_expression)
+        self.assertEqual(self.validator(self.valid_expression), self.valid_expression)
 
     def test_invalid(self):
-        self.assertRaises(ArgumentTypeError, self.validator,
-                          self.invalid_expression)
+        self.assertRaises(ArgumentTypeError, self.validator, self.invalid_expression)
 
 
 class valid_xpathTestCase(valid_TestCaseBase, unittest.TestCase):
     def setUp(self):
         self.validator = valid_xpath
-        self.valid_expression = "/*[local-name()=\"VOEvent\" and @role=\"test\"]"
+        self.valid_expression = '/*[local-name()="VOEvent" and @role="test"]'
         self.invalid_expression = "\/\/\/\/\/"
 
 
@@ -41,13 +40,14 @@ class valid_ivoroidTestCase(valid_TestCaseBase, unittest.TestCase):
 
 class BaseOptionsTestCase(unittest.TestCase, OptionTestUtils):
     ARGNAME, ARGVALUE = "test-argument", "test-value"
-    PROGNAME="BaseOptionsTestCase-ProgName"
+    PROGNAME = "BaseOptionsTestCase-ProgName"
 
     def setUp(self):
         class TrivialOptions(BaseOptions):
-            """Demonstrate core features of option parsing.
-            """
-            PROG=self.PROGNAME
+            """Demonstrate core features of option parsing."""
+
+            PROG = self.PROGNAME
+
             def _configureParser(self):
                 self.parser.add_argument(f"--{BaseOptionsTestCase.ARGNAME}")
                 self.has_been_checked = False
@@ -63,8 +63,7 @@ class BaseOptionsTestCase(unittest.TestCase, OptionTestUtils):
         self.assertFalse(self.config.has_been_checked)
         self.config.parseOptions([f"--{self.ARGNAME}", self.ARGVALUE])
         self.assertIn(self.ARGNAME.replace("-", "_"), self.config)
-        self.assertEqual(self.config[self.ARGNAME.replace("-", "_")],
-                         self.ARGVALUE)
+        self.assertEqual(self.config[self.ARGNAME.replace("-", "_")], self.ARGVALUE)
         self.assertTrue(self.config.has_been_checked)
 
     def test_bad_parse(self):
@@ -73,9 +72,9 @@ class BaseOptionsTestCase(unittest.TestCase, OptionTestUtils):
         self._check_bad_parse([f"--bad-arg", self.ARGVALUE])
 
     def test_missing_option(self):
-        self.assertFalse('no-such-option' in self.config)
+        self.assertFalse("no-such-option" in self.config)
         with self.assertRaises(KeyError):
-            self.config['no-such-option']
+            self.config["no-such-option"]
 
     def test_prog(self):
         # TrivialOptions sets its progname.
@@ -84,28 +83,30 @@ class BaseOptionsTestCase(unittest.TestCase, OptionTestUtils):
         # But a parser which doesn't is equally valid.
         class NoProgOptions(BaseOptions):
             pass
+
         self.assertNotEqual(NoProgOptions(), self.PROGNAME)
 
     def test_verbose(self):
         # By default, verbosity is not set.
         self.config.parseOptions([])
-        self.assertEqual(self.config['verbose'], None)
+        self.assertEqual(self.config["verbose"], None)
         self.assertEqual(log.LEVEL, log.Levels.WARNING)
 
         # But it can be set once...
         self.config.parseOptions(["--verbose"])
-        self.assertEqual(self.config['verbose'], 1)
+        self.assertEqual(self.config["verbose"], 1)
         self.assertEqual(log.LEVEL, log.Levels.INFO)
 
         # ...or more.
         self.config.parseOptions(["--verbose", "-v"])
-        self.assertEqual(self.config['verbose'], 2)
+        self.assertEqual(self.config["verbose"], 2)
         self.assertEqual(log.LEVEL, log.Levels.DEBUG)
 
     def test_pluginpath(self):
         # The COMET_PLUGINPATH environment variable should set the locations
         # set for plugins.
-        dummy_plugin = dedent(f"""
+        dummy_plugin = dedent(
+            f"""
         # Comet VOEvent Broker.
         # This is a no-op plugin, used to demonstrate plugin registration.
 
@@ -124,7 +125,8 @@ class BaseOptionsTestCase(unittest.TestCase, OptionTestUtils):
                 pass
 
         # This instance of the handler is what actually constitutes our plugin.
-        test_plugin = TestPlugin()""")
+        test_plugin = TestPlugin()"""
+        )
 
         # We'll restore the initial environment at the end of the test case.
         init_environ = os.environ.copy()
@@ -143,13 +145,16 @@ class BaseOptionsTestCase(unittest.TestCase, OptionTestUtils):
                 BaseOptions()
 
                 # Should now be one more plugin available.
-                self.assertEqual(len(list(getPlugins(IHandler, comet.plugins))),
-                                 initial_plugin_count + 1)
+                self.assertEqual(
+                    len(list(getPlugins(IHandler, comet.plugins))),
+                    initial_plugin_count + 1,
+                )
 
         finally:
             os.environ = init_environ
             comet.plugins.__path__ = init_pluginpath
 
         # Should be back to the original plugin count.
-        self.assertEqual(len(list(getPlugins(IHandler, comet.plugins))),
-                         initial_plugin_count)
+        self.assertEqual(
+            len(list(getPlugins(IHandler, comet.plugins))), initial_plugin_count
+        )

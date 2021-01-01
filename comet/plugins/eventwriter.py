@@ -15,6 +15,7 @@ import comet.log as log
 # Used when building filenames to avoid over-writing.
 FILENAME_PAD = "_"
 
+
 def string_to_filename(input_string):
     # Strip weird, confusing or special characters from input_string so that
     # we can safely use it as a filename.
@@ -22,9 +23,12 @@ def string_to_filename(input_string):
     # Allow ".", but not as the first character.
     if input_string[0] == ".":
         input_string = input_string[1:]
-    return "".join(x for x in input_string.replace("/", "_").replace("\\", "_")
+    return "".join(
+        x
+        for x in input_string.replace("/", "_").replace("\\", "_")
         if x in string.digits + string.ascii_letters + "_."
     )
+
 
 @contextmanager
 def event_file(ivoid, dirname=None):
@@ -32,17 +36,18 @@ def event_file(ivoid, dirname=None):
     # If a directory is specified, write into that; otherwise, use the cwd.
     # We use a lock to ensure we don't clobber other files with the same name.
     if not dirname:
-        dirname=os.getcwd()
+        dirname = os.getcwd()
     fname = os.path.join(dirname, string_to_filename(ivoid))
     lock = lockfile.FilesystemLock(string_to_filename(ivoid) + "-lock")
     lock.lock()
     try:
         while os.path.exists(fname):
             fname += FILENAME_PAD
-        with open(fname, 'w') as f:
+        with open(fname, "w") as f:
             yield f
     finally:
         lock.unlock()
+
 
 # Event handlers must implement IPlugin and IHandler.
 # Implementing IHasOptions enables us to use command line options.
@@ -66,17 +71,17 @@ class EventWriter(object):
         """
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
-        with event_file(event.element.attrib['ivorn'], self.directory) as f:
+        with event_file(event.element.attrib["ivorn"], self.directory) as f:
             log.debug("Writing to %s" % (f.name,))
             f.write(event.raw_bytes.decode(event.encoding))
 
     def get_options(self):
-        return [('directory', self.directory,
-                 'Directory in which to save events')]
+        return [("directory", self.directory, "Directory in which to save events")]
 
     def set_option(self, name, value):
         if name == "directory":
             self.directory = value
+
 
 # This instance of the handler is what actually constitutes our plugin.
 save_event = EventWriter()

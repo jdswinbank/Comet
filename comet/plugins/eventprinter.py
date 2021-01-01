@@ -24,5 +24,6 @@ class EventPrinter(object):
         """
         print(ElementTree.tounicode(event.element))
 
+
 # This instance of the handler is what actually constitutes our plugin.
 print_event = EventPrinter()

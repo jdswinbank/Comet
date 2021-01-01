@@ -6,11 +6,13 @@ from comet.icomet import IHandler
 
 __all__ = ["EventRelay"]
 
+
 @implementer(IHandler)
 class EventRelay(object):
     """
     Forward an event to all subscribers.
     """
+
     name = "event-relay"
 
     def __init__(self, broadcaster_factory):

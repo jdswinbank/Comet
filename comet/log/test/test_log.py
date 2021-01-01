@@ -7,6 +7,7 @@ from comet.testutils import DummyLogObserver
 
 DUMMY_MESSAGE = "Dummy message"
 
+
 class test_comet_logging(unittest.TestCase):
     def setUp(self):
         self.observer = DummyLogObserver()

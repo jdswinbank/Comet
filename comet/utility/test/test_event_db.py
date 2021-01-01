@@ -18,6 +18,7 @@ from twisted.trial import unittest
 from comet.testutils import DummyEvent
 from comet.utility.event_db import Event_DB
 
+
 class Event_DB_TestCase(unittest.TestCase):
     def setUp(self):
         self.event_db_dir = tempfile.mkdtemp()
@@ -35,7 +36,7 @@ class Event_DB_TestCase(unittest.TestCase):
         # If the path specified for the Event_DB *does* exist but isn't a
         # directory, then we should fail fast.
         filename = "event_db_test_is_file_%.5f" % (time.time(),)
-        open(filename, 'w').close()
+        open(filename, "w").close()
         self.assertRaises(RuntimeError, Event_DB, filename)
 
     @skipIf(platform == "win32", "Not available on Windows.")
@@ -48,8 +49,9 @@ class Event_DB_TestCase(unittest.TestCase):
         os.chmod(filename, 0)
         self.assertRaises(RuntimeError, Event_DB, filename)
         for n_perms in [1, 2]:
-            for perms in permutations([stat.S_IRUSR, stat.S_IWUSR, stat.S_IXUSR],
-                                      n_perms):
+            for perms in permutations(
+                [stat.S_IRUSR, stat.S_IWUSR, stat.S_IXUSR], n_perms
+            ):
                 os.chmod(filename, reduce(__or__, perms))
                 self.assertRaises(RuntimeError, Event_DB, filename)
         os.chmod(filename, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
@@ -75,6 +77,7 @@ class Event_DB_TestCase(unittest.TestCase):
     def test_prune(self):
         def done_prune(result):
             self.assertTrue(self.event_db.check_event(self.event))
+
         self.event_db.check_event(self.event)
         d = self.event_db.prune(0)
         d.addCallback(done_prune)
@@ -99,6 +102,7 @@ class Event_DB_TestCase(unittest.TestCase):
                 self.assertFalse(lock.locked())
             self.assertFalse(self.event_db.check_event(bad_event))
             self.assertTrue(self.event_db.check_event(self.event))
+
         d.addCallback(done_prune)
         return d
 
