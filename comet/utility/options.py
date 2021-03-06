@@ -2,7 +2,6 @@
 # Base class for command line options.
 
 import os
-import sys
 from argparse import ArgumentParser, ArgumentTypeError
 
 from lxml.etree import XPath, XPathSyntaxError
@@ -21,9 +20,8 @@ class BaseOptions(object):
         else:
             self.parser = ArgumentParser()
         if "COMET_PLUGINPATH" in os.environ:
-            split_on = ";" if sys.platform == "win32" else ":"
             comet.plugins.__path__.extend(
-                os.environ.get("COMET_PLUGINPATH").split(split_on)
+                os.environ.get("COMET_PLUGINPATH").split(os.pathsep)
             )
 
         self.parser.add_argument(
