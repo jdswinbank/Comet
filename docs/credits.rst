@@ -6,10 +6,4 @@ It is indexed by the `Astrophysics Source Code Library <https://ascl.net/>`_ as 
 
 If you make use of Comet in published research, please cite `Swinbank (2014) <https://dx.doi.org/10.1016/j.ascom.2014.09.001>`_.
 
-Many thanks to these contributors:
-
-* `Tim-Oliver Husser`_
-* `Tim Staley`_
-
-.. _Tim-Oliver Husser: https://github.com/thusser/
-.. _Tim Staley: https://timstaley.co.uk/
+Many thanks to Comet's various `contributors <https://github.com/jdswinbank/Comet/graphs/contributors>`_!
